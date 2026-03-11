@@ -101,3 +101,10 @@ async def change_password(
 
     user.hashed_password = hash_password(body.new_password)
     await db.commit()
+
+
+@router.post("/refresh", response_model=Token)
+async def refresh_token(user: User = Depends(get_current_user)):
+    """Issue a fresh access token for an authenticated user."""
+    token = create_access_token(user.id, user.company_id)
+    return Token(access_token=token)
