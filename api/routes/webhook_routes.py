@@ -8,7 +8,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from api.database import get_db
 from api.deps import get_current_user
 from api.models import User
-from api.schemas import PaginatedResponse, WebhookCreate, WebhookDeliveryOut, WebhookOut
+from api.schemas import PaginatedResponse, WebhookCreate, WebhookDeliveryOut, WebhookOut, WebhookOutPublic
 from api.services.webhooks import create_webhook, delete_webhook, list_deliveries, list_webhooks, toggle_webhook
 
 router = APIRouter(prefix="/webhooks", tags=["webhooks"])
@@ -28,7 +28,7 @@ async def add_webhook(
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
 
 
-@router.get("/", response_model=list[WebhookOut])
+@router.get("/", response_model=list[WebhookOutPublic])
 async def get_webhooks(
     user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
@@ -37,7 +37,7 @@ async def get_webhooks(
     return await list_webhooks(db, user.company_id)
 
 
-@router.patch("/{webhook_id}", response_model=WebhookOut)
+@router.patch("/{webhook_id}", response_model=WebhookOutPublic)
 async def update_webhook(
     webhook_id: str,
     active: bool = True,

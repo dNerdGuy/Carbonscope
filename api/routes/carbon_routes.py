@@ -5,13 +5,15 @@ from __future__ import annotations
 import csv
 import io
 
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
 from fastapi.responses import StreamingResponse
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from api.config import RATE_LIMIT_DEFAULT
 from api.database import get_db
 from api.deps import get_current_user
+from api.limiter import limiter
 from api.models import Company, DataUpload, EmissionReport, User, _utcnow
 from api.schemas import (
     DashboardSummary,
@@ -30,7 +32,9 @@ router = APIRouter(tags=["carbon"])
 
 
 @router.post("/estimate", response_model=EmissionReportOut, status_code=status.HTTP_201_CREATED)
+@limiter.limit("5/minute")
 async def create_estimate(
+    request: Request,
     body: EstimateRequest,
     user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),

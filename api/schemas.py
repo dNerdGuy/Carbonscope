@@ -268,11 +268,24 @@ class WebhookCreate(BaseModel):
 
 
 class WebhookOut(BaseModel):
+    """Full webhook details — includes secret (returned only on creation)."""
     id: str
     company_id: str
     url: str
     event_types: list[str]
     secret: str
+    active: bool
+    created_at: datetime
+
+    model_config = {"from_attributes": True}
+
+
+class WebhookOutPublic(BaseModel):
+    """Webhook details without secret — used for list and update responses."""
+    id: str
+    company_id: str
+    url: str
+    event_types: list[str]
     active: bool
     created_at: datetime
 
