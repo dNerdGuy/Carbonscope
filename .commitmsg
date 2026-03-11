@@ -1,8 +1,7 @@
-feat: report export endpoint (CSV and JSON)
+feat: frontend error boundaries, 404 page, and loading state
 
-- Add GET /reports/export with format=csv|json and optional year filter
-- Route placed before /reports/{report_id} to avoid path conflict
-- CSV output with proper headers and Content-Disposition
-- JSON export with indented formatting
-- Respects soft-delete filter
-- 3 new tests for export (170 tests pass)
+- Add app-level error.tsx error boundary with retry button
+- Add custom not-found.tsx 404 page
+- Add loading.tsx with animated spinner
+- Add route-level error boundaries for dashboard and reports
+- All 170 backend tests pass
