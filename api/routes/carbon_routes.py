@@ -8,7 +8,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from api.database import get_db
 from api.deps import get_current_user
-from api.models import Company, DataUpload, EmissionReport, User
+from api.models import Company, DataUpload, EmissionReport, User, _utcnow
 from api.schemas import (
     DashboardSummary,
     CompanyOut,
@@ -40,6 +40,7 @@ async def create_estimate(
         select(DataUpload).where(
             DataUpload.id == body.data_upload_id,
             DataUpload.company_id == user.company_id,
+            DataUpload.deleted_at.is_(None),
         )
     )
     upload = result.scalar_one_or_none()
@@ -107,7 +108,10 @@ async def list_reports(
     db: AsyncSession = Depends(get_db),
 ):
     """List emission reports with pagination, filtering, and sorting."""
-    base = select(EmissionReport).where(EmissionReport.company_id == user.company_id)
+    base = select(EmissionReport).where(
+        EmissionReport.company_id == user.company_id,
+        EmissionReport.deleted_at.is_(None),
+    )
     if year is not None:
         base = base.where(EmissionReport.year == year)
     if confidence_min is not None:
@@ -132,6 +136,7 @@ async def get_report(
         select(EmissionReport).where(
             EmissionReport.id == report_id,
             EmissionReport.company_id == user.company_id,
+            EmissionReport.deleted_at.is_(None),
         )
     )
     report = result.scalar_one_or_none()
@@ -146,17 +151,18 @@ async def delete_report(
     user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
-    """Delete a specific emission report."""
+    """Soft-delete a specific emission report."""
     result = await db.execute(
         select(EmissionReport).where(
             EmissionReport.id == report_id,
             EmissionReport.company_id == user.company_id,
+            EmissionReport.deleted_at.is_(None),
         )
     )
     report = result.scalar_one_or_none()
     if report is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Report not found")
-    await db.delete(report)
+    report.deleted_at = _utcnow()
     await db.commit()
 
 
@@ -176,7 +182,10 @@ async def dashboard(
     # Counts
     uploads_count = (
         await db.execute(
-            select(func.count()).select_from(DataUpload).where(DataUpload.company_id == user.company_id)
+            select(func.count()).select_from(DataUpload).where(
+                DataUpload.company_id == user.company_id,
+                DataUpload.deleted_at.is_(None),
+            )
         )
     ).scalar() or 0
 
@@ -184,14 +193,20 @@ async def dashboard(
         await db.execute(
             select(func.count())
             .select_from(EmissionReport)
-            .where(EmissionReport.company_id == user.company_id)
+            .where(
+                EmissionReport.company_id == user.company_id,
+                EmissionReport.deleted_at.is_(None),
+            )
         )
     ).scalar() or 0
 
     # Latest report
     latest_result = await db.execute(
         select(EmissionReport)
-        .where(EmissionReport.company_id == user.company_id)
+        .where(
+            EmissionReport.company_id == user.company_id,
+            EmissionReport.deleted_at.is_(None),
+        )
         .order_by(EmissionReport.created_at.desc())
         .limit(1)
     )
@@ -206,7 +221,10 @@ async def dashboard(
             func.sum(EmissionReport.scope3).label("scope3"),
             func.sum(EmissionReport.total).label("total"),
         )
-        .where(EmissionReport.company_id == user.company_id)
+        .where(
+            EmissionReport.company_id == user.company_id,
+            EmissionReport.deleted_at.is_(None),
+        )
         .group_by(EmissionReport.year)
         .order_by(EmissionReport.year)
     )

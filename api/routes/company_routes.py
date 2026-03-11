@@ -8,7 +8,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from api.database import get_db
 from api.deps import get_current_user
-from api.models import Company, DataUpload, User
+from api.models import Company, DataUpload, User, _utcnow
 from api.schemas import (
     CompanyOut,
     CompanyUpdate,
@@ -89,7 +89,10 @@ async def list_data_uploads(
     db: AsyncSession = Depends(get_db),
 ):
     """List data uploads with pagination and optional year filter."""
-    base = select(DataUpload).where(DataUpload.company_id == user.company_id)
+    base = select(DataUpload).where(
+        DataUpload.company_id == user.company_id,
+        DataUpload.deleted_at.is_(None),
+    )
     if year is not None:
         base = base.where(DataUpload.year == year)
 
@@ -112,6 +115,7 @@ async def get_data_upload(
         select(DataUpload).where(
             DataUpload.id == upload_id,
             DataUpload.company_id == user.company_id,
+            DataUpload.deleted_at.is_(None),
         )
     )
     upload = result.scalar_one_or_none()
@@ -132,6 +136,7 @@ async def update_data_upload(
         select(DataUpload).where(
             DataUpload.id == upload_id,
             DataUpload.company_id == user.company_id,
+            DataUpload.deleted_at.is_(None),
         )
     )
     upload = result.scalar_one_or_none()
@@ -153,16 +158,17 @@ async def delete_data_upload(
     user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
-    """Delete a data upload."""
+    """Soft-delete a data upload."""
     result = await db.execute(
         select(DataUpload).where(
             DataUpload.id == upload_id,
             DataUpload.company_id == user.company_id,
+            DataUpload.deleted_at.is_(None),
         )
     )
     upload = result.scalar_one_or_none()
     if upload is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Data upload not found")
 
-    await db.delete(upload)
+    upload.deleted_at = _utcnow()
     await db.commit()

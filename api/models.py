@@ -10,9 +10,11 @@ from sqlalchemy import (
     DateTime,
     Float,
     ForeignKey,
+    Index,
     Integer,
     String,
     Text,
+    event,
 )
 from sqlalchemy.dialects.sqlite import JSON
 from sqlalchemy.orm import relationship
@@ -68,13 +70,17 @@ class User(Base):
 
 class DataUpload(Base):
     __tablename__ = "data_uploads"
+    __table_args__ = (
+        Index("ix_data_uploads_company_year", "company_id", "year"),
+    )
 
     id: str = Column(String(32), primary_key=True, default=_new_id)
-    company_id: str = Column(String(32), ForeignKey("companies.id"), nullable=False)
+    company_id: str = Column(String(32), ForeignKey("companies.id"), nullable=False, index=True)
     year: int = Column(Integer, nullable=False)
     provided_data: dict = Column(JSON, nullable=False, default=dict)
     notes: str | None = Column(Text, nullable=True)
     created_at: datetime = Column(DateTime(timezone=True), default=_utcnow)
+    deleted_at: datetime | None = Column(DateTime(timezone=True), nullable=True, default=None)
 
     company = relationship("Company", back_populates="data_uploads")
 
@@ -84,9 +90,12 @@ class DataUpload(Base):
 
 class EmissionReport(Base):
     __tablename__ = "emission_reports"
+    __table_args__ = (
+        Index("ix_emission_reports_company_year", "company_id", "year"),
+    )
 
     id: str = Column(String(32), primary_key=True, default=_new_id)
-    company_id: str = Column(String(32), ForeignKey("companies.id"), nullable=False)
+    company_id: str = Column(String(32), ForeignKey("companies.id"), nullable=False, index=True)
     data_upload_id: str | None = Column(String(32), ForeignKey("data_uploads.id"), nullable=True)
     year: int = Column(Integer, nullable=False)
 
@@ -105,6 +114,7 @@ class EmissionReport(Base):
     miner_scores: dict | None = Column(JSON, nullable=True)
 
     created_at: datetime = Column(DateTime(timezone=True), default=_utcnow)
+    deleted_at: datetime | None = Column(DateTime(timezone=True), nullable=True, default=None)
 
     company = relationship("Company", back_populates="emission_reports")
 
