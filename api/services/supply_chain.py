@@ -9,8 +9,9 @@ from __future__ import annotations
 
 from typing import Any
 
-from sqlalchemy import and_, select
+from sqlalchemy import and_, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import aliased
 
 from api.models import Company, EmissionReport, SupplyChainLink
 
@@ -57,25 +58,42 @@ async def list_suppliers(
     db: AsyncSession,
     buyer_company_id: str,
 ) -> list[dict[str, Any]]:
-    """List all suppliers for a buyer, with their latest emissions if available."""
-    result = await db.execute(
-        select(SupplyChainLink, Company)
+    """List all suppliers for a buyer, with their latest emissions if available.
+
+    Uses a single query with a correlated subquery to avoid N+1 performance issues.
+    """
+    # Subquery: latest report created_at per company
+    latest_ts = (
+        select(func.max(EmissionReport.created_at))
+        .where(
+            EmissionReport.company_id == SupplyChainLink.supplier_company_id,
+            EmissionReport.deleted_at.is_(None),
+        )
+        .correlate(SupplyChainLink)
+        .scalar_subquery()
+    )
+
+    LatestReport = aliased(EmissionReport)
+
+    stmt = (
+        select(SupplyChainLink, Company, LatestReport)
         .join(Company, Company.id == SupplyChainLink.supplier_company_id)
+        .outerjoin(
+            LatestReport,
+            and_(
+                LatestReport.company_id == SupplyChainLink.supplier_company_id,
+                LatestReport.created_at == latest_ts,
+                LatestReport.deleted_at.is_(None),
+            ),
+        )
         .where(SupplyChainLink.buyer_company_id == buyer_company_id)
         .order_by(Company.name)
     )
 
-    suppliers = []
-    for link, company in result.all():
-        # Get supplier's latest emission report
-        report_result = await db.execute(
-            select(EmissionReport)
-            .where(EmissionReport.company_id == company.id)
-            .order_by(EmissionReport.created_at.desc())
-            .limit(1)
-        )
-        latest_report = report_result.scalar_one_or_none()
+    result = await db.execute(stmt)
 
+    suppliers = []
+    for link, company, report in result.all():
         suppliers.append({
             "link_id": link.id,
             "company_id": company.id,
@@ -86,12 +104,12 @@ async def list_suppliers(
             "category": link.category,
             "status": link.status,
             "emissions": {
-                "scope1": latest_report.scope1 if latest_report else None,
-                "scope2": latest_report.scope2 if latest_report else None,
-                "total": latest_report.total if latest_report else None,
-                "confidence": latest_report.confidence if latest_report else None,
-                "year": latest_report.year if latest_report else None,
-            } if latest_report else None,
+                "scope1": report.scope1 if report else None,
+                "scope2": report.scope2 if report else None,
+                "total": report.total if report else None,
+                "confidence": report.confidence if report else None,
+                "year": report.year if report else None,
+            } if report else None,
             "created_at": link.created_at.isoformat(),
         })
 
@@ -134,47 +152,71 @@ async def calc_supplier_scope3(
 
     For each linked supplier, their Scope 1+2 is attributed to the buyer's
     Scope 3 Cat 1, weighted by spend allocation.
+    Uses a single query with LEFT JOIN to avoid N+1 issues.
     """
-    links_result = await db.execute(
-        select(SupplyChainLink).where(
+    # Subquery: latest report per supplier (filtered by year if given)
+    report_filter = [
+        EmissionReport.deleted_at.is_(None),
+    ]
+    if year:
+        report_filter.append(EmissionReport.year == year)
+
+    latest_ts_sub = (
+        select(func.max(EmissionReport.created_at))
+        .where(
+            EmissionReport.company_id == SupplyChainLink.supplier_company_id,
+            *report_filter,
+        )
+        .correlate(SupplyChainLink)
+        .scalar_subquery()
+    )
+
+    LatestReport = aliased(EmissionReport)
+
+    stmt = (
+        select(SupplyChainLink, LatestReport)
+        .outerjoin(
+            LatestReport,
+            and_(
+                LatestReport.company_id == SupplyChainLink.supplier_company_id,
+                LatestReport.created_at == latest_ts_sub,
+                LatestReport.deleted_at.is_(None),
+                *([LatestReport.year == year] if year else []),
+            ),
+        )
+        .where(
             SupplyChainLink.buyer_company_id == buyer_company_id,
             SupplyChainLink.status == "verified",
         )
     )
-    links = links_result.scalars().all()
 
-    if not links:
+    result = await db.execute(stmt)
+    rows = result.all()
+
+    if not rows:
+        # Count all links for coverage calc
+        all_count_r = await db.execute(
+            select(func.count()).select_from(SupplyChainLink).where(
+                SupplyChainLink.buyer_company_id == buyer_company_id
+            )
+        )
+        all_count = all_count_r.scalar() or 0
         return {
             "scope3_cat1_from_suppliers": 0.0,
-            "supplier_count": 0,
+            "supplier_count": all_count,
             "verified_count": 0,
             "coverage_pct": 0.0,
             "details": [],
         }
 
-    total_spend = sum(link.spend_usd or 0 for link in links)
+    total_spend = sum(link.spend_usd or 0 for link, _ in rows)
     details = []
     cat1_total = 0.0
 
-    for link in links:
-        # Get supplier's latest report for the given year
-        stmt = (
-            select(EmissionReport)
-            .where(EmissionReport.company_id == link.supplier_company_id)
-            .order_by(EmissionReport.created_at.desc())
-            .limit(1)
-        )
-        if year:
-            stmt = stmt.where(EmissionReport.year == year)
-
-        report_result = await db.execute(stmt)
-        report = report_result.scalar_one_or_none()
-
+    for link, report in rows:
         if report:
-            # Supplier's Scope 1+2 = buyer's Scope 3 Cat 1
             supplier_emissions = report.scope1 + report.scope2
 
-            # If spend data exists, attribute proportionally
             if link.spend_usd and total_spend > 0:
                 attribution = link.spend_usd / total_spend
                 attributed = supplier_emissions * attribution
@@ -192,19 +234,19 @@ async def calc_supplier_scope3(
                 "confidence": report.confidence,
             })
 
-    # Count total suppliers (including unverified) for coverage calc
-    all_links_result = await db.execute(
-        select(SupplyChainLink).where(
+    # Count total suppliers for coverage calc
+    all_count_r = await db.execute(
+        select(func.count()).select_from(SupplyChainLink).where(
             SupplyChainLink.buyer_company_id == buyer_company_id
         )
     )
-    all_count = len(all_links_result.scalars().all())
+    all_count = all_count_r.scalar() or 0
 
     return {
         "scope3_cat1_from_suppliers": round(cat1_total, 2),
         "supplier_count": all_count,
-        "verified_count": len(links),
-        "coverage_pct": round(len(links) / max(all_count, 1) * 100, 1),
+        "verified_count": len(rows),
+        "coverage_pct": round(len(rows) / max(all_count, 1) * 100, 1),
         "details": details,
     }
 
