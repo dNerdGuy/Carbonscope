@@ -1,8 +1,0 @@
-feat: E2E integration and security tests
-
-- Full lifecycle E2E test: register → upload → estimate → list → export → dashboard → delete
-- Cross-company isolation: verify User B cannot access User A's data/reports
-- JWT security: expired token, invalid signature, missing token, malformed token
-- Rate limiting enforcement test on login endpoint
-- Input validation: weak password, invalid email, invalid year, invalid webhook event
-- 11 new tests (181 total, all passing)
