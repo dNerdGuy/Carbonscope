@@ -323,3 +323,70 @@ class AuditLogOut(BaseModel):
     created_at: datetime
 
     model_config = {"from_attributes": True}
+
+
+# ── Questionnaire ───────────────────────────────────────────────────
+
+
+class QuestionnaireOut(BaseModel):
+    id: str
+    company_id: str
+    title: str
+    original_filename: str
+    file_type: str
+    file_size: int
+    status: str
+    created_at: datetime
+    updated_at: datetime
+
+    model_config = {"from_attributes": True}
+
+
+class QuestionOut(BaseModel):
+    id: str
+    questionnaire_id: str
+    question_number: int
+    question_text: str
+    category: str | None = None
+    ai_draft_answer: str | None = None
+    human_answer: str | None = None
+    status: str
+    confidence: float
+    created_at: datetime
+
+    model_config = {"from_attributes": True}
+
+
+class QuestionUpdate(BaseModel):
+    human_answer: str | None = None
+    status: str | None = Field(default=None, pattern="^(draft|reviewed|approved)$")
+
+
+class QuestionnaireDetail(BaseModel):
+    questionnaire: QuestionnaireOut
+    questions: list[QuestionOut]
+
+
+# ── What-If Scenarios ───────────────────────────────────────────────
+
+
+class ScenarioCreate(BaseModel):
+    name: str = Field(min_length=1, max_length=255)
+    description: str | None = None
+    base_report_id: str | None = None
+    parameters: dict[str, Any]
+
+
+class ScenarioOut(BaseModel):
+    id: str
+    company_id: str
+    name: str
+    description: str | None = None
+    base_report_id: str | None = None
+    parameters: dict[str, Any]
+    results: dict[str, Any] | None = None
+    status: str
+    created_at: datetime
+    updated_at: datetime
+
+    model_config = {"from_attributes": True}

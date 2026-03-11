@@ -512,14 +512,220 @@ export async function toggleWebhook(
   id: string,
   active: boolean,
 ): Promise<WebhookConfig> {
-  return request<WebhookConfig>(
-    `/webhooks/${encodeURIComponent(id)}`,
-    { method: "PATCH", body: JSON.stringify({ active }) },
-  );
+  return request<WebhookConfig>(`/webhooks/${encodeURIComponent(id)}`, {
+    method: "PATCH",
+    body: JSON.stringify({ active }),
+  });
 }
 
 export async function deleteWebhook(id: string): Promise<void> {
   return request(`/webhooks/${encodeURIComponent(id)}`, {
+    method: "DELETE",
+  });
+}
+
+// ── Questionnaires ──────────────────────────────────────────────────
+
+export interface QuestionnaireOut {
+  id: string;
+  company_id: string;
+  title: string;
+  original_filename: string;
+  file_type: string;
+  file_size: number;
+  status: string;
+  created_at: string;
+  updated_at: string | null;
+}
+
+export interface QuestionOut {
+  id: string;
+  questionnaire_id: string;
+  question_number: number;
+  question_text: string;
+  category: string | null;
+  ai_draft_answer: string | null;
+  human_answer: string | null;
+  status: string;
+  confidence: number | null;
+  created_at: string;
+}
+
+export interface QuestionnaireDetail {
+  questionnaire: QuestionnaireOut;
+  questions: QuestionOut[];
+}
+
+export async function uploadQuestionnaire(
+  file: File,
+): Promise<QuestionnaireOut> {
+  const token =
+    typeof window !== "undefined" ? localStorage.getItem("token") : null;
+  const formData = new FormData();
+  formData.append("file", file);
+  const headers: Record<string, string> = {};
+  if (token) headers["Authorization"] = `Bearer ${token}`;
+  const res = await fetch(`${BASE}/questionnaires/upload`, {
+    method: "POST",
+    headers,
+    body: formData,
+  });
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({}));
+    throw new ApiError(res.status, body.detail ?? res.statusText);
+  }
+  return res.json();
+}
+
+export async function listQuestionnaires(params?: {
+  limit?: number;
+  offset?: number;
+}): Promise<PaginatedResponse<QuestionnaireOut>> {
+  const q = new URLSearchParams();
+  if (params?.limit != null) q.set("limit", String(params.limit));
+  if (params?.offset != null) q.set("offset", String(params.offset));
+  const qs = q.toString();
+  return request(`/questionnaires/${qs ? `?${qs}` : ""}`);
+}
+
+export async function getQuestionnaire(
+  id: string,
+): Promise<QuestionnaireDetail> {
+  return request<QuestionnaireDetail>(
+    `/questionnaires/${encodeURIComponent(id)}`,
+  );
+}
+
+export async function extractQuestions(
+  id: string,
+): Promise<QuestionnaireDetail> {
+  return request<QuestionnaireDetail>(
+    `/questionnaires/${encodeURIComponent(id)}/extract`,
+    { method: "POST" },
+  );
+}
+
+export async function updateQuestion(
+  questionnaireId: string,
+  questionId: string,
+  data: { human_answer?: string; status?: string },
+): Promise<QuestionOut> {
+  return request<QuestionOut>(
+    `/questionnaires/${encodeURIComponent(questionnaireId)}/questions/${encodeURIComponent(questionId)}`,
+    { method: "PATCH", body: JSON.stringify(data) },
+  );
+}
+
+export async function deleteQuestionnaire(id: string): Promise<void> {
+  return request<void>(`/questionnaires/${encodeURIComponent(id)}`, {
+    method: "DELETE",
+  });
+}
+
+export async function exportQuestionnairePdf(id: string): Promise<Blob> {
+  const token =
+    typeof window !== "undefined" ? localStorage.getItem("token") : null;
+  const headers: Record<string, string> = {};
+  if (token) headers["Authorization"] = `Bearer ${token}`;
+  const res = await fetch(
+    `${BASE}/questionnaires/${encodeURIComponent(id)}/export/pdf`,
+    { headers },
+  );
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({}));
+    throw new ApiError(res.status, body.detail ?? res.statusText);
+  }
+  return res.blob();
+}
+
+export async function exportReportPdf(id: string): Promise<Blob> {
+  const token =
+    typeof window !== "undefined" ? localStorage.getItem("token") : null;
+  const headers: Record<string, string> = {};
+  if (token) headers["Authorization"] = `Bearer ${token}`;
+  const res = await fetch(
+    `${BASE}/reports/${encodeURIComponent(id)}/export/pdf`,
+    { headers },
+  );
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({}));
+    throw new ApiError(res.status, body.detail ?? res.statusText);
+  }
+  return res.blob();
+}
+
+export interface TemplateSummary {
+  id: string;
+  title: string;
+  description: string;
+  framework: string;
+  question_count: number;
+}
+
+export async function listTemplates(): Promise<TemplateSummary[]> {
+  return request<TemplateSummary[]>("/questionnaires/templates/");
+}
+
+export async function applyTemplate(
+  templateId: string,
+): Promise<QuestionnaireDetail> {
+  return request<QuestionnaireDetail>(
+    `/questionnaires/templates/${encodeURIComponent(templateId)}/apply`,
+    { method: "POST" },
+  );
+}
+
+// ── What-if Scenarios ───────────────────────────────────────────────
+
+export interface ScenarioOut {
+  id: string;
+  company_id: string;
+  name: string;
+  description: string | null;
+  base_report_id: string;
+  parameters: Record<string, unknown>;
+  results: Record<string, unknown> | null;
+  status: string;
+  created_at: string;
+  updated_at: string | null;
+}
+
+export async function createScenario(data: {
+  name: string;
+  description?: string;
+  base_report_id: string;
+  parameters: Record<string, unknown>;
+}): Promise<ScenarioOut> {
+  return request<ScenarioOut>("/scenarios/", {
+    method: "POST",
+    body: JSON.stringify(data),
+  });
+}
+
+export async function listScenarios(params?: {
+  limit?: number;
+  offset?: number;
+}): Promise<PaginatedResponse<ScenarioOut>> {
+  const q = new URLSearchParams();
+  if (params?.limit != null) q.set("limit", String(params.limit));
+  if (params?.offset != null) q.set("offset", String(params.offset));
+  const qs = q.toString();
+  return request(`/scenarios/${qs ? `?${qs}` : ""}`);
+}
+
+export async function getScenario(id: string): Promise<ScenarioOut> {
+  return request<ScenarioOut>(`/scenarios/${encodeURIComponent(id)}`);
+}
+
+export async function computeScenario(id: string): Promise<ScenarioOut> {
+  return request<ScenarioOut>(
+    `/scenarios/${encodeURIComponent(id)}/compute`,
+    { method: "POST" },
+  );
+}
+
+export async function deleteScenario(id: string): Promise<void> {
+  return request<void>(`/scenarios/${encodeURIComponent(id)}`, {
     method: "DELETE",
   });
 }

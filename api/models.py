@@ -194,3 +194,66 @@ class AuditLog(Base):
     resource_id: str | None = Column(String(32), nullable=True)
     detail: str | None = Column(Text, nullable=True)
     created_at: datetime = Column(DateTime(timezone=True), default=_utcnow)
+
+
+# ── Questionnaire ───────────────────────────────────────────────────
+
+
+class Questionnaire(Base):
+    """Uploaded sustainability questionnaire document."""
+    __tablename__ = "questionnaires"
+
+    id: str = Column(String(32), primary_key=True, default=_new_id)
+    company_id: str = Column(String(32), ForeignKey("companies.id"), nullable=False, index=True)
+    title: str = Column(String(500), nullable=False)
+    original_filename: str = Column(String(500), nullable=False)
+    file_type: str = Column(String(20), nullable=False)  # pdf, xlsx, docx, csv
+    file_size: int = Column(Integer, nullable=False)
+    status: str = Column(String(50), default="uploaded")  # uploaded | extracting | extracted | reviewed | exported
+    extracted_text: str | None = Column(Text, nullable=True)
+    created_at: datetime = Column(DateTime(timezone=True), default=_utcnow)
+    updated_at: datetime = Column(DateTime(timezone=True), default=_utcnow, onupdate=_utcnow)
+    deleted_at: datetime | None = Column(DateTime(timezone=True), nullable=True, default=None)
+
+    company = relationship("Company")
+    questions = relationship("QuestionnaireQuestion", back_populates="questionnaire", cascade="all, delete-orphan")
+
+
+class QuestionnaireQuestion(Base):
+    """Individual question extracted from a questionnaire."""
+    __tablename__ = "questionnaire_questions"
+
+    id: str = Column(String(32), primary_key=True, default=_new_id)
+    questionnaire_id: str = Column(String(32), ForeignKey("questionnaires.id", ondelete="CASCADE"), nullable=False, index=True)
+    question_number: int = Column(Integer, nullable=False)
+    question_text: str = Column(Text, nullable=False)
+    category: str = Column(String(100), nullable=True)  # emissions, energy, waste, transport, governance, etc.
+    ai_draft_answer: str | None = Column(Text, nullable=True)
+    human_answer: str | None = Column(Text, nullable=True)
+    status: str = Column(String(50), default="draft")  # draft | reviewed | approved
+    confidence: float = Column(Float, default=0.0)
+    created_at: datetime = Column(DateTime(timezone=True), default=_utcnow)
+    updated_at: datetime = Column(DateTime(timezone=True), default=_utcnow, onupdate=_utcnow)
+
+    questionnaire = relationship("Questionnaire", back_populates="questions")
+
+
+# ── Scenario (What-If) ──────────────────────────────────────────────
+
+
+class Scenario(Base):
+    """What-if scenario for predictive emissions analysis."""
+    __tablename__ = "scenarios"
+
+    id: str = Column(String(32), primary_key=True, default=_new_id)
+    company_id: str = Column(String(32), ForeignKey("companies.id"), nullable=False, index=True)
+    name: str = Column(String(255), nullable=False)
+    description: str | None = Column(Text, nullable=True)
+    base_report_id: str | None = Column(String(32), ForeignKey("emission_reports.id"), nullable=True)
+    parameters: dict = Column(JSON, nullable=False, default=dict)  # what-if changes
+    results: dict | None = Column(JSON, nullable=True)  # computed results
+    status: str = Column(String(50), default="draft")  # draft | computed | archived
+    created_at: datetime = Column(DateTime(timezone=True), default=_utcnow)
+    updated_at: datetime = Column(DateTime(timezone=True), default=_utcnow, onupdate=_utcnow)
+
+    company = relationship("Company")

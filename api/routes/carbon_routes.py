@@ -225,6 +225,48 @@ async def get_report(
     return report
 
 
+@router.get("/reports/{report_id}/export/pdf")
+async def export_report_pdf(
+    report_id: str,
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Export an emission report as a styled PDF."""
+    from api.services.pdf_export import generate_report_pdf
+
+    result = await db.execute(
+        select(EmissionReport).where(
+            EmissionReport.id == report_id,
+            EmissionReport.company_id == user.company_id,
+            EmissionReport.deleted_at.is_(None),
+        )
+    )
+    report = result.scalar_one_or_none()
+    if report is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Report not found")
+
+    company_result = await db.execute(select(Company).where(Company.id == user.company_id))
+    company = company_result.scalar_one()
+
+    pdf_bytes = generate_report_pdf(
+        company_name=company.name,
+        industry=company.industry,
+        region=company.region,
+        year=report.year,
+        scope1=report.scope1,
+        scope2=report.scope2,
+        scope3=report.scope3,
+        total=report.total,
+        methodology=report.methodology_version,
+        confidence=report.confidence,
+    )
+    return StreamingResponse(
+        io.BytesIO(pdf_bytes),
+        media_type="application/pdf",
+        headers={"Content-Disposition": f"attachment; filename=emission_report_{report.year}.pdf"},
+    )
+
+
 @router.delete("/reports/{report_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_report(
     report_id: str,

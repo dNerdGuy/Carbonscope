@@ -431,8 +431,13 @@ export default function SettingsPage() {
                     <td className="py-2">
                       <button
                         onClick={async () => {
-                          const updated = await toggleWebhook(wh.id, !wh.active);
-                          setWebhooks(webhooks.map((w) => w.id === wh.id ? updated : w));
+                          const updated = await toggleWebhook(
+                            wh.id,
+                            !wh.active,
+                          );
+                          setWebhooks(
+                            webhooks.map((w) => (w.id === wh.id ? updated : w)),
+                          );
                         }}
                         className={`text-xs ${wh.active ? "text-green-400" : "text-[var(--muted)]"} hover:underline`}
                       >
