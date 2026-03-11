@@ -1,0 +1,208 @@
+{
+  "_meta": {
+    "source": "Composite from CDP disclosures, EPA sector benchmarks, academic studies",
+    "version": "2025",
+    "notes": "Industry-average emission profiles and Scope 3 materiality weights. Used for gap-filling when company data is incomplete."
+  },
+  "industries": {
+    "manufacturing": {
+      "display_name": "Manufacturing (General)",
+      "typical_scope_split": {
+        "scope1_pct": 0.3,
+        "scope2_pct": 0.2,
+        "scope3_pct": 0.5
+      },
+      "avg_tco2e_per_employee": 25.0,
+      "avg_tco2e_per_million_usd_revenue": 120.0,
+      "scope3_materiality": {
+        "cat1_purchased_goods": 0.4,
+        "cat2_capital_goods": 0.05,
+        "cat3_fuel_energy_not_s1s2": 0.05,
+        "cat4_upstream_transport": 0.15,
+        "cat5_waste": 0.03,
+        "cat6_business_travel": 0.02,
+        "cat7_commuting": 0.03,
+        "cat9_downstream_transport": 0.1,
+        "cat11_use_of_sold_products": 0.12,
+        "cat12_end_of_life": 0.05
+      },
+      "spend_factor_kgco2e_per_1000usd": 3.5
+    },
+    "transportation": {
+      "display_name": "Transportation & Logistics",
+      "typical_scope_split": {
+        "scope1_pct": 0.7,
+        "scope2_pct": 0.03,
+        "scope3_pct": 0.27
+      },
+      "avg_tco2e_per_employee": 40.0,
+      "avg_tco2e_per_million_usd_revenue": 200.0,
+      "scope3_materiality": {
+        "cat1_purchased_goods": 0.1,
+        "cat3_fuel_energy_not_s1s2": 0.3,
+        "cat4_upstream_transport": 0.15,
+        "cat6_business_travel": 0.05,
+        "cat7_commuting": 0.1,
+        "cat9_downstream_transport": 0.2,
+        "cat12_end_of_life": 0.1
+      },
+      "spend_factor_kgco2e_per_1000usd": 5.0
+    },
+    "technology": {
+      "display_name": "Technology / Software / SaaS",
+      "typical_scope_split": {
+        "scope1_pct": 0.05,
+        "scope2_pct": 0.25,
+        "scope3_pct": 0.7
+      },
+      "avg_tco2e_per_employee": 5.0,
+      "avg_tco2e_per_million_usd_revenue": 15.0,
+      "scope3_materiality": {
+        "cat1_purchased_goods": 0.2,
+        "cat2_capital_goods": 0.1,
+        "cat6_business_travel": 0.3,
+        "cat7_commuting": 0.25,
+        "cat8_upstream_leased": 0.05,
+        "cat11_use_of_sold_products": 0.1
+      },
+      "spend_factor_kgco2e_per_1000usd": 1.5
+    },
+    "retail": {
+      "display_name": "Retail & Consumer Goods",
+      "typical_scope_split": {
+        "scope1_pct": 0.1,
+        "scope2_pct": 0.3,
+        "scope3_pct": 0.6
+      },
+      "avg_tco2e_per_employee": 8.0,
+      "avg_tco2e_per_million_usd_revenue": 30.0,
+      "scope3_materiality": {
+        "cat1_purchased_goods": 0.35,
+        "cat4_upstream_transport": 0.15,
+        "cat5_waste": 0.05,
+        "cat7_commuting": 0.05,
+        "cat9_downstream_transport": 0.15,
+        "cat11_use_of_sold_products": 0.15,
+        "cat12_end_of_life": 0.1
+      },
+      "spend_factor_kgco2e_per_1000usd": 2.5
+    },
+    "financial_services": {
+      "display_name": "Financial Services / Banking / Insurance",
+      "typical_scope_split": {
+        "scope1_pct": 0.03,
+        "scope2_pct": 0.12,
+        "scope3_pct": 0.85
+      },
+      "avg_tco2e_per_employee": 3.0,
+      "avg_tco2e_per_million_usd_revenue": 5.0,
+      "scope3_materiality": {
+        "cat1_purchased_goods": 0.05,
+        "cat6_business_travel": 0.15,
+        "cat7_commuting": 0.1,
+        "cat8_upstream_leased": 0.05,
+        "cat15_investments": 0.65
+      },
+      "spend_factor_kgco2e_per_1000usd": 0.8
+    },
+    "energy": {
+      "display_name": "Energy / Oil & Gas / Mining",
+      "typical_scope_split": {
+        "scope1_pct": 0.45,
+        "scope2_pct": 0.1,
+        "scope3_pct": 0.45
+      },
+      "avg_tco2e_per_employee": 200.0,
+      "avg_tco2e_per_million_usd_revenue": 500.0,
+      "scope3_materiality": {
+        "cat1_purchased_goods": 0.05,
+        "cat3_fuel_energy_not_s1s2": 0.1,
+        "cat4_upstream_transport": 0.1,
+        "cat9_downstream_transport": 0.1,
+        "cat10_processing_sold_products": 0.15,
+        "cat11_use_of_sold_products": 0.45,
+        "cat12_end_of_life": 0.05
+      },
+      "spend_factor_kgco2e_per_1000usd": 8.0
+    },
+    "construction": {
+      "display_name": "Construction / Real Estate",
+      "typical_scope_split": {
+        "scope1_pct": 0.35,
+        "scope2_pct": 0.15,
+        "scope3_pct": 0.5
+      },
+      "avg_tco2e_per_employee": 20.0,
+      "avg_tco2e_per_million_usd_revenue": 80.0,
+      "scope3_materiality": {
+        "cat1_purchased_goods": 0.5,
+        "cat2_capital_goods": 0.1,
+        "cat4_upstream_transport": 0.15,
+        "cat5_waste": 0.1,
+        "cat7_commuting": 0.05,
+        "cat11_use_of_sold_products": 0.1
+      },
+      "spend_factor_kgco2e_per_1000usd": 4.5
+    },
+    "food_beverage": {
+      "display_name": "Food & Beverage",
+      "typical_scope_split": {
+        "scope1_pct": 0.15,
+        "scope2_pct": 0.15,
+        "scope3_pct": 0.7
+      },
+      "avg_tco2e_per_employee": 18.0,
+      "avg_tco2e_per_million_usd_revenue": 90.0,
+      "scope3_materiality": {
+        "cat1_purchased_goods": 0.5,
+        "cat4_upstream_transport": 0.15,
+        "cat5_waste": 0.05,
+        "cat9_downstream_transport": 0.1,
+        "cat11_use_of_sold_products": 0.1,
+        "cat12_end_of_life": 0.1
+      },
+      "spend_factor_kgco2e_per_1000usd": 4.0
+    },
+    "healthcare": {
+      "display_name": "Healthcare / Pharmaceuticals",
+      "typical_scope_split": {
+        "scope1_pct": 0.15,
+        "scope2_pct": 0.25,
+        "scope3_pct": 0.6
+      },
+      "avg_tco2e_per_employee": 10.0,
+      "avg_tco2e_per_million_usd_revenue": 35.0,
+      "scope3_materiality": {
+        "cat1_purchased_goods": 0.4,
+        "cat4_upstream_transport": 0.1,
+        "cat5_waste": 0.1,
+        "cat6_business_travel": 0.1,
+        "cat7_commuting": 0.1,
+        "cat9_downstream_transport": 0.1,
+        "cat12_end_of_life": 0.1
+      },
+      "spend_factor_kgco2e_per_1000usd": 2.0
+    }
+  },
+  "commuting_averages": {
+    "_notes": "Average annual commuting emissions per employee by region (tCO2e/employee/year)",
+    "US": 2.4,
+    "GB": 1.5,
+    "EU": 1.3,
+    "JP": 0.9,
+    "IN": 0.8,
+    "CN": 1.1,
+    "AU": 2.2,
+    "global": 1.5
+  },
+  "business_travel_averages": {
+    "_notes": "Average annual business travel emissions per employee by sector (tCO2e/employee/year)",
+    "technology": 2.5,
+    "financial_services": 3.0,
+    "manufacturing": 1.2,
+    "retail": 0.5,
+    "healthcare": 1.5,
+    "energy": 2.0,
+    "global_average": 1.5
+  }
+}

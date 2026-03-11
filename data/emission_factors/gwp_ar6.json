@@ -1,0 +1,43 @@
+{
+  "_meta": {
+    "source": "IPCC Sixth Assessment Report (AR6, 2021)",
+    "version": "AR6",
+    "notes": "Global Warming Potential (GWP) values for 100-year time horizon. Used to convert greenhouse gas masses to CO2-equivalent."
+  },
+  "gwp_100yr": {
+    "CO2": 1,
+    "CH4": 27,
+    "CH4_fossil": 30,
+    "N2O": 273,
+    "SF6": 25200,
+    "NF3": 17400,
+    "CF4": 7380,
+    "C2F6": 12400,
+    "C3F8": 9290,
+    "C4F10": 10000,
+    "C5F12": 9220,
+    "C6F14": 7910,
+    "HFC_23": 14600,
+    "HFC_32": 771,
+    "HFC_125": 3740,
+    "HFC_134a": 1530,
+    "HFC_143a": 5810,
+    "HFC_152a": 164,
+    "HFC_227ea": 3600,
+    "HFC_236fa": 8690,
+    "HFC_245fa": 962,
+    "HFC_365mfc": 914,
+    "HFC_4310mee": 1640
+  },
+  "common_refrigerants": {
+    "R_134a": { "gwp": 1530, "chemical": "HFC-134a" },
+    "R_410A": { "gwp": 2088, "chemical": "HFC-410A (blend)" },
+    "R_404A": { "gwp": 3922, "chemical": "HFC-404A (blend)" },
+    "R_407C": { "gwp": 1774, "chemical": "HFC-407C (blend)" },
+    "R_507A": { "gwp": 3985, "chemical": "HFC-507A (blend)" },
+    "R_32": { "gwp": 771, "chemical": "HFC-32" },
+    "R_22": { "gwp": 1960, "chemical": "HCFC-22 (being phased out)" },
+    "R_290": { "gwp": 3, "chemical": "Propane (low-GWP alternative)" },
+    "R_744": { "gwp": 1, "chemical": "CO2 (natural refrigerant)" }
+  }
+}

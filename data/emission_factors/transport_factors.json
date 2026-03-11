@@ -1,0 +1,50 @@
+{
+  "_meta": {
+    "source": "Composite from GLEC Framework, EPA SmartWay, IMO",
+    "version": "2025",
+    "units": "kgCO2e per ton-km (freight), kgCO2e per passenger-km (passenger)",
+    "notes": "Freight factors assume average load. Passenger factors per single traveler."
+  },
+  "freight": {
+    "air": {
+      "kgco2e_per_ton_km": 0.065,
+      "long_haul_over_3700km": 0.052,
+      "short_haul_under_3700km": 0.08,
+      "notes": "Belly cargo + freighter average"
+    },
+    "road": {
+      "kgco2e_per_ton_km": 0.09,
+      "articulated_truck_over_33t": 0.06,
+      "rigid_truck_7_5_to_17t": 0.13,
+      "van_under_3_5t": 0.52,
+      "notes": "Diesel trucks, average load factor ~60%"
+    },
+    "sea": {
+      "kgco2e_per_ton_km": 0.006,
+      "container_ship": 0.008,
+      "bulk_carrier": 0.004,
+      "tanker": 0.005,
+      "notes": "Ocean-going vessels, average"
+    },
+    "rail": {
+      "kgco2e_per_ton_km": 0.03,
+      "electric_rail": 0.015,
+      "diesel_rail": 0.035,
+      "notes": "Average freight rail"
+    },
+    "inland_waterway": {
+      "kgco2e_per_ton_km": 0.032,
+      "notes": "Barge transport"
+    }
+  },
+  "passenger": {
+    "domestic_flight": { "kgco2e_per_passenger_km": 0.255 },
+    "short_haul_flight": { "kgco2e_per_passenger_km": 0.156 },
+    "long_haul_flight_economy": { "kgco2e_per_passenger_km": 0.15 },
+    "long_haul_flight_business": { "kgco2e_per_passenger_km": 0.434 },
+    "car_average": { "kgco2e_per_passenger_km": 0.17 },
+    "bus": { "kgco2e_per_passenger_km": 0.065 },
+    "rail": { "kgco2e_per_passenger_km": 0.035 },
+    "subway_metro": { "kgco2e_per_passenger_km": 0.029 }
+  }
+}

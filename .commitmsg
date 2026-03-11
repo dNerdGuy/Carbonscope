@@ -1,0 +1,22 @@
+feat: complete CarbonScope platform (Phases 1-4)
+
+Phase 1 - Bittensor Subnet:
+- CarbonSynapse protocol, emission factor datasets (EPA, eGRID, IEA, DEFRA)
+- Scope 1/2/3 calculators, GHG Protocol validation, sanity checks
+- Composite scoring engine, miner and validator neurons, 89 subnet tests
+
+Phase 2 - FastAPI Backend:
+- JWT auth, company management, data uploads, emission estimation
+- Subnet bridge service for Bittensor integration + local fallback, 22 API tests
+
+Phase 3 - Next.js Frontend:
+- Dashboard, upload, reports, settings pages with dark theme
+- Auth context with JWT, typed API client, Recharts scope charts
+
+Phase 4 - AI Enhancement, Supply Chain, Compliance:
+- LLM text parser, missing data prediction, 11 reduction strategies
+- Supply chain network with Scope 3 Cat 1 propagation
+- GHG Protocol, CDP, TCFD, SBTi compliance reports
+- Webhook system with HMAC-SHA256 signing
+- Frontend pages for recommendations, supply chain, compliance, webhooks
+- 46 new tests (157 total)

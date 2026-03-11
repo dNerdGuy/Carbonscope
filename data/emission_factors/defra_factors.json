@@ -1,0 +1,46 @@
+{
+  "_meta": {
+    "source": "DEFRA UK Government GHG Conversion Factors for Company Reporting",
+    "version": "2024",
+    "units": "kgCO2e per unit specified",
+    "notes": "UK-specific factors. Useful for cross-validation and UK companies."
+  },
+  "fuels": {
+    "natural_gas": { "unit": "kWh", "kgco2e_per_unit": 0.18267 },
+    "diesel_100pct_mineral": { "unit": "liter", "kgco2e_per_unit": 2.7 },
+    "petrol_100pct_mineral": { "unit": "liter", "kgco2e_per_unit": 2.31 },
+    "burning_oil_kerosene": { "unit": "liter", "kgco2e_per_unit": 2.54 },
+    "fuel_oil": { "unit": "liter", "kgco2e_per_unit": 3.18 },
+    "lpg": { "unit": "liter", "kgco2e_per_unit": 1.56 },
+    "coal_industrial": { "unit": "kg", "kgco2e_per_unit": 2.39 },
+    "wood_logs": { "unit": "kg", "kgco2e_per_unit": 0.01 }
+  },
+  "electricity": {
+    "uk_grid_2024": { "unit": "kWh", "kgco2e_per_unit": 0.207 }
+  },
+  "transport": {
+    "average_car_unknown_fuel": { "unit": "km", "kgco2e_per_unit": 0.17 },
+    "small_car_petrol": { "unit": "km", "kgco2e_per_unit": 0.15 },
+    "medium_car_petrol": { "unit": "km", "kgco2e_per_unit": 0.19 },
+    "large_car_petrol": { "unit": "km", "kgco2e_per_unit": 0.23 },
+    "small_car_diesel": { "unit": "km", "kgco2e_per_unit": 0.14 },
+    "medium_car_diesel": { "unit": "km", "kgco2e_per_unit": 0.17 },
+    "large_car_diesel": { "unit": "km", "kgco2e_per_unit": 0.21 },
+    "domestic_flight": { "unit": "km", "kgco2e_per_unit": 0.246 },
+    "short_haul_flight_economy": { "unit": "km", "kgco2e_per_unit": 0.151 },
+    "long_haul_flight_economy": { "unit": "km", "kgco2e_per_unit": 0.148 },
+    "long_haul_flight_business": { "unit": "km", "kgco2e_per_unit": 0.429 },
+    "national_rail": { "unit": "km", "kgco2e_per_unit": 0.035 },
+    "bus_local": { "unit": "km", "kgco2e_per_unit": 0.079 },
+    "taxi": { "unit": "km", "kgco2e_per_unit": 0.149 }
+  },
+  "waste": {
+    "landfill_mixed_municipal": { "unit": "kg", "kgco2e_per_unit": 0.586 },
+    "recycling_mixed": { "unit": "kg", "kgco2e_per_unit": 0.021 },
+    "incineration_mixed_municipal": { "unit": "kg", "kgco2e_per_unit": 0.021 }
+  },
+  "water": {
+    "supply": { "unit": "m3", "kgco2e_per_unit": 0.149 },
+    "treatment": { "unit": "m3", "kgco2e_per_unit": 0.272 }
+  }
+}

@@ -1,0 +1,88 @@
+{
+  "_meta": {
+    "source": "EPA AP-42 & GHG Emission Factors Hub",
+    "version": "2025",
+    "units": "kgCO2e per unit specified",
+    "notes": "Includes CO2 + CH4 (GWP=27) + N2O (GWP=273) from IPCC AR6"
+  },
+  "fuels": {
+    "natural_gas": {
+      "unit": "m3",
+      "co2_kg_per_unit": 1.93,
+      "ch4_kg_per_unit": 0.000037,
+      "n2o_kg_per_unit": 0.0000035,
+      "total_kgco2e_per_unit": 2.04,
+      "density_kg_per_m3": 0.717
+    },
+    "diesel": {
+      "unit": "liter",
+      "co2_kg_per_unit": 2.68,
+      "ch4_kg_per_unit": 0.0001,
+      "n2o_kg_per_unit": 0.0001,
+      "total_kgco2e_per_unit": 2.71,
+      "density_kg_per_liter": 0.832
+    },
+    "gasoline": {
+      "unit": "liter",
+      "co2_kg_per_unit": 2.31,
+      "ch4_kg_per_unit": 0.0001,
+      "n2o_kg_per_unit": 0.0001,
+      "total_kgco2e_per_unit": 2.34,
+      "density_kg_per_liter": 0.745
+    },
+    "coal_anthracite": {
+      "unit": "kg",
+      "co2_kg_per_unit": 2.86,
+      "ch4_kg_per_unit": 0.00024,
+      "n2o_kg_per_unit": 0.000043,
+      "total_kgco2e_per_unit": 2.88
+    },
+    "coal_bituminous": {
+      "unit": "kg",
+      "co2_kg_per_unit": 2.42,
+      "ch4_kg_per_unit": 0.00024,
+      "n2o_kg_per_unit": 0.000043,
+      "total_kgco2e_per_unit": 2.44
+    },
+    "propane": {
+      "unit": "liter",
+      "co2_kg_per_unit": 1.51,
+      "ch4_kg_per_unit": 0.00003,
+      "n2o_kg_per_unit": 0.0000028,
+      "total_kgco2e_per_unit": 1.52,
+      "density_kg_per_liter": 0.493
+    },
+    "fuel_oil_no2": {
+      "unit": "liter",
+      "co2_kg_per_unit": 2.75,
+      "ch4_kg_per_unit": 0.0001,
+      "n2o_kg_per_unit": 0.0001,
+      "total_kgco2e_per_unit": 2.78,
+      "density_kg_per_liter": 0.887
+    },
+    "kerosene": {
+      "unit": "liter",
+      "co2_kg_per_unit": 2.54,
+      "ch4_kg_per_unit": 0.0001,
+      "n2o_kg_per_unit": 0.0001,
+      "total_kgco2e_per_unit": 2.57,
+      "density_kg_per_liter": 0.8
+    },
+    "biomass_wood": {
+      "unit": "kg",
+      "co2_kg_per_unit": 0.0,
+      "ch4_kg_per_unit": 0.00032,
+      "n2o_kg_per_unit": 0.000042,
+      "total_kgco2e_per_unit": 0.02,
+      "notes": "CO2 from biomass is biogenic (reported separately)"
+    },
+    "lng": {
+      "unit": "liter",
+      "co2_kg_per_unit": 1.18,
+      "ch4_kg_per_unit": 0.00006,
+      "n2o_kg_per_unit": 0.000003,
+      "total_kgco2e_per_unit": 1.18,
+      "density_kg_per_liter": 0.428
+    }
+  }
+}

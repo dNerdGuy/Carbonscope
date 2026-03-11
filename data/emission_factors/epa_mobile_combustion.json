@@ -1,0 +1,57 @@
+{
+  "_meta": {
+    "source": "EPA GHG Emission Factors Hub - Mobile Combustion",
+    "version": "2025",
+    "units": "kgCO2e per km",
+    "notes": "Includes CO2 + CH4 + N2O. Factors are per vehicle-km."
+  },
+  "vehicle_types": {
+    "passenger_car_gasoline": {
+      "fuel_type": "gasoline",
+      "kgco2e_per_km": 0.21,
+      "avg_fuel_consumption_liters_per_100km": 9.0
+    },
+    "passenger_car_diesel": {
+      "fuel_type": "diesel",
+      "kgco2e_per_km": 0.17,
+      "avg_fuel_consumption_liters_per_100km": 6.5
+    },
+    "light_truck_gasoline": {
+      "fuel_type": "gasoline",
+      "kgco2e_per_km": 0.29,
+      "avg_fuel_consumption_liters_per_100km": 12.5
+    },
+    "light_truck_diesel": {
+      "fuel_type": "diesel",
+      "kgco2e_per_km": 0.25,
+      "avg_fuel_consumption_liters_per_100km": 9.5
+    },
+    "heavy_truck_diesel": {
+      "fuel_type": "diesel",
+      "kgco2e_per_km": 0.93,
+      "avg_fuel_consumption_liters_per_100km": 34.0
+    },
+    "bus_diesel": {
+      "fuel_type": "diesel",
+      "kgco2e_per_km": 0.82,
+      "avg_fuel_consumption_liters_per_100km": 30.0
+    },
+    "motorcycle_gasoline": {
+      "fuel_type": "gasoline",
+      "kgco2e_per_km": 0.1,
+      "avg_fuel_consumption_liters_per_100km": 4.5
+    },
+    "van_diesel": {
+      "fuel_type": "diesel",
+      "kgco2e_per_km": 0.33,
+      "avg_fuel_consumption_liters_per_100km": 12.0
+    }
+  },
+  "fuel_consumption_factors": {
+    "_notes": "Liters of fuel per km for converting distance-based data to fuel-based",
+    "heavy_truck_diesel_liters_per_km": 0.34,
+    "light_truck_diesel_liters_per_km": 0.095,
+    "passenger_car_gasoline_liters_per_km": 0.09,
+    "bus_diesel_liters_per_km": 0.3
+  }
+}

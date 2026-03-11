@@ -1,0 +1,202 @@
+{
+  "_meta": {
+    "source": "EPA eGRID 2023 (Emissions & Generation Resource Integrated Database)",
+    "version": "2023",
+    "units": "gCO2e per kWh (total output emission rate)",
+    "notes": "US-only. 27 eGRID subregions. Includes CO2, CH4, N2O."
+  },
+  "subregions": {
+    "AKGD": {
+      "name": "ASCC Alaska Grid",
+      "gco2e_per_kwh": 465,
+      "state_coverage": ["AK"]
+    },
+    "AKMS": {
+      "name": "ASCC Miscellaneous",
+      "gco2e_per_kwh": 275,
+      "state_coverage": ["AK"]
+    },
+    "AZNM": {
+      "name": "WECC Southwest",
+      "gco2e_per_kwh": 410,
+      "state_coverage": ["AZ", "NM"]
+    },
+    "CAMX": {
+      "name": "WECC California",
+      "gco2e_per_kwh": 240,
+      "state_coverage": ["CA"]
+    },
+    "ERCT": {
+      "name": "ERCOT All",
+      "gco2e_per_kwh": 390,
+      "state_coverage": ["TX"]
+    },
+    "FRCC": {
+      "name": "FRCC All",
+      "gco2e_per_kwh": 380,
+      "state_coverage": ["FL"]
+    },
+    "HIMS": {
+      "name": "HICC Miscellaneous",
+      "gco2e_per_kwh": 540,
+      "state_coverage": ["HI"]
+    },
+    "HIOA": {
+      "name": "HICC Oahu",
+      "gco2e_per_kwh": 680,
+      "state_coverage": ["HI"]
+    },
+    "MROE": {
+      "name": "MRO East",
+      "gco2e_per_kwh": 530,
+      "state_coverage": ["WI", "MI"]
+    },
+    "MROW": {
+      "name": "MRO West",
+      "gco2e_per_kwh": 450,
+      "state_coverage": ["MN", "IA", "ND", "SD", "NE", "MT"]
+    },
+    "NEWE": {
+      "name": "NPCC New England",
+      "gco2e_per_kwh": 280,
+      "state_coverage": ["CT", "ME", "MA", "NH", "RI", "VT"]
+    },
+    "NWPP": {
+      "name": "WECC Northwest",
+      "gco2e_per_kwh": 300,
+      "state_coverage": ["WA", "OR", "ID", "WY", "UT", "CO"]
+    },
+    "NYCW": {
+      "name": "NPCC NYC/Westchester",
+      "gco2e_per_kwh": 250,
+      "state_coverage": ["NY"]
+    },
+    "NYLI": {
+      "name": "NPCC Long Island",
+      "gco2e_per_kwh": 430,
+      "state_coverage": ["NY"]
+    },
+    "NYUP": {
+      "name": "NPCC Upstate NY",
+      "gco2e_per_kwh": 130,
+      "state_coverage": ["NY"]
+    },
+    "PRMS": {
+      "name": "PREPA Miscellaneous",
+      "gco2e_per_kwh": 680,
+      "state_coverage": ["PR"]
+    },
+    "RFCE": {
+      "name": "RFC East",
+      "gco2e_per_kwh": 340,
+      "state_coverage": ["PA", "NJ", "DE", "MD", "DC"]
+    },
+    "RFCM": {
+      "name": "RFC Michigan",
+      "gco2e_per_kwh": 490,
+      "state_coverage": ["MI"]
+    },
+    "RFCW": {
+      "name": "RFC West",
+      "gco2e_per_kwh": 560,
+      "state_coverage": ["OH", "IN", "WV"]
+    },
+    "RMPA": {
+      "name": "WECC Rockies",
+      "gco2e_per_kwh": 530,
+      "state_coverage": ["CO", "WY"]
+    },
+    "SPNO": {
+      "name": "SPP North",
+      "gco2e_per_kwh": 480,
+      "state_coverage": ["KS", "NE"]
+    },
+    "SPSO": {
+      "name": "SPP South",
+      "gco2e_per_kwh": 440,
+      "state_coverage": ["OK", "AR", "LA"]
+    },
+    "SRMV": {
+      "name": "SERC Mississippi Valley",
+      "gco2e_per_kwh": 360,
+      "state_coverage": ["LA", "MS", "AR"]
+    },
+    "SRMW": {
+      "name": "SERC Midwest",
+      "gco2e_per_kwh": 600,
+      "state_coverage": ["MO", "IL"]
+    },
+    "SRSO": {
+      "name": "SERC South",
+      "gco2e_per_kwh": 410,
+      "state_coverage": ["AL", "GA"]
+    },
+    "SRTV": {
+      "name": "SERC Tennessee Valley",
+      "gco2e_per_kwh": 380,
+      "state_coverage": ["TN", "KY", "VA"]
+    },
+    "SRVC": {
+      "name": "SERC Virginia/Carolina",
+      "gco2e_per_kwh": 330,
+      "state_coverage": ["VA", "NC", "SC"]
+    }
+  },
+  "us_average": {
+    "gco2e_per_kwh": 390
+  },
+  "state_to_subregion": {
+    "AL": "SRSO",
+    "AK": "AKGD",
+    "AZ": "AZNM",
+    "AR": "SRMV",
+    "CA": "CAMX",
+    "CO": "RMPA",
+    "CT": "NEWE",
+    "DE": "RFCE",
+    "DC": "RFCE",
+    "FL": "FRCC",
+    "GA": "SRSO",
+    "HI": "HIOA",
+    "ID": "NWPP",
+    "IL": "SRMW",
+    "IN": "RFCW",
+    "IA": "MROW",
+    "KS": "SPNO",
+    "KY": "SRTV",
+    "LA": "SRMV",
+    "ME": "NEWE",
+    "MD": "RFCE",
+    "MA": "NEWE",
+    "MI": "RFCM",
+    "MN": "MROW",
+    "MS": "SRMV",
+    "MO": "SRMW",
+    "MT": "MROW",
+    "NE": "MROW",
+    "NV": "NWPP",
+    "NH": "NEWE",
+    "NJ": "RFCE",
+    "NM": "AZNM",
+    "NY": "NYCW",
+    "NC": "SRVC",
+    "ND": "MROW",
+    "OH": "RFCW",
+    "OK": "SPSO",
+    "OR": "NWPP",
+    "PA": "RFCE",
+    "PR": "PRMS",
+    "RI": "NEWE",
+    "SC": "SRVC",
+    "SD": "MROW",
+    "TN": "SRTV",
+    "TX": "ERCT",
+    "UT": "NWPP",
+    "VT": "NEWE",
+    "VA": "SRVC",
+    "WA": "NWPP",
+    "WV": "RFCW",
+    "WI": "MROE",
+    "WY": "RMPA"
+  }
+}
