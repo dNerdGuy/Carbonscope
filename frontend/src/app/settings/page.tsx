@@ -164,7 +164,9 @@ export default function SettingsPage() {
   return (
     <div className="max-w-2xl mx-auto p-8">
       <h1 className="text-2xl font-bold mb-2">Settings</h1>
-      <p className="text-[var(--muted)] mb-8">Manage your profile and company.</p>
+      <p className="text-[var(--muted)] mb-8">
+        Manage your profile and company.
+      </p>
 
       {/* User Profile */}
       {profile && (
@@ -202,7 +204,11 @@ export default function SettingsPage() {
               required
             />
           </div>
-          <button type="submit" className="btn-primary" disabled={profileSaving}>
+          <button
+            type="submit"
+            className="btn-primary"
+            disabled={profileSaving}
+          >
             {profileSaving ? "Saving..." : "Update Profile"}
           </button>
         </form>
@@ -246,7 +252,11 @@ export default function SettingsPage() {
             Min 8 characters, must include an uppercase letter and a digit.
           </p>
         </div>
-        <button type="submit" className="btn-primary" disabled={pwSaving || !currentPw || !newPw}>
+        <button
+          type="submit"
+          className="btn-primary"
+          disabled={pwSaving || !currentPw || !newPw}
+        >
           {pwSaving ? "Changing..." : "Change Password"}
         </button>
       </form>

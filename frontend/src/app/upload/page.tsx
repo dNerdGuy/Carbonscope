@@ -122,7 +122,10 @@ export default function UploadPage() {
             value={year}
             onChange={(e) => setYear(Number(e.target.value))}
           >
-            {Array.from({ length: CURRENT_YEAR - 2000 + 1 }, (_, i) => CURRENT_YEAR - i).map((y) => (
+            {Array.from(
+              { length: CURRENT_YEAR - 2000 + 1 },
+              (_, i) => CURRENT_YEAR - i,
+            ).map((y) => (
               <option key={y} value={y}>
                 {y}
               </option>

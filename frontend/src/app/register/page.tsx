@@ -46,7 +46,9 @@ export default function RegisterPage() {
       return;
     }
     if (!/[A-Z]/.test(form.password) || !/\d/.test(form.password)) {
-      setError("Password must contain at least one uppercase letter and one digit");
+      setError(
+        "Password must contain at least one uppercase letter and one digit",
+      );
       return;
     }
     setSubmitting(true);
@@ -61,9 +63,13 @@ export default function RegisterPage() {
     } catch (err: unknown) {
       if (err instanceof Error && "status" in err) {
         const status = (err as { status: number }).status;
-        if (status === 429) { setError("Too many requests. Please wait and try again."); }
-        else if (status === 409) { setError("An account with this email already exists."); }
-        else { setError(err.message); }
+        if (status === 429) {
+          setError("Too many requests. Please wait and try again.");
+        } else if (status === 409) {
+          setError("An account with this email already exists.");
+        } else {
+          setError(err.message);
+        }
       } else {
         setError(err instanceof Error ? err.message : "Registration failed");
       }

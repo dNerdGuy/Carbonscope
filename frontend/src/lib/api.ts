@@ -170,7 +170,11 @@ export async function getUploadById(id: string): Promise<DataUpload> {
 
 export async function patchUpload(
   id: string,
-  data: { year?: number; provided_data?: Record<string, unknown>; notes?: string },
+  data: {
+    year?: number;
+    provided_data?: Record<string, unknown>;
+    notes?: string;
+  },
 ): Promise<DataUpload> {
   return request<DataUpload>(`/data/${encodeURIComponent(id)}`, {
     method: "PATCH",
@@ -222,13 +226,16 @@ export async function listReports(params?: {
 }): Promise<PaginatedResponse<EmissionReport>> {
   const q = new URLSearchParams();
   if (params?.year != null) q.set("year", String(params.year));
-  if (params?.confidenceMin != null) q.set("confidence_min", String(params.confidenceMin));
+  if (params?.confidenceMin != null)
+    q.set("confidence_min", String(params.confidenceMin));
   if (params?.sortBy) q.set("sort_by", params.sortBy);
   if (params?.order) q.set("order", params.order);
   if (params?.limit != null) q.set("limit", String(params.limit));
   if (params?.offset != null) q.set("offset", String(params.offset));
   const qs = q.toString();
-  return request<PaginatedResponse<EmissionReport>>(`/reports${qs ? `?${qs}` : ""}`);
+  return request<PaginatedResponse<EmissionReport>>(
+    `/reports${qs ? `?${qs}` : ""}`,
+  );
 }
 
 export async function getReport(id: string): Promise<EmissionReport> {

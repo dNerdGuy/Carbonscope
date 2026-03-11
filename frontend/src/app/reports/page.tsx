@@ -14,7 +14,9 @@ export default function ReportsPage() {
   const [reports, setReports] = useState<EmissionReport[]>([]);
   const [total, setTotal] = useState(0);
   const [offset, setOffset] = useState(0);
-  const [sortBy, setSortBy] = useState<"created_at" | "year" | "total" | "confidence">("created_at");
+  const [sortBy, setSortBy] = useState<
+    "created_at" | "year" | "total" | "confidence"
+  >("created_at");
   const [order, setOrder] = useState<"asc" | "desc">("desc");
   const [yearFilter, setYearFilter] = useState<string>("");
   const [error, setError] = useState("");
@@ -53,7 +55,10 @@ export default function ReportsPage() {
 
   const handleExport = async (format: "csv" | "json") => {
     try {
-      const blob = await exportReports(format, yearFilter ? Number(yearFilter) : undefined);
+      const blob = await exportReports(
+        format,
+        yearFilter ? Number(yearFilter) : undefined,
+      );
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
@@ -87,14 +92,20 @@ export default function ReportsPage() {
           type="number"
           placeholder="Filter by year"
           value={yearFilter}
-          onChange={(e) => { setYearFilter(e.target.value); setOffset(0); }}
+          onChange={(e) => {
+            setYearFilter(e.target.value);
+            setOffset(0);
+          }}
           className="input w-36 text-sm"
           min={2000}
           max={2030}
         />
         <select
           value={sortBy}
-          onChange={(e) => { setSortBy(e.target.value as typeof sortBy); setOffset(0); }}
+          onChange={(e) => {
+            setSortBy(e.target.value as typeof sortBy);
+            setOffset(0);
+          }}
           className="input text-sm"
         >
           <option value="created_at">Date</option>
@@ -110,10 +121,16 @@ export default function ReportsPage() {
           {order === "desc" ? "↓" : "↑"}
         </button>
         <div className="ml-auto flex gap-2">
-          <button onClick={() => handleExport("csv")} className="btn-secondary text-sm">
+          <button
+            onClick={() => handleExport("csv")}
+            className="btn-secondary text-sm"
+          >
             Export CSV
           </button>
-          <button onClick={() => handleExport("json")} className="btn-secondary text-sm">
+          <button
+            onClick={() => handleExport("json")}
+            className="btn-secondary text-sm"
+          >
             Export JSON
           </button>
         </div>
@@ -190,7 +207,8 @@ export default function ReportsPage() {
           {totalPages > 1 && (
             <div className="flex items-center justify-between mt-6">
               <p className="text-sm text-[var(--muted)]">
-                Showing {offset + 1}–{Math.min(offset + PAGE_SIZE, total)} of {total}
+                Showing {offset + 1}–{Math.min(offset + PAGE_SIZE, total)} of{" "}
+                {total}
               </p>
               <div className="flex gap-2">
                 <button
