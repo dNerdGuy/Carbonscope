@@ -97,7 +97,27 @@ carbonscope/
 ## Prerequisites
 
 - Python 3.10+
+- Node.js 18+ (for the frontend)
 - Bittensor SDK >= 6.0.0
+
+## Environment Variables
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `DATABASE_URL` | `sqlite+aiosqlite:///carbonscope.db` | Async SQLAlchemy database URL |
+| `SECRET_KEY` | `change-me-in-production` | JWT signing key (**must** change in production) |
+| `ACCESS_TOKEN_EXPIRE_MINUTES` | `60` | JWT token lifetime in minutes |
+| `ALLOWED_ORIGINS` | `http://localhost:3000,http://127.0.0.1:3000` | Comma-separated CORS origins |
+| `RATE_LIMIT_AUTH` | `10/minute` | Rate limit for auth endpoints |
+| `RATE_LIMIT_DEFAULT` | `60/minute` | Rate limit for general endpoints |
+| `LOG_LEVEL` | `INFO` | Logging level (DEBUG, INFO, WARNING, ERROR) |
+| `BT_NETWORK` | `test` | Bittensor network (test, finney) |
+| `BT_NETUID` | `1` | Bittensor subnet UID |
+| `BT_WALLET_NAME` | `api_client` | Bittensor wallet name |
+| `BT_WALLET_HOTKEY` | `default` | Bittensor wallet hotkey |
+| `BT_QUERY_TIMEOUT` | `30.0` | Bittensor query timeout in seconds |
+| `OPENAI_API_KEY` | — | OpenAI API key (optional, for LLM text parsing) |
+| `ANTHROPIC_API_KEY` | — | Anthropic API key (optional, for LLM text parsing) |
 
 ## Setup
 
@@ -170,8 +190,75 @@ python -m neurons.validator \
 ## Running Tests
 
 ```bash
+# Run all tests
 pytest tests/ -v
+
+# Run a specific test file
+pytest tests/test_carbon_api.py -v
+
+# Run with short traceback
+pytest tests/ -q --tb=short
 ```
+
+### Test Coverage
+
+| File | Coverage |
+|------|----------|
+| `test_auth_api.py` | Registration, login, profile CRUD, password change |
+| `test_company_api.py` | Company CRUD, data upload pagination, PATCH, soft delete |
+| `test_carbon_api.py` | Estimation, report listing, pagination, soft delete |
+| `test_new_routes.py` | Webhooks CRUD, delivery logs, report export (CSV/JSON) |
+| `test_compliance.py` | GHG Protocol, CDP, TCFD, SBTi report generation |
+| `test_ai_services.py` | LLM parser, prediction engine, recommendations |
+| `test_emission_factors.py` | Scope 1/2/3 emission factor calculations |
+| `test_scoring.py` | Validator composite scoring engine |
+| `test_generator.py` | Test case generation (curated + synthetic) |
+| `test_utils.py` | Unit conversion utilities |
+| `test_e2e_security.py` | Cross-tenant isolation, rate limiting, auth flows |
+
+## Docker Deployment
+
+### Quick Start
+
+```bash
+# Build and run both services
+docker compose up --build -d
+
+# Check health
+docker compose ps
+curl http://localhost:8000/health
+```
+
+### Production Configuration
+
+```bash
+# Set required environment variables
+export SECRET_KEY=$(openssl rand -hex 32)
+
+# Run with production settings
+SECRET_KEY=$SECRET_KEY \
+  docker compose up --build -d
+```
+
+The backend runs on port 8000 and the frontend on port 3000. The frontend container automatically proxies API requests to the backend container.
+
+### Docker Architecture
+
+- **Backend**: Python 3.12-slim, installs from requirements.txt, runs uvicorn
+- **Frontend**: Node 20 Alpine, multi-stage build (deps → build → production), serves via Next.js standalone
+- **Volumes**: `db-data` persists the SQLite database
+- **Health check**: Backend checks `/health` every 30s; frontend starts only after backend is healthy
+
+## Troubleshooting
+
+| Issue | Solution |
+|-------|----------|
+| `SECRET_KEY is using the default value` warning | Set `SECRET_KEY` env var to a random 32+ char string |
+| CORS errors in browser | Add your frontend URL to `ALLOWED_ORIGINS` |
+| 429 Too Many Requests | Adjust `RATE_LIMIT_AUTH` / `RATE_LIMIT_DEFAULT` env vars |
+| Frontend can't reach backend | Ensure backend is running on port 8000 and Next.js `rewrites` in `next.config.ts` are configured |
+| SQLite locked errors under load | Switch `DATABASE_URL` to PostgreSQL for production |
+| Bittensor connection timeout | Check wallet registration and `BT_QUERY_TIMEOUT` value |
 
 ## Platform API
 
@@ -191,19 +278,29 @@ SECRET_KEY=your-secret DATABASE_URL=sqlite+aiosqlite:///carbonscope.db uvicorn a
 
 #### Core
 
-| Method | Endpoint                | Description               |
-| ------ | ----------------------- | ------------------------- |
-| POST   | `/api/v1/auth/register` | Register user + company   |
-| POST   | `/api/v1/auth/login`    | Get JWT token             |
-| GET    | `/api/v1/company`       | Get company profile       |
-| PATCH  | `/api/v1/company`       | Update company profile    |
-| POST   | `/api/v1/data`          | Upload operational data   |
-| GET    | `/api/v1/data`          | List data uploads         |
-| POST   | `/api/v1/estimate`      | Run emission estimation   |
-| GET    | `/api/v1/reports`       | List emission reports     |
-| GET    | `/api/v1/reports/{id}`  | Get specific report       |
-| GET    | `/api/v1/dashboard`     | Company dashboard summary |
-| GET    | `/health`               | Health check              |
+| Method | Endpoint                          | Description                    |
+| ------ | --------------------------------- | ------------------------------ |
+| POST   | `/api/v1/auth/register`           | Register user + company        |
+| POST   | `/api/v1/auth/login`              | Get JWT token                  |
+| GET    | `/api/v1/auth/me`                 | Get current user profile       |
+| PATCH  | `/api/v1/auth/me`                 | Update name / email            |
+| POST   | `/api/v1/auth/change-password`    | Change password (204)          |
+| GET    | `/api/v1/company`                 | Get company profile            |
+| PATCH  | `/api/v1/company`                 | Update company profile         |
+| POST   | `/api/v1/data`                    | Upload operational data (201)  |
+| GET    | `/api/v1/data`                    | List data uploads (paginated)  |
+| GET    | `/api/v1/data/{id}`               | Get specific upload            |
+| PATCH  | `/api/v1/data/{id}`               | Update upload                  |
+| DELETE | `/api/v1/data/{id}`               | Soft-delete upload (204)       |
+| POST   | `/api/v1/estimate`                | Run emission estimation (201)  |
+| GET    | `/api/v1/reports`                 | List reports (paginated)       |
+| GET    | `/api/v1/reports/{id}`            | Get specific report            |
+| DELETE | `/api/v1/reports/{id}`            | Soft-delete report (204)       |
+| GET    | `/api/v1/reports/export`          | Export reports as CSV or JSON  |
+| GET    | `/api/v1/dashboard`               | Company dashboard summary      |
+| GET    | `/health`                         | Health check                   |
+
+**Pagination**: List endpoints accept `limit` (1–200, default 50), `offset` (default 0). Reports also support `sort_by` (created_at, year, total, confidence), `order` (asc, desc), `confidence_min`, and `year` filter.
 
 #### AI Enhancement
 
@@ -233,12 +330,15 @@ SECRET_KEY=your-secret DATABASE_URL=sqlite+aiosqlite:///carbonscope.db uvicorn a
 
 #### Webhooks
 
-| Method | Endpoint                | Description                 |
-| ------ | ----------------------- | --------------------------- |
-| POST   | `/api/v1/webhooks/`     | Register webhook endpoint   |
-| GET    | `/api/v1/webhooks/`     | List webhooks               |
-| PATCH  | `/api/v1/webhooks/{id}` | Toggle webhook active state |
-| DELETE | `/api/v1/webhooks/{id}` | Remove webhook              |
+| Method | Endpoint                             | Description                       |
+| ------ | ------------------------------------ | --------------------------------- |
+| POST   | `/api/v1/webhooks/`                  | Register webhook endpoint         |
+| GET    | `/api/v1/webhooks/`                  | List webhooks                     |
+| PATCH  | `/api/v1/webhooks/{id}`              | Toggle webhook active state       |
+| DELETE | `/api/v1/webhooks/{id}`              | Remove webhook                    |
+| GET    | `/api/v1/webhooks/{id}/deliveries`   | List delivery logs for a webhook  |
+
+Webhooks are dispatched via HTTP POST with HMAC-SHA256 signed payloads. Delivery logs record status codes and response times.
 
 Interactive docs available at `http://localhost:8000/docs` (Swagger UI).
 
@@ -280,11 +380,11 @@ The Next.js 15 dashboard provides:
 
 - **Dashboard** — KPI cards, scope breakdown chart, year-over-year trends
 - **Data Upload** — Structured entry for Scope 1/2/3 activity data
-- **Reports** — List and detail view with scope charts and confidence meters
+- **Reports** — Paginated list with sorting, filtering, and CSV/JSON export
 - **Recommendations** — AI-generated reduction strategies per report
 - **Supply Chain** — Supplier network management, Scope 3 Category 1 propagation
 - **Compliance** — Generate and download GHG Protocol / CDP / TCFD / SBTi reports
-- **Settings** — Company profile management + webhook configuration
+- **Settings** — User profile, password change, company profile, webhook management
 
 ### Start the frontend
 
