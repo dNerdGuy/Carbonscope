@@ -2,6 +2,12 @@
 
 const BASE = "/api/v1";
 
+function getCsrfToken(): string | null {
+  if (typeof document === "undefined") return null;
+  const match = document.cookie.match(/(?:^|;\s*)csrf_token=([^;]*)/);
+  return match ? decodeURIComponent(match[1]) : null;
+}
+
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
   const token =
     typeof window !== "undefined" ? localStorage.getItem("token") : null;
@@ -12,7 +18,17 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
   };
   if (token) headers["Authorization"] = `Bearer ${token}`;
 
-  const res = await fetch(`${BASE}${path}`, { ...init, headers });
+  // Attach CSRF token for mutating requests when using cookie auth
+  const csrf = getCsrfToken();
+  if (csrf && !token) {
+    headers["X-CSRF-Token"] = csrf;
+  }
+
+  const res = await fetch(`${BASE}${path}`, {
+    ...init,
+    headers,
+    credentials: "include",
+  });
 
   if (!res.ok) {
     const body = await res.json().catch(() => ({}));
@@ -75,6 +91,10 @@ export async function login(email: string, password: string): Promise<Token> {
     method: "POST",
     body: JSON.stringify({ email, password }),
   });
+}
+
+export async function logoutApi(): Promise<void> {
+  return request<void>("/auth/logout", { method: "POST" });
 }
 
 export async function getProfile(): Promise<User> {

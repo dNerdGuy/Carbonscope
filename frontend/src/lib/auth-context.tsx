@@ -11,6 +11,7 @@ import {
 import { useRouter } from "next/navigation";
 import {
   login as apiLogin,
+  logoutApi,
   register as apiRegister,
   type User,
 } from "@/lib/api";
@@ -97,7 +98,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     [router],
   );
 
-  const logout = useCallback(() => {
+  const logout = useCallback(async () => {
+    try {
+      await logoutApi();
+    } catch {
+      // Proceed with local cleanup even if server-side logout fails
+    }
     localStorage.removeItem("token");
     localStorage.removeItem("user");
     setToken(null);

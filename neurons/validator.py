@@ -49,6 +49,12 @@ class CarbonValidator:
         # Track how many blocks since last weight update
         self.last_weight_block = 0
 
+        # Circuit breaker state
+        self._consecutive_failures = 0
+        self._max_failures = 3
+        self._backoff_seconds = 2.0
+        self._max_backoff = 60.0
+
     # ── Config ──────────────────────────────────────────────────────
 
     @staticmethod
@@ -193,16 +199,42 @@ class CarbonValidator:
                     f"Industry: {synapse.questionnaire.get('industry', '?')}"
                 )
 
-                # 4. Query all miners
-                responses: list[CarbonSynapse] = self.dendrite.query(
-                    axons=miner_axons,
-                    synapse=synapse,
-                    timeout=self.config.query_timeout,
-                )
+                # 4. Query all miners (with circuit breaker)
+                try:
+                    responses: list[CarbonSynapse] = self.dendrite.query(
+                        axons=miner_axons,
+                        synapse=synapse,
+                        timeout=self.config.query_timeout,
+                    )
+                    self._consecutive_failures = 0
+                    self._backoff_seconds = 2.0
+                except Exception:
+                    self._consecutive_failures += 1
+                    bt.logging.error(
+                        f"Query failed ({self._consecutive_failures}/{self._max_failures}):\n"
+                        f"{traceback.format_exc()}"
+                    )
+                    if self._consecutive_failures >= self._max_failures:
+                        backoff = min(self._backoff_seconds, self._max_backoff)
+                        bt.logging.warning(
+                            f"Circuit breaker: {self._consecutive_failures} consecutive failures. "
+                            f"Backing off {backoff:.0f}s..."
+                        )
+                        time.sleep(backoff)
+                        self._backoff_seconds = min(self._backoff_seconds * 2, self._max_backoff)
+                    else:
+                        time.sleep(self.config.query_interval)
+                    continue
 
                 # 5. Score each response
                 for uid, response in zip(miner_uids, responses):
                     try:
+                        # Skip error responses (miner signaled failure via confidence < 0)
+                        if response.confidence is not None and response.confidence < 0:
+                            bt.logging.info(f"  UID {uid}: error response (confidence={response.confidence}), score=0")
+                            self.update_scores(uid, 0.0)
+                            continue
+
                         sc = self.score_miner_response(synapse, response, ground_truth)
                     except Exception:
                         bt.logging.error(f"Scoring failed for UID {uid}:\n{traceback.format_exc()}")

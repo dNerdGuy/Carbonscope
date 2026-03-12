@@ -15,8 +15,12 @@ COPY alembic/ alembic/
 COPY alembic.ini .
 COPY carbonscope/ carbonscope/
 
-# Create data directory for uploads/exports
-RUN mkdir -p /app/data
+# Create data directory and non-root user
+RUN useradd -r -s /usr/sbin/nologin -u 1000 appuser && \
+    mkdir -p /app/data && \
+    chown -R appuser:appuser /app
+
+USER appuser
 
 EXPOSE 8000
 
@@ -48,6 +52,8 @@ ENV NEXT_TELEMETRY_DISABLED=1
 COPY --from=frontend-build /app/.next/standalone ./
 COPY --from=frontend-build /app/.next/static ./.next/static
 COPY --from=frontend-build /app/public ./public
+
+USER node
 
 EXPOSE 3000
 

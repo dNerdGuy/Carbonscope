@@ -1,6 +1,11 @@
 import { describe, it, expect } from "vitest";
 import { render, screen } from "@testing-library/react";
-import { Skeleton, CardSkeleton, TableSkeleton, PageSkeleton } from "@/components/Skeleton";
+import {
+  Skeleton,
+  CardSkeleton,
+  TableSkeleton,
+  PageSkeleton,
+} from "@/components/Skeleton";
 
 describe("Skeleton", () => {
   it("renders with aria-hidden", () => {

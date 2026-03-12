@@ -4,26 +4,52 @@ from __future__ import annotations
 
 from typing import Callable
 
-from fastapi import Depends, HTTPException, status
+from fastapi import Depends, HTTPException, Request, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 import jwt
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from api.auth import decode_access_token
+from api.auth import decode_access_token, is_token_revoked
 from api.database import get_db
 from api.models import User
 
-_bearer = HTTPBearer()
+_bearer = HTTPBearer(auto_error=False)
 
 
 async def get_current_user(
-    creds: HTTPAuthorizationCredentials = Depends(_bearer),
+    request: Request,
+    creds: HTTPAuthorizationCredentials | None = Depends(_bearer),
     db: AsyncSession = Depends(get_db),
 ) -> User:
-    """Extract and validate the current user from the Bearer token."""
+    """Extract and validate the current user from the Bearer token or httpOnly cookie."""
+    token: str | None = None
+    from_cookie = False
+
+    if creds and creds.credentials:
+        token = creds.credentials
+    else:
+        token = request.cookies.get("access_token")
+        from_cookie = True
+
+    if not token:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Not authenticated",
+        )
+
+    # CSRF check when using cookie-based auth on state-changing methods
+    if from_cookie and request.method not in ("GET", "HEAD", "OPTIONS"):
+        csrf_cookie = request.cookies.get("csrf_token", "")
+        csrf_header = request.headers.get("x-csrf-token", "")
+        if not csrf_cookie or not csrf_header or csrf_cookie != csrf_header:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="CSRF validation failed",
+            )
+
     try:
-        payload = decode_access_token(creds.credentials)
+        payload = decode_access_token(token)
     except jwt.PyJWTError:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -34,10 +60,19 @@ async def get_current_user(
     if user_id is None:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token payload")
 
+    # Check if token has been revoked (logout)
+    jti = payload.get("jti")
+    if jti and await is_token_revoked(db, jti):
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Token has been revoked")
+
     result = await db.execute(select(User).where(User.id == user_id))
     user = result.scalar_one_or_none()
     if user is None:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="User not found")
+
+    if not user.is_active:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Account is deactivated")
+
     return user
 
 

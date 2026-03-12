@@ -65,6 +65,11 @@ class User(Base):
     full_name: str = Column(String(255), nullable=False)
     company_id: str = Column(String(32), ForeignKey("companies.id"), nullable=False)
     role: str = Column(String(50), default="member")  # admin | member
+    is_active: bool = Column(Boolean, nullable=False, default=True)
+    deleted_at: datetime | None = Column(DateTime(timezone=True), nullable=True, default=None)
+    last_login: datetime | None = Column(DateTime(timezone=True), nullable=True)
+    failed_login_attempts: int = Column(Integer, nullable=False, default=0)
+    locked_until: datetime | None = Column(DateTime(timezone=True), nullable=True)
     created_at: datetime = Column(DateTime(timezone=True), default=_utcnow)
 
 
@@ -350,4 +355,28 @@ class DataPurchase(Base):
     created_at: datetime = Column(DateTime(timezone=True), default=_utcnow)
 
     listing = relationship("DataListing")
-    buyer = relationship("Company")
+
+
+# ── Token Storage (persistent) ──────────────────────────────────────
+
+
+class RefreshToken(Base):
+    """Persistent refresh token — replaces in-memory dict."""
+    __tablename__ = "refresh_tokens"
+
+    id: str = Column(String(32), primary_key=True, default=_new_id)
+    user_id: str = Column(String(32), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
+    token_hash: str = Column(String(128), unique=True, nullable=False, index=True)
+    expires_at: datetime = Column(DateTime(timezone=True), nullable=False)
+    created_at: datetime = Column(DateTime(timezone=True), default=_utcnow)
+
+
+class RevokedToken(Base):
+    """Revoked JWT access token — checked in auth middleware."""
+    __tablename__ = "revoked_tokens"
+
+    id: str = Column(String(32), primary_key=True, default=_new_id)
+    jti: str = Column(String(64), unique=True, nullable=False, index=True)
+    user_id: str = Column(String(32), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
+    revoked_at: datetime = Column(DateTime(timezone=True), default=_utcnow)
+    expires_at: datetime = Column(DateTime(timezone=True), nullable=False)

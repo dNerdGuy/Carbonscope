@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import logging
+import time
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, Request
@@ -31,6 +32,9 @@ from api.routes.marketplace_routes import router as marketplace_router
 
 logger = logging.getLogger(__name__)
 
+_start_time: float = 0.0
+_request_count: int = 0
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -38,7 +42,9 @@ async def lifespan(app: FastAPI):
     if ENV != "production":
         # In production, use Alembic migrations instead of create_all
         await init_db()
-    logger.info("CarbonScope API v0.6.0 started (env=%s)", ENV)
+    global _start_time
+    _start_time = time.monotonic()
+    logger.info("CarbonScope API v0.7.0 started (env=%s)", ENV)
 
     from api.services.scheduler import start_scheduler, stop_scheduler
 
@@ -50,7 +56,7 @@ async def lifespan(app: FastAPI):
 app = FastAPI(
     title="CarbonScope Platform API",
     description="Decentralized corporate carbon emission estimation powered by Bittensor",
-    version="0.6.0",
+    version="0.7.0",
     lifespan=lifespan,
 )
 app.state.limiter = limiter
@@ -98,6 +104,24 @@ async def health():
         db_ok = False
     return {
         "status": "ok" if db_ok else "degraded",
-        "version": "0.6.0",
+        "version": "0.7.0",
         "database": "connected" if db_ok else "unavailable",
+    }
+
+
+@app.middleware("http")
+async def _count_requests(request: Request, call_next):
+    global _request_count
+    _request_count += 1
+    return await call_next(request)
+
+
+@app.get("/metrics")
+async def metrics():
+    """Basic operational metrics."""
+    uptime = time.monotonic() - _start_time if _start_time else 0
+    return {
+        "uptime_seconds": round(uptime, 1),
+        "total_requests": _request_count,
+        "version": "0.7.0",
     }

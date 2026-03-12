@@ -92,6 +92,11 @@ async def estimate_emissions(
         if not resp.is_success or resp.emissions is None:
             continue
 
+        # Skip error responses signalled by negative confidence
+        if resp.confidence is not None and resp.confidence < 0:
+            logger.info("Skipping miner %d: error response (confidence=%s)", idx, resp.confidence)
+            continue
+
         result = score_response(
             emissions=resp.emissions,
             breakdown=resp.breakdown,

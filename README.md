@@ -235,23 +235,23 @@ pytest tests/ --cov=api --cov-report=term-missing  # With coverage
 
 ### Test Coverage
 
-| File                       | Coverage                                                   |
-| -------------------------- | ---------------------------------------------------------- |
-| `test_auth_api.py`         | Registration, login, profile CRUD, password change         |
-| `test_company_api.py`      | Company CRUD, data upload pagination, PATCH, soft delete   |
-| `test_carbon_api.py`       | Estimation, report listing, pagination, soft delete        |
-| `test_new_routes.py`       | Webhooks CRUD, delivery logs, report export (CSV/JSON)     |
-| `test_new_features.py`     | Questionnaire upload, AI extraction, scenarios, PDF export |
-| `test_compliance.py`       | GHG Protocol, CDP, TCFD, SBTi report generation            |
-| `test_ai_services.py`      | LLM parser, prediction engine, recommendations             |
-| `test_emission_factors.py` | Scope 1/2/3 emission factor calculations                   |
-| `test_scoring.py`          | Validator composite scoring engine                         |
-| `test_generator.py`        | Test case generation (curated + synthetic)                 |
-| `test_utils.py`            | Unit conversion utilities                                  |
-| `test_e2e_security.py`     | Cross-tenant isolation, rate limiting, auth flows          |
-| `test_billing_alerts_marketplace.py` | Subscriptions, credits, alerts, marketplace, scheduler |
-| `test_coverage_gaps.py`    | Refresh tokens, soft deletes, pagination, webhook toggle   |
-| `test_v060_features.py`    | SSRF, refresh rotation, password reset, middleware, admin  |
+| File                                 | Coverage                                                   |
+| ------------------------------------ | ---------------------------------------------------------- |
+| `test_auth_api.py`                   | Registration, login, profile CRUD, password change         |
+| `test_company_api.py`                | Company CRUD, data upload pagination, PATCH, soft delete   |
+| `test_carbon_api.py`                 | Estimation, report listing, pagination, soft delete        |
+| `test_new_routes.py`                 | Webhooks CRUD, delivery logs, report export (CSV/JSON)     |
+| `test_new_features.py`               | Questionnaire upload, AI extraction, scenarios, PDF export |
+| `test_compliance.py`                 | GHG Protocol, CDP, TCFD, SBTi report generation            |
+| `test_ai_services.py`                | LLM parser, prediction engine, recommendations             |
+| `test_emission_factors.py`           | Scope 1/2/3 emission factor calculations                   |
+| `test_scoring.py`                    | Validator composite scoring engine                         |
+| `test_generator.py`                  | Test case generation (curated + synthetic)                 |
+| `test_utils.py`                      | Unit conversion utilities                                  |
+| `test_e2e_security.py`               | Cross-tenant isolation, rate limiting, auth flows          |
+| `test_billing_alerts_marketplace.py` | Subscriptions, credits, alerts, marketplace, scheduler     |
+| `test_coverage_gaps.py`              | Refresh tokens, soft deletes, pagination, webhook toggle   |
+| `test_v060_features.py`              | SSRF, refresh rotation, password reset, middleware, admin  |
 
 ## Docker Deployment
 
@@ -280,16 +280,16 @@ Interactive docs: `http://localhost:8000/docs`
 
 #### Auth (8 endpoints)
 
-| Method | Endpoint                       | Description                          |
-| ------ | ------------------------------ | ------------------------------------ |
-| POST   | `/api/v1/auth/register`        | Register user + company              |
-| POST   | `/api/v1/auth/login`           | Get JWT access + refresh tokens      |
-| GET    | `/api/v1/auth/me`              | Get current user profile             |
-| PATCH  | `/api/v1/auth/me`              | Update name / email                  |
-| POST   | `/api/v1/auth/change-password` | Change password                      |
-| POST   | `/api/v1/auth/refresh`         | Rotate refresh token for new pair    |
-| POST   | `/api/v1/auth/forgot-password` | Request password reset email         |
-| POST   | `/api/v1/auth/reset-password`  | Reset password with token            |
+| Method | Endpoint                       | Description                       |
+| ------ | ------------------------------ | --------------------------------- |
+| POST   | `/api/v1/auth/register`        | Register user + company           |
+| POST   | `/api/v1/auth/login`           | Get JWT access + refresh tokens   |
+| GET    | `/api/v1/auth/me`              | Get current user profile          |
+| PATCH  | `/api/v1/auth/me`              | Update name / email               |
+| POST   | `/api/v1/auth/change-password` | Change password                   |
+| POST   | `/api/v1/auth/refresh`         | Rotate refresh token for new pair |
+| POST   | `/api/v1/auth/forgot-password` | Request password reset email      |
+| POST   | `/api/v1/auth/reset-password`  | Reset password with token         |
 
 #### Company & Data (7)
 

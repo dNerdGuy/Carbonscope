@@ -27,6 +27,12 @@ DATABASE_URL: str = os.getenv(
     f"sqlite+aiosqlite:///{BASE_DIR / 'carbonscope.db'}",
 )
 
+if ENV == "production" and "sqlite" in DATABASE_URL:
+    raise RuntimeError(
+        "SQLite is not supported in production. Set DATABASE_URL to a PostgreSQL connection string. "
+        "Example: postgresql+asyncpg://user:pass@localhost:5432/carbonscope"
+    )
+
 # ── Auth ────────────────────────────────────────────────────────────
 
 _DEFAULT_SECRET = "change-me-in-production"
@@ -40,6 +46,13 @@ if SECRET_KEY == _DEFAULT_SECRET:
     logger.warning(
         "SECRET_KEY is using the default value. Set SECRET_KEY env var in production!"
     )
+
+# Validate SECRET_KEY quality
+if ENV == "production":
+    if len(SECRET_KEY) < 32:
+        raise RuntimeError("SECRET_KEY must be at least 32 characters in production.")
+    if len(set(SECRET_KEY)) < 10:
+        raise RuntimeError("SECRET_KEY appears to lack sufficient randomness.")
 ALGORITHM: str = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES: int = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", "60"))
 
@@ -57,6 +70,12 @@ ALLOWED_ORIGINS: list[str] = [
 
 RATE_LIMIT_AUTH: str = os.getenv("RATE_LIMIT_AUTH", "10/minute")
 RATE_LIMIT_DEFAULT: str = os.getenv("RATE_LIMIT_DEFAULT", "60/minute")
+
+# ── Cookies / CSRF ──────────────────────────────────────────────────
+
+COOKIE_SECURE: bool = ENV == "production"
+COOKIE_SAMESITE: str = "lax"
+COOKIE_DOMAIN: str | None = os.getenv("COOKIE_DOMAIN", None)
 
 # ── Logging ─────────────────────────────────────────────────────────
 

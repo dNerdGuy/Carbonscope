@@ -2,12 +2,14 @@
 
 from __future__ import annotations
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Request, status
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from api.config import RATE_LIMIT_DEFAULT
 from api.database import get_db
 from api.deps import get_current_user
+from api.limiter import limiter
 from api.models import Company, EmissionReport, User
 from api.schemas import (
     AuditTrailRequest,
@@ -25,7 +27,9 @@ router = APIRouter(prefix="/ai", tags=["ai"])
 
 
 @router.post("/parse-text", response_model=ParseTextResponse)
+@limiter.limit(RATE_LIMIT_DEFAULT)
 async def parse_text(
+    request: Request,
     body: ParseTextRequest,
     user: User = Depends(get_current_user),
 ):
@@ -35,7 +39,9 @@ async def parse_text(
 
 
 @router.post("/predict", response_model=PredictionResponse)
+@limiter.limit(RATE_LIMIT_DEFAULT)
 async def predict(
+    request: Request,
     body: PredictionRequest,
     user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),

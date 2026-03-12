@@ -91,9 +91,9 @@ class CarbonMiner:
             return self._estimate(synapse)
         except Exception:
             bt.logging.error(f"Estimation failed:\n{traceback.format_exc()}")
-            # Return empty response rather than crashing
+            # Signal error with negative confidence so validators can skip
             synapse.emissions = {"scope1": 0, "scope2": 0, "scope3": 0, "total": 0}
-            synapse.confidence = 0.0
+            synapse.confidence = -1.0
             synapse.sources = []
             synapse.assumptions = ["Estimation failed due to internal error"]
             return synapse

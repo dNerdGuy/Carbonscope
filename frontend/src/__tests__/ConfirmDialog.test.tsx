@@ -18,7 +18,9 @@ describe("ConfirmDialog", () => {
   it("renders title and message when open", () => {
     render(<ConfirmDialog {...defaultProps} />);
     expect(screen.getByText("Delete item?")).toBeInTheDocument();
-    expect(screen.getByText("This action cannot be undone.")).toBeInTheDocument();
+    expect(
+      screen.getByText("This action cannot be undone."),
+    ).toBeInTheDocument();
   });
 
   it("does not render when closed", () => {
