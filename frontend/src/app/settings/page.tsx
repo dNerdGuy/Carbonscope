@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/auth-context";
 import {
@@ -70,6 +70,17 @@ export default function SettingsPage() {
   const [whEvents, setWhEvents] = useState<string[]>(["report.created"]);
   const [addingWh, setAddingWh] = useState(false);
   const [deleteWhTarget, setDeleteWhTarget] = useState<string | null>(null);
+  const [copiedId, setCopiedId] = useState<string | null>(null);
+
+  const copyToClipboard = useCallback(async (text: string, id: string) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopiedId(id);
+      setTimeout(() => setCopiedId(null), 2000);
+    } catch {
+      // Fallback ignored — clipboard not available
+    }
+  }, []);
 
   const ALL_EVENTS = [
     "report.created",
@@ -408,7 +419,21 @@ export default function SettingsPage() {
                     className="border-b border-[var(--card-border)]"
                   >
                     <td className="py-2 font-mono text-xs truncate max-w-[200px]">
-                      {wh.url}
+                      <span className="flex items-center gap-1">
+                        {wh.url}
+                        <button
+                          type="button"
+                          aria-label="Copy URL"
+                          onClick={() => copyToClipboard(wh.url, wh.id)}
+                          className="text-[var(--muted)] hover:text-[var(--foreground)] transition-colors shrink-0"
+                        >
+                          {copiedId === wh.id ? (
+                            <span className="text-[var(--primary)] text-xs font-medium">Copied!</span>
+                          ) : (
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                          )}
+                        </button>
+                      </span>
                     </td>
                     <td className="py-2 text-xs">
                       {wh.event_types.join(", ")}
