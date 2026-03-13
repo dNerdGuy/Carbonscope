@@ -67,7 +67,9 @@ export default function ScenariosPage() {
   const [reports, setReports] = useState<EmissionReport[]>([]);
   const [error, setError] = useState("");
   const [showCreate, setShowCreate] = useState(false);
-  const [statusFilter, setStatusFilter] = useState(searchParams.get("status") ?? "");
+  const [statusFilter, setStatusFilter] = useState(
+    searchParams.get("status") ?? "",
+  );
 
   // Create form state
   const [name, setName] = useState("");
@@ -79,26 +81,29 @@ export default function ScenariosPage() {
   const [creating, setCreating] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
 
-  const fetchData = useCallback(async (status?: string) => {
-    try {
-      const [sRes, rRes] = await Promise.all([
-        listScenarios({ status: status || undefined }),
-        listReports({ limit: 50 }),
-      ]);
-      setScenarios(sRes.items);
-      setReports(rRes.items);
-      if (rRes.items.length > 0) {
-        setBaseReportId((prev) => prev || rRes.items[0].id);
+  const fetchData = useCallback(
+    async (status?: string) => {
+      try {
+        const [sRes, rRes] = await Promise.all([
+          listScenarios({ status: status || undefined }),
+          listReports({ limit: 50 }),
+        ]);
+        setScenarios(sRes.items);
+        setReports(rRes.items);
+        if (rRes.items.length > 0) {
+          setBaseReportId((prev) => prev || rRes.items[0].id);
+        }
+        // Sync filter to URL
+        const params = new URLSearchParams();
+        if (status) params.set("status", status);
+        const qs = params.toString();
+        router.replace(`/scenarios${qs ? `?${qs}` : ""}`, { scroll: false });
+      } catch {
+        setError("Failed to load data");
       }
-      // Sync filter to URL
-      const params = new URLSearchParams();
-      if (status) params.set("status", status);
-      const qs = params.toString();
-      router.replace(`/scenarios${qs ? `?${qs}` : ""}`, { scroll: false });
-    } catch {
-      setError("Failed to load data");
-    }
-  }, [router]);
+    },
+    [router],
+  );
 
   useEffect(() => {
     if (!loading && !user) {

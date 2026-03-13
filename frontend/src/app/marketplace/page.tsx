@@ -41,31 +41,38 @@ export default function MarketplacePage() {
   const [creating, setCreating] = useState(false);
   const [purchaseTarget, setPurchaseTarget] = useState<string | null>(null);
 
-  const fetchListings = useCallback(async (ind?: string, reg?: string) => {
-    try {
-      const res = await browseListings({
-        industry: ind || undefined,
-        region: reg || undefined,
-        limit: 50,
-      });
-      setData(res);
-      // Sync filters to URL
-      const params = new URLSearchParams();
-      if (ind) params.set("industry", ind);
-      if (reg) params.set("region", reg);
-      const qs = params.toString();
-      router.replace(`/marketplace${qs ? `?${qs}` : ""}`, { scroll: false });
-    } catch (e: unknown) {
-      setError(e instanceof Error ? e.message : "Failed to load listings");
-    }
-  }, [router]);
+  const fetchListings = useCallback(
+    async (ind?: string, reg?: string) => {
+      try {
+        const res = await browseListings({
+          industry: ind || undefined,
+          region: reg || undefined,
+          limit: 50,
+        });
+        setData(res);
+        // Sync filters to URL
+        const params = new URLSearchParams();
+        if (ind) params.set("industry", ind);
+        if (reg) params.set("region", reg);
+        const qs = params.toString();
+        router.replace(`/marketplace${qs ? `?${qs}` : ""}`, { scroll: false });
+      } catch (e: unknown) {
+        setError(e instanceof Error ? e.message : "Failed to load listings");
+      }
+    },
+    [router],
+  );
 
   useEffect(() => {
     if (!loading && !user) {
       router.replace("/login");
       return;
     }
-    if (user) fetchListings(searchParams.get("industry") ?? "", searchParams.get("region") ?? "");
+    if (user)
+      fetchListings(
+        searchParams.get("industry") ?? "",
+        searchParams.get("region") ?? "",
+      );
   }, [user, loading, router, fetchListings, searchParams]);
 
   async function handlePurchase(id: string) {

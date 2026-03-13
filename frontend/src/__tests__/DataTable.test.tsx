@@ -25,7 +25,7 @@ describe("DataTable", () => {
   it("renders column headers in desktop table", () => {
     render(<DataTable columns={columns} data={[]} />);
     const ths = document.querySelectorAll("th");
-    const headers = Array.from(ths).map(th => th.textContent);
+    const headers = Array.from(ths).map((th) => th.textContent);
     expect(headers).toContain("Name");
     expect(headers).toContain("Value");
   });
@@ -127,7 +127,9 @@ describe("DataTable", () => {
       />,
     );
     expect(screen.getAllByRole("button", { name: "Next" })[0]).toBeDisabled();
-    expect(screen.getAllByRole("button", { name: "Previous" })[0]).toBeEnabled();
+    expect(
+      screen.getAllByRole("button", { name: "Previous" })[0],
+    ).toBeEnabled();
   });
 
   it("does not render pagination when total fits in one page", () => {

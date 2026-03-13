@@ -244,12 +244,12 @@ CarbonScope operates as a Bittensor subnet where miners compete to produce the h
 2. **Miners return estimates** — Each miner runs its emission-factor pipeline and returns scope-level emissions, a confidence score, and methodology metadata.
 3. **Validators score responses** — Every response is evaluated across four weighted axes:
 
-| Axis | Weight | Description |
-|------|--------|-------------|
-| Accuracy | 0.40 | Deviation from validator's own ground-truth calculation |
-| Compliance | 0.25 | Adherence to GHG Protocol methodology |
-| Completeness | 0.20 | Coverage of all requested scopes and categories |
-| Timeliness | 0.15 | Response latency (faster is better) |
+| Axis         | Weight | Description                                             |
+| ------------ | ------ | ------------------------------------------------------- |
+| Accuracy     | 0.40   | Deviation from validator's own ground-truth calculation |
+| Compliance   | 0.25   | Adherence to GHG Protocol methodology                   |
+| Completeness | 0.20   | Coverage of all requested scopes and categories         |
+| Timeliness   | 0.15   | Response latency (faster is better)                     |
 
 4. **EMA scoring** — Miner scores are smoothed over time using an exponential moving average (α = 0.1) to reduce noise and reward consistent quality.
 5. **Weight setting** — Validators call `set_weights()` on the chain proportional to each miner's EMA score. Miners with zero scores receive weight 0 (effectively banned until quality improves).

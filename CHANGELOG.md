@@ -9,6 +9,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 ## [0.17.0] — 2026-03-13 — Phase 22: Completion & Polish
 
 ### Added — Frontend
+
 - Responsive card layout for `DataTable` on mobile (`<640px`) — stacked label/value pairs replacing table rows.
 - Copy-to-clipboard with "Copied!" toast feedback on webhook URLs in settings page.
 - URL query state sync on marketplace page (`?industry=&region=`) and scenarios page (`?status=`).
@@ -16,10 +17,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - `listScenarios` API client now supports `status` parameter.
 
 ### Added — Documentation
+
 - Bittensor economic model docs in README — TAO earning mechanics, 4-axis scoring table, reward optimization tips, validator economics.
 - Local Subtensor testnet deployment guide in README — step-by-step for offline development.
 
 ### Added — Testing & Infrastructure
+
 - E2E Playwright test scaffolding — `playwright.config.ts`, smoke tests (login, register, navigation), protected route redirect tests.
 - Bittensor subnet load/stress test script (`scripts/load_test_subnet.py`) — synapse + HTTP modes, latency percentiles, ramp-up support.
 

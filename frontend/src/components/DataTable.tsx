@@ -84,14 +84,19 @@ export function DataTable<T extends Record<string, unknown>>({
         {loading ? (
           <div className="space-y-3">
             {Array.from({ length: 3 }).map((_, i) => (
-              <div key={i} className="rounded-lg border border-[var(--card-border)] bg-[var(--card)] p-4 animate-pulse">
+              <div
+                key={i}
+                className="rounded-lg border border-[var(--card-border)] bg-[var(--card)] p-4 animate-pulse"
+              >
                 <div className="h-4 bg-[var(--muted)]/20 rounded w-3/4 mb-2" />
                 <div className="h-3 bg-[var(--muted)]/20 rounded w-1/2" />
               </div>
             ))}
           </div>
         ) : data.length === 0 ? (
-          <p className="px-4 py-8 text-center text-[var(--muted)]">{emptyMessage}</p>
+          <p className="px-4 py-8 text-center text-[var(--muted)]">
+            {emptyMessage}
+          </p>
         ) : (
           data.map((row, i) => (
             <div
@@ -99,8 +104,13 @@ export function DataTable<T extends Record<string, unknown>>({
               className="rounded-lg border border-[var(--card-border)] bg-[var(--card)] p-4 space-y-2"
             >
               {columns.map((col) => (
-                <div key={col.key} className="flex justify-between gap-2 text-sm">
-                  <span className="font-medium text-[var(--muted)] shrink-0">{col.header}</span>
+                <div
+                  key={col.key}
+                  className="flex justify-between gap-2 text-sm"
+                >
+                  <span className="font-medium text-[var(--muted)] shrink-0">
+                    {col.header}
+                  </span>
                   <span className="text-[var(--foreground)] text-right">
                     {col.render ? col.render(row) : String(row[col.key] ?? "")}
                   </span>
