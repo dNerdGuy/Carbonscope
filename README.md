@@ -302,6 +302,73 @@ WALLET_NAME=validator ./scripts/register.sh
 
 ---
 
+## Local Subtensor Testnet
+
+For fully offline/isolated development, you can run a local Subtensor node instead of connecting to the public testnet.
+
+### 1. Start Local Subtensor
+
+```bash
+# Clone and run the Subtensor node locally (requires Docker)
+git clone https://github.com/opentensor/subtensor.git
+cd subtensor
+docker compose up -d --build
+```
+
+The local chain runs at `ws://127.0.0.1:9946`.
+
+### 2. Create & Fund Wallets
+
+```bash
+btcli wallet create --wallet.name owner --wallet.hotkey default
+btcli wallet create --wallet.name miner --wallet.hotkey default
+btcli wallet create --wallet.name validator --wallet.hotkey default
+
+# Fund from the local faucet (fast, unlimited)
+btcli wallet faucet --wallet.name owner --subtensor.chain_endpoint ws://127.0.0.1:9946
+btcli wallet faucet --wallet.name miner --subtensor.chain_endpoint ws://127.0.0.1:9946
+btcli wallet faucet --wallet.name validator --subtensor.chain_endpoint ws://127.0.0.1:9946
+```
+
+### 3. Create a Local Subnet
+
+```bash
+btcli subnet create --wallet.name owner --subtensor.chain_endpoint ws://127.0.0.1:9946
+# Note the returned netuid (usually 1)
+```
+
+### 4. Register Miner & Validator
+
+```bash
+btcli subnet register --wallet.name miner --netuid 1 --subtensor.chain_endpoint ws://127.0.0.1:9946
+btcli subnet register --wallet.name validator --netuid 1 --subtensor.chain_endpoint ws://127.0.0.1:9946
+```
+
+### 5. Run CarbonScope on Local Chain
+
+```bash
+# Terminal 1 — Miner
+python3 neurons/miner.py \
+  --netuid 1 \
+  --wallet.name miner \
+  --subtensor.chain_endpoint ws://127.0.0.1:9946 \
+  --axon.port 8091
+
+# Terminal 2 — Validator
+python3 neurons/validator.py \
+  --netuid 1 \
+  --wallet.name validator \
+  --subtensor.chain_endpoint ws://127.0.0.1:9946
+```
+
+### 6. Tear Down
+
+```bash
+cd subtensor && docker compose down -v
+```
+
+---
+
 ## Running Tests
 
 ### Backend Tests (491+)
