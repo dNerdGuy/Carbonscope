@@ -16,7 +16,7 @@ from api.schemas import (
     DataPurchaseOut,
     PaginatedResponse,
 )
-from api.services.marketplace import browse_listings, create_listing, list_my_listings, purchase_listing, withdraw_listing, list_my_sales, get_seller_revenue
+from api.services.marketplace import browse_listings, create_listing, get_listing_by_id, list_my_listings, purchase_listing, withdraw_listing, list_my_sales, get_seller_revenue
 from api.services import audit
 from api.limiter import limiter
 from api.config import RATE_LIMIT_DEFAULT
@@ -80,16 +80,7 @@ async def get_listing(
     db: AsyncSession = Depends(get_db),
 ):
     """Get a specific marketplace listing."""
-    from sqlalchemy import select
-    from api.models import DataListing
-
-    result = await db.execute(
-        select(DataListing).where(
-            DataListing.id == listing_id,
-            DataListing.status == "active",
-        )
-    )
-    listing = result.scalar_one_or_none()
+    listing = await get_listing_by_id(db, listing_id)
     if not listing:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Listing not found")
     return listing

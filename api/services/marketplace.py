@@ -103,6 +103,17 @@ async def browse_listings(
     return result.scalars().all(), total
 
 
+async def get_listing_by_id(db: AsyncSession, listing_id: str) -> DataListing | None:
+    """Get a single active listing by ID."""
+    result = await db.execute(
+        select(DataListing).where(
+            DataListing.id == listing_id,
+            DataListing.status == "active",
+        )
+    )
+    return result.scalar_one_or_none()
+
+
 async def purchase_listing(
     db: AsyncSession,
     listing_id: str,

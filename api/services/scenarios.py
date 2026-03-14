@@ -8,10 +8,11 @@ from __future__ import annotations
 
 from typing import Any
 
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from api.models import Company, EmissionReport, Scenario
+from api.models import Company, EmissionReport, Scenario, _utcnow
+from api.services import ServiceError
 
 
 # Parameter adjustment handlers — each takes baseline emissions + params → adjusted
@@ -140,3 +141,100 @@ async def run_scenario(
     await db.commit()
     await db.refresh(scenario)
     return scenario
+
+
+class ScenarioError(ServiceError):
+    """Scenario service error."""
+
+
+async def create_scenario(
+    db: AsyncSession,
+    *,
+    company_id: str,
+    name: str,
+    description: str | None,
+    base_report_id: str,
+    parameters: dict[str, Any] | None,
+) -> Scenario:
+    """Create a what-if scenario linked to an emission report."""
+    result = await db.execute(
+        select(EmissionReport).where(
+            EmissionReport.id == base_report_id,
+            EmissionReport.company_id == company_id,
+            EmissionReport.deleted_at.is_(None),
+        )
+    )
+    if not result.scalar_one_or_none():
+        raise ScenarioError("Base emission report not found", status_code=404)
+
+    scenario = Scenario(
+        company_id=company_id,
+        name=name,
+        description=description,
+        base_report_id=base_report_id,
+        parameters=parameters,
+    )
+    db.add(scenario)
+    await db.commit()
+    await db.refresh(scenario)
+    return scenario
+
+
+async def list_scenarios(
+    db: AsyncSession,
+    *,
+    company_id: str,
+    status: str | None = None,
+    sort_by: str = "created_at",
+    order: str = "desc",
+    limit: int = 20,
+    offset: int = 0,
+) -> tuple[list[Scenario], int]:
+    """List scenarios for a company with pagination."""
+    base = select(Scenario).where(
+        Scenario.company_id == company_id,
+        Scenario.deleted_at.is_(None),
+    )
+    if status is not None:
+        base = base.where(Scenario.status == status)
+
+    total = (await db.execute(select(func.count()).select_from(base.subquery()))).scalar() or 0
+
+    sort_col = getattr(Scenario, sort_by)
+    sort_expr = sort_col.asc() if order == "asc" else sort_col.desc()
+    rows = (await db.execute(base.order_by(sort_expr).offset(offset).limit(limit))).scalars().all()
+    return rows, total
+
+
+async def get_scenario(db: AsyncSession, scenario_id: str, company_id: str) -> Scenario:
+    """Get a specific scenario or raise."""
+    result = await db.execute(
+        select(Scenario).where(
+            Scenario.id == scenario_id,
+            Scenario.company_id == company_id,
+            Scenario.deleted_at.is_(None),
+        )
+    )
+    scenario = result.scalar_one_or_none()
+    if not scenario:
+        raise ScenarioError("Scenario not found", status_code=404)
+    return scenario
+
+
+async def update_scenario(
+    db: AsyncSession, scenario_id: str, company_id: str, updates: dict[str, Any],
+) -> Scenario:
+    """Update a scenario's fields."""
+    scenario = await get_scenario(db, scenario_id, company_id)
+    for key, value in updates.items():
+        setattr(scenario, key, value)
+    await db.commit()
+    await db.refresh(scenario)
+    return scenario
+
+
+async def delete_scenario(db: AsyncSession, scenario_id: str, company_id: str) -> None:
+    """Soft-delete a scenario."""
+    scenario = await get_scenario(db, scenario_id, company_id)
+    scenario.deleted_at = _utcnow()
+    await db.commit()

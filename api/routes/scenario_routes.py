@@ -3,15 +3,22 @@
 from __future__ import annotations
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
-from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from api.database import get_db
 from api.deps import get_current_user, require_credits
-from api.models import EmissionReport, Scenario, User, _utcnow
+from api.models import User
 from api.schemas import PaginatedResponse, ScenarioCreate, ScenarioOut, ScenarioUpdate
 from api.services import audit
-from api.services.scenarios import run_scenario
+from api.services.scenarios import (
+    ScenarioError,
+    create_scenario as svc_create,
+    delete_scenario as svc_delete,
+    get_scenario as svc_get,
+    list_scenarios as svc_list,
+    run_scenario,
+    update_scenario as svc_update,
+)
 from api.limiter import limiter
 from api.config import RATE_LIMIT_DEFAULT
 
@@ -27,31 +34,17 @@ async def create_scenario(
     db: AsyncSession = Depends(get_db),
 ):
     """Create a what-if scenario linked to an emission report."""
-    # Verify the base report belongs to the user's company
-    result = await db.execute(
-        select(EmissionReport).where(
-            EmissionReport.id == body.base_report_id,
-            EmissionReport.company_id == user.company_id,
-            EmissionReport.deleted_at.is_(None),
+    try:
+        return await svc_create(
+            db,
+            company_id=user.company_id,
+            name=body.name,
+            description=body.description,
+            base_report_id=body.base_report_id,
+            parameters=body.parameters,
         )
-    )
-    if not result.scalar_one_or_none():
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Base emission report not found",
-        )
-
-    scenario = Scenario(
-        company_id=user.company_id,
-        name=body.name,
-        description=body.description,
-        base_report_id=body.base_report_id,
-        parameters=body.parameters,
-    )
-    db.add(scenario)
-    await db.commit()
-    await db.refresh(scenario)
-    return scenario
+    except ScenarioError as e:
+        raise HTTPException(status_code=e.status_code, detail=str(e))
 
 
 @router.get("/", response_model=PaginatedResponse[ScenarioOut])
@@ -67,21 +60,15 @@ async def list_scenarios(
     db: AsyncSession = Depends(get_db),
 ):
     """List scenarios for the current user's company."""
-    base = select(Scenario).where(
-        Scenario.company_id == user.company_id,
-        Scenario.deleted_at.is_(None),
+    rows, total = await svc_list(
+        db,
+        company_id=user.company_id,
+        status=status,
+        sort_by=sort_by,
+        order=order,
+        limit=limit,
+        offset=offset,
     )
-    if status is not None:
-        base = base.where(Scenario.status == status)
-
-    total = (await db.execute(select(func.count()).select_from(base.subquery()))).scalar() or 0
-
-    sort_col = getattr(Scenario, sort_by)
-    sort_expr = sort_col.asc() if order == "asc" else sort_col.desc()
-    rows = (
-        await db.execute(base.order_by(sort_expr).offset(offset).limit(limit))
-    ).scalars().all()
-
     return PaginatedResponse[ScenarioOut](
         items=[ScenarioOut.model_validate(r) for r in rows],
         total=total,
@@ -99,17 +86,10 @@ async def get_scenario(
     db: AsyncSession = Depends(get_db),
 ):
     """Get a specific scenario."""
-    result = await db.execute(
-        select(Scenario).where(
-            Scenario.id == scenario_id,
-            Scenario.company_id == user.company_id,
-            Scenario.deleted_at.is_(None),
-        )
-    )
-    scenario = result.scalar_one_or_none()
-    if not scenario:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Scenario not found")
-    return scenario
+    try:
+        return await svc_get(db, scenario_id, user.company_id)
+    except ScenarioError as e:
+        raise HTTPException(status_code=e.status_code, detail=str(e))
 
 
 @router.patch("/{scenario_id}", response_model=ScenarioOut)
@@ -122,27 +102,14 @@ async def update_scenario(
     db: AsyncSession = Depends(get_db),
 ):
     """Update a scenario's name or description."""
-    result = await db.execute(
-        select(Scenario).where(
-            Scenario.id == scenario_id,
-            Scenario.company_id == user.company_id,
-            Scenario.deleted_at.is_(None),
-        )
-    )
-    scenario = result.scalar_one_or_none()
-    if not scenario:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Scenario not found")
-
-    updates = body.model_dump(exclude_unset=True)
-    for key, value in updates.items():
-        setattr(scenario, key, value)
-
+    try:
+        scenario = await svc_update(db, scenario_id, user.company_id, body.model_dump(exclude_unset=True))
+    except ScenarioError as e:
+        raise HTTPException(status_code=e.status_code, detail=str(e))
     await audit.record(
         db, user_id=user.id, company_id=user.company_id,
         action="update", resource_type="scenario", resource_id=scenario_id,
     )
-    await db.commit()
-    await db.refresh(scenario)
     return scenario
 
 
@@ -176,19 +143,11 @@ async def delete_scenario(
     db: AsyncSession = Depends(get_db),
 ):
     """Delete a scenario."""
-    result = await db.execute(
-        select(Scenario).where(
-            Scenario.id == scenario_id,
-            Scenario.company_id == user.company_id,
-            Scenario.deleted_at.is_(None),
-        )
-    )
-    scenario = result.scalar_one_or_none()
-    if not scenario:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Scenario not found")
-    scenario.deleted_at = _utcnow()
+    try:
+        await svc_delete(db, scenario_id, user.company_id)
+    except ScenarioError as e:
+        raise HTTPException(status_code=e.status_code, detail=str(e))
     await audit.record(
         db, user_id=user.id, company_id=user.company_id,
         action="delete", resource_type="scenario", resource_id=scenario_id,
     )
-    await db.commit()
