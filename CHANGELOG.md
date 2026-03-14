@@ -6,6 +6,71 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ---
 
+## [0.23.0] — 2026-03-15 — Phases 50–59: Audit Hardening & Frontend Security
+
+### Fixed — Phase 50: Bittensor Critical Fixes
+
+- Atomic score persistence with file-rename in validator
+- Circuit breaker auto-reset after recovery window
+- EMA alpha validation (0 < α ≤ 1)
+- Hotkey deregistration detection in miner
+- Non-mutating Pydantic field validators in protocol
+- Request hash computation on CarbonEstimateRequest
+- Bounded rate limiter with TTL-based cleanup
+
+### Fixed — Phase 51: Auth Hardening
+
+- JWT issuer claim validation on decode
+- Audit log on profile update
+- Consolidated double-commit patterns in auth routes
+
+### Fixed — Phase 52: Model & Migration Hardening
+
+- `updated_at` added to 8 models (DataUpload, EmissionReport, etc.)
+- AuditLog.user_id CASCADE ondelete
+- Indexes on DataPurchase.created_at, Scenario.company_id, SupplyChainLink.status, DataListing.seller_company_id
+- Alembic migration k8l9m0n1o2p3
+
+### Changed — Phase 53: Service Extraction
+
+- Extracted audit `list_logs` and benchmark `list_benchmarks` to service layer
+- Fixed MFA double-commit patterns
+
+### Added — Phase 54: Rate Limiting & Validation
+
+- Rate limiter decorators on 7 carbon_routes endpoints
+- `PasswordChange.current_password` min_length validation
+
+### Fixed — Phase 55: Paginated Response Consistency
+
+- Supply chain `get_link` extracted to service layer
+- Consistent paginated shape for suppliers/buyers endpoints
+
+### Fixed — Phase 56: Frontend Security
+
+- Removed `unsafe-eval` from CSP in next.config.js and nginx.conf
+- Replaced `atob()` with `Buffer.from()` for cross-platform JWT decode
+- Added Next.js middleware for route guards
+
+### Changed — Phase 57: Schema & Validation Tightening
+
+- `UserRegister.company_name` strip validator rejects whitespace-only
+- `MFA_PENDING_TOKEN_EXPIRE_MINUTES` configurable via environment
+- `EMISSION_INCREASE_THRESHOLD` / `CONFIDENCE_DROP_THRESHOLD` configurable
+
+### Fixed — Phase 58: K8s & Nginx Hardening
+
+- TOTP_ENCRYPTION_KEY added to k8s/secrets.yaml template
+- Warning comments on placeholder secrets
+- IPv6 listen directives in nginx
+- Auth header redaction map in nginx logging
+
+### Changed — Phase 59: Version Bump
+
+- Version bumped to 0.23.0
+
+---
+
 ## [0.22.0] — 2026-03-15 — Phases 39–49: Code Quality, Security & Service Layer
 
 ### Fixed — Phase 39: Critical Backend Fixes
