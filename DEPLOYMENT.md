@@ -455,6 +455,8 @@ For static assets, deploy the Next.js standalone server behind a CDN (CloudFront
 
 ## Backup & Recovery
 
+Detailed operational procedure: see `BACKUP_RESTORE_RUNBOOK.md`.
+
 ### PostgreSQL Backups
 
 ```bash
