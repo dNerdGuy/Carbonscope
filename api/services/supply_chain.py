@@ -55,6 +55,22 @@ async def create_link(
     return link
 
 
+async def get_link(
+    db: AsyncSession,
+    link_id: str,
+    buyer_company_id: str,
+) -> SupplyChainLink | None:
+    """Fetch a single supply chain link owned by the buyer company."""
+    result = await db.execute(
+        select(SupplyChainLink).where(
+            SupplyChainLink.id == link_id,
+            SupplyChainLink.buyer_company_id == buyer_company_id,
+            SupplyChainLink.deleted_at.is_(None),
+        )
+    )
+    return result.scalar_one_or_none()
+
+
 async def list_suppliers(
     db: AsyncSession,
     buyer_company_id: str,

@@ -10,10 +10,11 @@ from api.database import get_db
 from api.deps import get_current_user, require_admin
 from api.limiter import limiter
 from api.models import User
-from api.schemas import SupplyChainLinkCreate, SupplyChainLinkOut, SupplyChainLinkUpdate
+from api.schemas import PaginatedResponse, SupplyChainLinkCreate, SupplyChainLinkOut, SupplyChainLinkUpdate
 from api.services.supply_chain import (
     calc_supplier_scope3,
     create_link,
+    get_link as svc_get_link,
     list_buyers,
     list_suppliers,
     remove_link,
@@ -102,17 +103,7 @@ async def get_link(
     db: AsyncSession = Depends(get_db),
 ):
     """Get a specific supply chain link."""
-    from sqlalchemy import select as sa_select
-    from api.models import SupplyChainLink
-
-    result = await db.execute(
-        sa_select(SupplyChainLink).where(
-            SupplyChainLink.id == link_id,
-            SupplyChainLink.buyer_company_id == user.company_id,
-            SupplyChainLink.deleted_at.is_(None),
-        )
-    )
-    link = result.scalar_one_or_none()
+    link = await svc_get_link(db, link_id, user.company_id)
     if not link:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Link not found")
     return link
