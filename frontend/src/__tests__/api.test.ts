@@ -61,4 +61,35 @@ describe("API Client request function", () => {
     // With auto-refresh: 401 triggers refresh attempt which also gets 401 → "Session expired"
     await expect(getProfile()).rejects.toThrow("Session expired");
   });
+
+  it("retries transient 503 and then succeeds", async () => {
+    const mockFetch = vi
+      .fn()
+      .mockResolvedValueOnce({
+        ok: false,
+        status: 503,
+        statusText: "Service Unavailable",
+        headers: new Headers(),
+        json: () => Promise.resolve({ detail: "temporarily unavailable" }),
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        headers: new Headers(),
+        json: () => Promise.resolve({ id: "1", email: "test@test.com" }),
+      });
+
+    vi.stubGlobal("fetch", mockFetch);
+    vi.stubGlobal("localStorage", {
+      getItem: vi.fn().mockReturnValue("my-token"),
+      setItem: vi.fn(),
+      removeItem: vi.fn(),
+    });
+
+    const { getProfile } = await import("@/lib/api");
+    const profile = await getProfile();
+
+    expect(profile.email).toBe("test@test.com");
+    expect(mockFetch).toHaveBeenCalledTimes(2);
+  });
 });

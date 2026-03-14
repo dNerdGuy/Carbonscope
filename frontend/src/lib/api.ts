@@ -1,6 +1,54 @@
 /** Typed API client for the CarbonScope backend. */
 
 const BASE = "/api/v1";
+const RETRY_MAX_ATTEMPTS = 3;
+const RETRY_BASE_DELAY_MS =
+  typeof process !== "undefined" && process.env.NODE_ENV === "test" ? 1 : 200;
+
+function sleep(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+function parseRetryAfterMs(value: string | null): number | null {
+  if (!value) return null;
+  const seconds = Number(value);
+  if (Number.isFinite(seconds) && seconds >= 0) return seconds * 1000;
+  const dateMs = Date.parse(value);
+  if (!Number.isNaN(dateMs)) {
+    const delta = dateMs - Date.now();
+    return delta > 0 ? delta : 0;
+  }
+  return null;
+}
+
+function isRetryableStatus(status: number): boolean {
+  return status === 429 || status === 502 || status === 503 || status === 504;
+}
+
+async function fetchWithRetry(input: string, init: RequestInit): Promise<Response> {
+  for (let attempt = 1; attempt <= RETRY_MAX_ATTEMPTS; attempt++) {
+    try {
+      const res = await fetch(input, init);
+      if (!isRetryableStatus(res.status) || attempt === RETRY_MAX_ATTEMPTS) {
+        return res;
+      }
+
+      const retryAfterMs = parseRetryAfterMs(res.headers.get("Retry-After"));
+      const backoff = RETRY_BASE_DELAY_MS * 2 ** (attempt - 1);
+      await sleep(retryAfterMs ?? backoff);
+      continue;
+    } catch (err) {
+      if (attempt === RETRY_MAX_ATTEMPTS) {
+        throw err;
+      }
+      const backoff = RETRY_BASE_DELAY_MS * 2 ** (attempt - 1);
+      await sleep(backoff);
+    }
+  }
+
+  // Unreachable, but keeps TS control flow explicit.
+  throw new Error("Request retry loop exhausted");
+}
 
 function getCsrfToken(): string | null {
   if (typeof document === "undefined") return null;
@@ -12,7 +60,7 @@ function getCsrfToken(): string | null {
 let refreshPromise: Promise<string> | null = null;
 
 async function doRefresh(): Promise<string> {
-  const res = await fetch(`${BASE}/auth/refresh`, {
+  const res = await fetchWithRetry(`${BASE}/auth/refresh`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     credentials: "include",
@@ -39,7 +87,7 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
     headers["X-CSRF-Token"] = csrf;
   }
 
-  const res = await fetch(`${BASE}${path}`, {
+  const res = await fetchWithRetry(`${BASE}${path}`, {
     ...init,
     headers,
     credentials: "include",
@@ -52,7 +100,7 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
       const newToken = await refreshPromise;
       refreshPromise = null;
       headers["Authorization"] = `Bearer ${newToken}`;
-      const retry = await fetch(`${BASE}${path}`, {
+      const retry = await fetchWithRetry(`${BASE}${path}`, {
         ...init,
         headers,
         credentials: "include",
