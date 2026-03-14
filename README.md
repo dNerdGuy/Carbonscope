@@ -21,11 +21,11 @@
 
 <p align="center">
   <a href="#quick-start">Quick Start</a> · 
-  <a href="API.md">API Reference</a> · 
-  <a href="ARCHITECTURE.md">Architecture</a> · 
-  <a href="DEPLOYMENT.md">Deploy</a> · 
-  <a href="CONTRIBUTING.md">Contribute</a> · 
-  <a href="CHANGELOG.md">Changelog</a>
+  <a href="docs/API.md">API Reference</a> · 
+  <a href="docs/ARCHITECTURE.md">Architecture</a> · 
+  <a href="docs/DEPLOYMENT.md">Deploy</a> · 
+  <a href="docs/CONTRIBUTING.md">Contribute</a> · 
+  <a href="docs/CHANGELOG.md">Changelog</a>
 </p>
 
 ---
@@ -108,7 +108,7 @@ The platform ships with a production-ready **FastAPI** backend (97+ endpoints), 
 | **Anti-Hallucination** |  15%   | Sanity checks for physically impossible values                    |
 | **Benchmark**          |   5%   | Scope-split alignment with industry norms                         |
 
-> **Deep Dive:** See [ARCHITECTURE.md](ARCHITECTURE.md) for detailed system design, data flow diagrams, database schema, and service architecture.
+> **Deep Dive:** See [ARCHITECTURE.md](docs/ARCHITECTURE.md) for detailed system design, data flow diagrams, database schema, and service architecture.
 
 ---
 
@@ -199,7 +199,7 @@ alembic downgrade -1                                # Rollback one revision
 alembic current                                     # Show current revision
 ```
 
-> **Production Deployment:** See [DEPLOYMENT.md](DEPLOYMENT.md) for Nginx, Docker, systemd, TLS, and scaling guides.
+> **Production Deployment:** See [DEPLOYMENT.md](docs/DEPLOYMENT.md) for Nginx, Docker, systemd, TLS, and scaling guides.
 
 ---
 
@@ -509,7 +509,7 @@ The platform exposes **97+ RESTful endpoints** across 18 route modules. All endp
 | **Stripe**            |     1     | Stripe webhook endpoint for subscription events                        |
 | **Audit & Health**    |     2     | Audit logs (admin), health check                                       |
 
-> **Full Reference:** See [API.md](API.md) for the complete endpoint reference with request/response examples.
+> **Full Reference:** See [API.md](docs/API.md) for the complete endpoint reference with request/response examples.
 
 ---
 
@@ -539,7 +539,7 @@ The platform uses **19 SQLAlchemy models** with full async support, soft deletes
 | **RevokedToken**          | Access token blacklist (JTI-based, for logout)                                    |
 | **PasswordResetToken**    | Short-lived password reset token (15-minute expiry)                               |
 
-> **Schema Details:** See [ARCHITECTURE.md](ARCHITECTURE.md) for database relationships, constraints, and ER diagrams.
+> **Schema Details:** See [ARCHITECTURE.md](docs/ARCHITECTURE.md) for database relationships, constraints, and ER diagrams.
 
 ---
 
@@ -666,7 +666,7 @@ docker compose -f docker-compose.prod.yml up --build -d
 
 The production stack includes PostgreSQL 16, resource limits, `no-new-privileges` security, and non-root container execution.
 
-> **Full Guide:** See [DEPLOYMENT.md](DEPLOYMENT.md) for Nginx reverse proxy, TLS certificates, systemd services, scaling strategies, and the pre-launch checklist.
+> **Full Guide:** See [DEPLOYMENT.md](docs/DEPLOYMENT.md) for Nginx reverse proxy, TLS certificates, systemd services, scaling strategies, and the pre-launch checklist.
 
 ---
 
@@ -807,21 +807,21 @@ Set `SENTRY_DSN` to enable error tracking and performance monitoring. Adjust `SE
 | Document                                 | Description                                                               |
 | :--------------------------------------- | :------------------------------------------------------------------------ |
 | [README.md](README.md)                   | Project overview, quick start, and feature summary (this file)            |
-| [API.md](API.md)                         | Complete API reference — all 95+ endpoints with request/response examples |
-| [ARCHITECTURE.md](ARCHITECTURE.md)       | System design, data flow, database schema, service architecture           |
-| [DEPLOYMENT.md](DEPLOYMENT.md)           | Production deployment guide (Nginx, Docker, systemd, TLS, scaling)        |
-| [CONTRIBUTING.md](CONTRIBUTING.md)       | Development workflow, code style, testing, and PR process                 |
-| [CHANGELOG.md](CHANGELOG.md)             | Version history and release notes                                         |
-| [SECURITY.md](SECURITY.md)               | Security policy, vulnerability reporting, and security architecture       |
+| [API.md](docs/API.md)                    | Complete API reference — all 95+ endpoints with request/response examples |
+| [ARCHITECTURE.md](docs/ARCHITECTURE.md)  | System design, data flow, database schema, service architecture           |
+| [DEPLOYMENT.md](docs/DEPLOYMENT.md)      | Production deployment guide (Nginx, Docker, systemd, TLS, scaling)        |
+| [CONTRIBUTING.md](docs/CONTRIBUTING.md)  | Development workflow, code style, testing, and PR process                 |
+| [CHANGELOG.md](docs/CHANGELOG.md)        | Version history and release notes                                         |
+| [SECURITY.md](docs/SECURITY.md)          | Security policy, vulnerability reporting, and security architecture       |
 | [frontend/README.md](frontend/README.md) | Frontend setup, components, testing, and development guide                |
 
 ---
 
 ## Changelog
 
-See [CHANGELOG.md](CHANGELOG.md) for the full version history.
+See [CHANGELOG.md](docs/CHANGELOG.md) for the full version history.
 
-**Latest — v0.22.0** (Phases 39–49: Code Quality, Security & Service Layer): Thread-safe metrics, service layer extraction (carbon, company, AI, scenarios), security headers, schema validation hardening, CI/CD improvements, GitHub templates. See [CHANGELOG.md](CHANGELOG.md) for the full history.
+**Latest — v0.22.0** (Phases 39–49: Code Quality, Security & Service Layer): Thread-safe metrics, service layer extraction (carbon, company, AI, scenarios), security headers, schema validation hardening, CI/CD improvements, GitHub templates. See [CHANGELOG.md](docs/CHANGELOG.md) for the full history.
 
 ---
 

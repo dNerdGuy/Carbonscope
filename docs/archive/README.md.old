@@ -64,7 +64,7 @@ Validator                          Miner
 | **Anti-Hallucination** | 15%    | Sanity checks for physically impossible values                  |
 | **Benchmark**          | 5%     | Scope-split alignment with industry norms                       |
 
-> For full system design details, see [ARCHITECTURE.md](ARCHITECTURE.md).
+> For full system design details, see [ARCHITECTURE.md](../ARCHITECTURE.md).
 
 ## Key Features
 
@@ -132,7 +132,7 @@ alembic downgrade -1                                # Rollback one revision
 alembic current                                     # Show current revision
 ```
 
-> For full production deployment instructions, see [DEPLOYMENT.md](DEPLOYMENT.md).
+> For full production deployment instructions, see [DEPLOYMENT.md](../DEPLOYMENT.md).
 
 ## Environment Variables
 
@@ -280,7 +280,7 @@ The platform exposes **75+ RESTful endpoints** across 13 route modules. All endp
 | **Webhooks**          | 5         | HMAC-signed webhooks, delivery logs                          |
 | **Audit & Health**    | 2         | Audit logs, health check                                     |
 
-> For the complete endpoint reference with request/response examples, see [API.md](API.md).
+> For the complete endpoint reference with request/response examples, see [API.md](../API.md).
 
 ## Data Models
 
@@ -305,7 +305,7 @@ The platform uses **16 SQLAlchemy models** with full async support, soft deletes
 | **DataListing**           | Marketplace listing (anonymized data, price in credits)               |
 | **DataPurchase**          | Marketplace purchase transaction record                               |
 
-> For database schema relationships and architecture details, see [ARCHITECTURE.md](ARCHITECTURE.md).
+> For database schema relationships and architecture details, see [ARCHITECTURE.md](../ARCHITECTURE.md).
 
 ## Subscription Plans
 
@@ -411,7 +411,7 @@ docker compose -f docker-compose.prod.yml up --build -d
 
 The production stack includes PostgreSQL 16, resource limits, and `no-new-privileges` security. The Dockerfile runs as a non-root `appuser`.
 
-> For full deployment instructions including Nginx, systemd, TLS, and scaling, see [DEPLOYMENT.md](DEPLOYMENT.md).
+> For full deployment instructions including Nginx, systemd, TLS, and scaling, see [DEPLOYMENT.md](../DEPLOYMENT.md).
 
 ## Troubleshooting
 
@@ -431,17 +431,17 @@ The production stack includes PostgreSQL 16, resource limits, and `no-new-privil
 | Document                                 | Description                                                     |
 | ---------------------------------------- | --------------------------------------------------------------- |
 | [README.md](README.md)                   | Project overview and quick start (this file)                    |
-| [API.md](API.md)                         | Complete API reference — all 75+ endpoints with examples        |
-| [ARCHITECTURE.md](ARCHITECTURE.md)       | System design, data flow, database schema, service architecture |
-| [DEPLOYMENT.md](DEPLOYMENT.md)           | Production deployment guide (Nginx, Docker, systemd, scaling)   |
-| [CONTRIBUTING.md](CONTRIBUTING.md)       | Development workflow, code style, PR process                    |
-| [CHANGELOG.md](CHANGELOG.md)             | Version history and release notes                               |
-| [SECURITY.md](SECURITY.md)               | Security policy, vulnerability reporting, architecture overview |
+| [API.md](../API.md)                         | Complete API reference — all 75+ endpoints with examples        |
+| [ARCHITECTURE.md](../ARCHITECTURE.md)       | System design, data flow, database schema, service architecture |
+| [DEPLOYMENT.md](../DEPLOYMENT.md)           | Production deployment guide (Nginx, Docker, systemd, scaling)   |
+| [CONTRIBUTING.md](../CONTRIBUTING.md)       | Development workflow, code style, PR process                    |
+| [CHANGELOG.md](../CHANGELOG.md)             | Version history and release notes                               |
+| [SECURITY.md](../SECURITY.md)               | Security policy, vulnerability reporting, architecture overview |
 | [frontend/README.md](frontend/README.md) | Frontend setup, components, and testing                         |
 
 ## Changelog
 
-See [CHANGELOG.md](CHANGELOG.md) for the full version history.
+See [CHANGELOG.md](../CHANGELOG.md) for the full version history.
 
 **Latest — v0.8.0** (Phase 7: Frontend Quality): ConfirmDialog wired into all delete actions, Breadcrumbs on detail pages, FormField component across auth pages, error boundaries for 5 routes, 7 new frontend tests.
 
