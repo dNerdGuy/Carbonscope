@@ -6,6 +6,71 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ---
 
+## [0.22.0] — 2026-03-15 — Phases 39–49: Code Quality, Security & Service Layer
+
+### Fixed — Phase 39: Critical Backend Fixes
+
+- **Thread-safe metrics**: `_request_count`/`_request_errors`/`_status_counts` protected by `threading.Lock`.
+- **APP_VERSION from source**: `api/__init__.__version__` replaces hardcoded string.
+- **Unauthenticated `/metrics`**: monitoring endpoint no longer requires JWT.
+- **EmissionReport FK SET NULL**: `data_upload_id` foreign key uses `ondelete="SET NULL"`.
+- **DRY password validator**: shared `_check_password_strength()` used by both registration schemas.
+- Alembic migration `i6j7k8l9m0n1`.
+
+### Changed — Phase 40: Service Layer Extraction
+
+- **`api/services/carbon.py`**: extracted 8 functions from carbon_routes.py.
+- **`api/services/company.py`**: extracted 7 functions from company_routes.py.
+- **`api/services/ai.py`**: extracted 4 functions from ai_routes.py.
+- **`ServiceError` base class** in `api/services/__init__.py` with `status_code`.
+- `ReviewError` now inherits from `ServiceError`.
+- All refactored routes use thin handler → `ServiceError` → `HTTPException` pattern.
+
+### Added — Phase 41: CI/CD Completeness
+
+- **`tsc --noEmit`** step in frontend CI job.
+- **Playwright E2E** CI job with artifact upload on failure.
+- **`.pre-commit-config.yaml`**: trailing-whitespace, ruff, frontend-lint, frontend-typecheck hooks.
+
+### Changed — Phase 42: Documentation Sync
+
+- SECURITY.md supported versions updated.
+- CONTRIBUTING.md test counts: 729 backend, 142 frontend.
+- API.md: Stripe Webhooks section added.
+- `.env.example`: `VALIDATOR_SCORES_PATH` added.
+
+### Added — Phase 43: Performance Indexes & Schema Hardening
+
+- Database indexes on `WebhookDelivery.status_code`, `PasswordResetToken.email`, `DataReview.status`.
+- JSON depth validator (`_check_json_depth`) on `DataUploadCreate.provided_data` and `ScenarioCreate.parameters`.
+- Alembic migration `j7k8l9m0n1o2`.
+
+### Added — Phase 44: GitHub Templates
+
+- `CODEOWNERS`, `PULL_REQUEST_TEMPLATE.md`, issue templates (`bug.yml`, `feature.yml`).
+
+### Changed — Phase 45: pyproject.toml Sync
+
+- Tightened all dependency minimum version bounds to match requirements.txt pinned versions.
+
+### Added — Phase 46: Security Headers
+
+- `Cross-Origin-Embedder-Policy: require-corp` header.
+- `Cross-Origin-Opener-Policy: same-origin` header.
+- `X-Permitted-Cross-Domain-Policies: none` header.
+
+### Changed — Phase 47: Service Extraction (Scenario & Marketplace)
+
+- Moved scenario CRUD (create/list/get/update/delete) to `api/services/scenarios.py`.
+- Added `ScenarioError(ServiceError)` for consistent error propagation.
+- Added `get_listing_by_id()` to marketplace service; removed inline query from route.
+
+### Changed — Phase 48: Schema Validation Hardening
+
+- `max_length=2000` on all free-text input fields: description (DataListingCreate, ScenarioCreate, ScenarioUpdate), notes (DataUploadCreate, DataUploadUpdate, ReportUpdate, SupplyChainLinkCreate, DataReviewAction, FinancedAssetCreate).
+
+---
+
 ## [0.21.0] — 2026-03-14 — Phases 27–32: Security, Services, Coverage & Infrastructure
 
 ### Added — Phase 27: Security Hardening & Data Integrity

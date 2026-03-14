@@ -13,7 +13,7 @@
   <a href="https://opensource.org/licenses/MIT"><img src="https://img.shields.io/badge/License-MIT-blue.svg?style=flat-square" alt="License: MIT"></a>
   <img src="https://img.shields.io/badge/python-3.10%2B-3776AB?style=flat-square&logo=python&logoColor=white" alt="Python 3.10+">
   <img src="https://img.shields.io/badge/node-18%2B-339933?style=flat-square&logo=node.js&logoColor=white" alt="Node 18+">
-  <img src="https://img.shields.io/badge/version-0.21.0-orange?style=flat-square" alt="Version 0.21.0">
+  <img src="https://img.shields.io/badge/version-0.22.0-orange?style=flat-square" alt="Version 0.22.0">
   <img src="https://img.shields.io/badge/tests-729%20backend%20%7C%20142%20frontend-brightgreen?style=flat-square" alt="Tests">
   <img src="https://img.shields.io/badge/endpoints-97%2B-7B61FF?style=flat-square" alt="97+ API Endpoints">
   <img src="https://img.shields.io/badge/Bittensor-Subnet-000000?style=flat-square" alt="Bittensor Subnet">
@@ -818,7 +818,7 @@ Set `SENTRY_DSN` to enable error tracking and performance monitoring. Adjust `SE
 
 See [CHANGELOG.md](CHANGELOG.md) for the full version history.
 
-**Latest — v0.21.0** (Phases 27–32: Security, Services, Coverage & Infrastructure): TOTP encryption at rest, CASCADE deletes, service layer extraction (reviews, benchmarks), 80+ new backend tests, 43+ new frontend tests, security headers, E2E expansion. See [CHANGELOG.md](CHANGELOG.md) for the full history.
+**Latest — v0.22.0** (Phases 39–49: Code Quality, Security & Service Layer): Thread-safe metrics, service layer extraction (carbon, company, AI, scenarios), security headers, schema validation hardening, CI/CD improvements, GitHub templates. See [CHANGELOG.md](CHANGELOG.md) for the full history.
 
 ---
 
