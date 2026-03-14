@@ -75,22 +75,25 @@ The platform ships with a production-ready **FastAPI** backend (97+ endpoints), 
 ## Architecture
 
 ```
-                    ┌─────────────────────────────────────────┐
-                    │           Bittensor Network              │
-                    │                                         │
-  ┌─────────────┐  │  ┌──────────────┐   ┌──────────────┐   │  ┌─────────────┐
-  │   Next.js   │  │  │  Validator    │   │    Miner     │   │  │  PostgreSQL  │
-  │  Dashboard  │──┼──│  (Dendrite)   │◄─►│   (Axon)     │   │  │  Database    │
-  │  React 19   │  │  │  Score &      │   │  Estimate    │   │  │             │
-  └──────┬──────┘  │  │  Set Weights  │   │  S1/S2/S3    │   │  └──────┬──────┘
-         │         │  └──────────────┘   └──────────────┘   │         │
-         │         └─────────────────────────────────────────┘         │
-         │                                                             │
-         │         ┌─────────────────────────────────────────┐         │
-         └────────►│          FastAPI Backend                 │◄────────┘
-                   │  18 Route Modules · 97+ Endpoints        │
-                   │  JWT Auth · Rate Limiting · Audit Logs   │
-                   └─────────────────────────────────────────┘
+  ┌──────────────────────┐
+  │   Next.js Dashboard  │
+  │      (React 19)      │
+  └──────────┬───────────┘
+             │ HTTPS / REST
+             v
+  ┌─────────────────────────────────────────┐
+  │            FastAPI Backend              │
+  │      18 Route Modules · 97+ Endpoints   │
+  │   JWT Auth · Rate Limiting · Audit Logs │
+  └──────────┬─────────────────────┬────────┘
+             │                     │
+             │ SQLAlchemy          │ Subnet Queries (optional)
+             v                     v
+  ┌──────────────────────┐   ┌─────────────────────────────────────────┐
+  │  PostgreSQL Database │   │          Bittensor Network             │
+  └──────────────────────┘   │  Validator (Dendrite) ◄──► Miner (Axon)│
+                             │       scoring/weights      S1/S2/S3     │
+                             └─────────────────────────────────────────┘
 ```
 
 **Validators** send `CarbonSynapse` queries containing company operational data. **Miners** respond with full emission estimates including Scope 1/2/3 breakdowns, confidence scores, data sources, and assumptions. Validators score responses across five axes and set on-chain weights accordingly.
