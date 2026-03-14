@@ -67,8 +67,24 @@ jobs:
           SECRET_KEY: ci-test-secret-key-12345
           DATABASE_URL: "sqlite+aiosqlite:///ci_migration_test.db"
 
+      - name: Rehearse Alembic rollback (SQLite)
+        run: |
+          alembic downgrade -1
+          alembic upgrade head
+        env:
+          SECRET_KEY: ci-test-secret-key-12345
+          DATABASE_URL: "sqlite+aiosqlite:///ci_migration_test.db"
+
       - name: Validate Alembic migrations (PostgreSQL)
         run: alembic upgrade head
+        env:
+          SECRET_KEY: ci-test-secret-key-12345
+          DATABASE_URL: "postgresql+asyncpg://carbonscope:ci_test_password@localhost:5432/carbonscope_test"
+
+      - name: Rehearse Alembic rollback (PostgreSQL)
+        run: |
+          alembic downgrade -1
+          alembic upgrade head
         env:
           SECRET_KEY: ci-test-secret-key-12345
           DATABASE_URL: "postgresql+asyncpg://carbonscope:ci_test_password@localhost:5432/carbonscope_test"
