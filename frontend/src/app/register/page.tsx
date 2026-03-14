@@ -4,6 +4,11 @@ import { useState } from "react";
 import Link from "next/link";
 import { useAuth } from "@/lib/auth-context";
 import { FormField } from "@/components/FormField";
+import {
+  validateRegisterField,
+  validateRegisterForm,
+  type RegisterFormValues,
+} from "@/lib/validation";
 
 const INDUSTRIES = [
   "Energy",
@@ -33,7 +38,7 @@ const REGIONS = [
 
 export default function RegisterPage() {
   const { register } = useAuth();
-  const [form, setForm] = useState({
+  const [form, setForm] = useState<RegisterFormValues>({
     email: "",
     password: "",
     confirmPassword: "",
@@ -46,7 +51,7 @@ export default function RegisterPage() {
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [submitting, setSubmitting] = useState(false);
 
-  function update(field: string, value: string) {
+  function update(field: keyof RegisterFormValues, value: string) {
     setForm((prev) => ({ ...prev, [field]: value }));
     // Clear field error on change
     setFieldErrors((prev) => {
@@ -57,23 +62,9 @@ export default function RegisterPage() {
     });
   }
 
-  function validateField(field: string, value: string) {
-    let err = "";
-    switch (field) {
-      case "email":
-        if (value && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value))
-          err = "Enter a valid email address";
-        break;
-      case "password":
-        if (value && value.length < 8)
-          err = "Password must be at least 8 characters";
-        else if (value && (!/[A-Z]/.test(value) || !/\d/.test(value)))
-          err = "Must include an uppercase letter and a digit";
-        break;
-      case "confirmPassword":
-        if (value && value !== form.password) err = "Passwords do not match";
-        break;
-    }
+  function validateField(field: keyof RegisterFormValues, value: string) {
+    const nextValues = { ...form, [field]: value };
+    const err = validateRegisterField(field, nextValues);
     setFieldErrors((prev) => {
       if (!err && !prev[field]) return prev;
       if (!err) {
@@ -88,18 +79,10 @@ export default function RegisterPage() {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError("");
-    if (form.password !== form.confirmPassword) {
-      setError("Passwords do not match");
-      return;
-    }
-    if (form.password.length < 8) {
-      setError("Password must be at least 8 characters");
-      return;
-    }
-    if (!/[A-Z]/.test(form.password) || !/\d/.test(form.password)) {
-      setError(
-        "Password must contain at least one uppercase letter and one digit",
-      );
+    const validationErrors = validateRegisterForm(form);
+    if (Object.keys(validationErrors).length > 0) {
+      setFieldErrors(validationErrors);
+      setError(Object.values(validationErrors)[0]);
       return;
     }
     setSubmitting(true);
