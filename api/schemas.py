@@ -10,6 +10,20 @@ from pydantic import BaseModel, EmailStr, Field, field_validator
 
 T = TypeVar("T")
 
+_MAX_JSON_DEPTH = 5
+
+
+def _check_json_depth(obj: Any, depth: int = 0) -> None:
+    """Reject deeply nested JSON to prevent resource exhaustion."""
+    if depth > _MAX_JSON_DEPTH:
+        raise ValueError(f"JSON nesting exceeds maximum depth of {_MAX_JSON_DEPTH}")
+    if isinstance(obj, dict):
+        for v in obj.values():
+            _check_json_depth(v, depth + 1)
+    elif isinstance(obj, list):
+        for v in obj:
+            _check_json_depth(v, depth + 1)
+
 
 def _check_password_strength(v: str) -> str:
     """Shared password strength validator."""
@@ -106,6 +120,12 @@ class DataUploadCreate(BaseModel):
     year: int = Field(ge=2000, le=2030)
     provided_data: dict[str, Any]
     notes: str | None = None
+
+    @field_validator("provided_data")
+    @classmethod
+    def validate_depth(cls, v: dict) -> dict:
+        _check_json_depth(v)
+        return v
 
 
 class DataUploadUpdate(BaseModel):
@@ -397,6 +417,12 @@ class ScenarioCreate(BaseModel):
     description: str | None = None
     base_report_id: str | None = None
     parameters: dict[str, Any]
+
+    @field_validator("parameters")
+    @classmethod
+    def validate_depth(cls, v: dict) -> dict:
+        _check_json_depth(v)
+        return v
 
 
 class ScenarioUpdate(BaseModel):

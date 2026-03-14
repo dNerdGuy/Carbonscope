@@ -293,6 +293,7 @@ class WebhookDelivery(Base):
         Index("ix_webhook_deliveries_created_at", "created_at"),
         Index("ix_webhook_deliveries_next_retry", "next_retry_at"),
         Index("ix_webhook_deliveries_company", "webhook_id"),
+        Index("ix_webhook_deliveries_status_code", "status_code"),
     )
 
     id: str = Column(String(32), primary_key=True, default=_new_id)
@@ -527,6 +528,9 @@ class RevokedToken(Base):
 class PasswordResetToken(Base):
     """Persistent password-reset token — replaces in-memory _reset_tokens dict."""
     __tablename__ = "password_reset_tokens"
+    __table_args__ = (
+        Index("ix_password_reset_tokens_email", "email"),
+    )
 
     id: str = Column(String(32), primary_key=True, default=_new_id)
     user_id: str = Column(String(32), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
@@ -594,6 +598,9 @@ class FinancedAsset(Base):
 class DataReview(Base):
     """Track review/approval status of emission reports."""
     __tablename__ = "data_reviews"
+    __table_args__ = (
+        Index("ix_data_reviews_status", "status"),
+    )
 
     id: str = Column(String(32), primary_key=True, default=_new_id)
     report_id: str = Column(String(32), ForeignKey("emission_reports.id"), nullable=False, index=True)
