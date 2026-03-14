@@ -1698,27 +1698,28 @@ Receives payment events from Stripe. No authentication token required — reques
 
 ### Supported Events
 
-| Event Type                        | Action                                              |
-| :-------------------------------- | :-------------------------------------------------- |
-| `customer.subscription.updated`   | Sync subscription status (active, past_due, cancelled) |
-| `customer.subscription.deleted`   | Mark subscription cancelled                         |
-| `invoice.payment_failed`          | Create payment failure alert, notify account owner  |
-| `checkout.session.completed`      | Link Stripe customer to company subscription        |
+| Event Type                      | Action                                                 |
+| :------------------------------ | :----------------------------------------------------- |
+| `customer.subscription.updated` | Sync subscription status (active, past_due, cancelled) |
+| `customer.subscription.deleted` | Mark subscription cancelled                            |
+| `invoice.payment_failed`        | Create payment failure alert, notify account owner     |
+| `checkout.session.completed`    | Link Stripe customer to company subscription           |
 
 ### Signature Verification
 
 Stripe signs each webhook with HMAC-SHA256 over `{timestamp}.{payload}`. The endpoint rejects:
+
 - Requests without a valid `Stripe-Signature` header
 - Timestamps older than 5 minutes (replay protection)
 - Invalid HMAC signatures
 
 ### Response Codes
 
-| Code | Meaning                                      |
-| :--- | :------------------------------------------- |
-| 200  | Event processed successfully                 |
-| 400  | Signature verification failed                |
-| 503  | `STRIPE_WEBHOOK_SECRET` not configured       |
+| Code | Meaning                                |
+| :--- | :------------------------------------- |
+| 200  | Event processed successfully           |
+| 400  | Signature verification failed          |
+| 503  | `STRIPE_WEBHOOK_SECRET` not configured |
 
 ---
 

@@ -1,21 +1,26 @@
 # Default owners for the entire repo
-* @Soul-Research-Labs/core
+
+- @Soul-Research-Labs/core
 
 # Backend
+
 /api/ @Soul-Research-Labs/backend
 /tests/ @Soul-Research-Labs/backend
 /alembic/ @Soul-Research-Labs/backend
 
 # Frontend
+
 /frontend/ @Soul-Research-Labs/frontend
 
 # Bittensor subnet
+
 /neurons/ @Soul-Research-Labs/subnet
 /carbonscope/ @Soul-Research-Labs/subnet
 
 # Infrastructure
+
 /k8s/ @Soul-Research-Labs/infra
 /nginx/ @Soul-Research-Labs/infra
 /.github/ @Soul-Research-Labs/infra
-/docker-compose*.yml @Soul-Research-Labs/infra
+/docker-compose\*.yml @Soul-Research-Labs/infra
 /Dockerfile @Soul-Research-Labs/infra
