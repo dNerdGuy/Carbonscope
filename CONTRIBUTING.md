@@ -175,7 +175,7 @@ git rebase upstream/main
 ### Backend Tests (pytest)
 
 ```bash
-# Run full suite (647 tests)
+# Run full suite (729 tests)
 pytest tests/ -v
 
 # Specific file
@@ -203,7 +203,7 @@ pytest tests/ -n auto
 ```bash
 cd frontend
 
-# Run full suite (83 tests)
+# Run full suite (142 tests)
 npm test
 
 # Watch mode

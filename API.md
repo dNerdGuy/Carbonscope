@@ -27,6 +27,7 @@
 - [Alerts](#alerts)
 - [Data Marketplace](#data-marketplace)
 - [Webhooks](#webhooks)
+- [Stripe Webhooks](#stripe-webhooks)
 - [Audit Logs](#audit-logs)
 - [Health & Metrics](#health--metrics)
 - [Common Patterns](#common-patterns)
@@ -1686,6 +1687,38 @@ Authorization: Bearer <token>
   ]
 }
 ```
+
+---
+
+## Stripe Webhooks
+
+Endpoint: `POST /api/v1/stripe/webhooks`
+
+Receives payment events from Stripe. No authentication token required — requests are verified using the `Stripe-Signature` header and the `STRIPE_WEBHOOK_SECRET` environment variable.
+
+### Supported Events
+
+| Event Type                        | Action                                              |
+| :-------------------------------- | :-------------------------------------------------- |
+| `customer.subscription.updated`   | Sync subscription status (active, past_due, cancelled) |
+| `customer.subscription.deleted`   | Mark subscription cancelled                         |
+| `invoice.payment_failed`          | Create payment failure alert, notify account owner  |
+| `checkout.session.completed`      | Link Stripe customer to company subscription        |
+
+### Signature Verification
+
+Stripe signs each webhook with HMAC-SHA256 over `{timestamp}.{payload}`. The endpoint rejects:
+- Requests without a valid `Stripe-Signature` header
+- Timestamps older than 5 minutes (replay protection)
+- Invalid HMAC signatures
+
+### Response Codes
+
+| Code | Meaning                                      |
+| :--- | :------------------------------------------- |
+| 200  | Event processed successfully                 |
+| 400  | Signature verification failed                |
+| 503  | `STRIPE_WEBHOOK_SECRET` not configured       |
 
 ---
 
