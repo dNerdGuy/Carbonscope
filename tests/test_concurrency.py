@@ -7,6 +7,9 @@ import asyncio
 import pytest
 from httpx import AsyncClient
 
+from api.services.subscriptions import deduct_credits, get_credit_balance
+from tests.conftest import TestSessionLocal
+
 
 async def _create_report(auth_client: AsyncClient, year: int = 2024) -> str:
     upload = await auth_client.post("/api/v1/data", json={
@@ -75,3 +78,29 @@ class TestConcurrency:
         # Read again — original should still be there
         resp3 = await auth_client.get(f"/api/v1/reports/{report_id}")
         assert resp3.status_code == 200
+
+    async def test_parallel_estimates_do_not_overdraw_credits(self, auth_client: AsyncClient):
+        """Concurrent deductions should cap at available balance without underflow."""
+        # Ensure subscription is initialized with free-plan credits.
+        await auth_client.get("/api/v1/billing/subscription")
+        me = await auth_client.get("/api/v1/auth/me")
+        company_id = me.json()["company_id"]
+
+        async def deduct_once() -> str:
+            async with TestSessionLocal() as db:
+                try:
+                    await deduct_credits(db, company_id, 10, "concurrency_test")
+                    await db.commit()
+                    return "ok"
+                except ValueError:
+                    await db.rollback()
+                    return "insufficient"
+
+        results = await asyncio.gather(*[deduct_once() for _ in range(12)])
+        success_count = results.count("ok")
+        insufficient_count = results.count("insufficient")
+        assert success_count + insufficient_count == 12
+
+        async with TestSessionLocal() as db:
+            balance = await get_credit_balance(db, company_id)
+        assert balance >= 0

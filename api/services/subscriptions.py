@@ -160,8 +160,23 @@ async def _get_balance_for_update(db: AsyncSession, company_id: str) -> int:
     return entry.balance_after if entry is not None else 0
 
 
+async def _lock_subscription_for_credits(db: AsyncSession, company_id: str) -> None:
+    """Lock the company subscription row to serialize credit mutations.
+
+    Locking the subscription row avoids the empty-ledger race where two
+    concurrent deductions could both observe the same latest balance.
+    """
+    await db.execute(
+        select(Subscription.id)
+        .where(Subscription.company_id == company_id)
+        .limit(1)
+        .with_for_update()
+    )
+
+
 async def grant_credits(db: AsyncSession, company_id: str, amount: int, reason: str) -> CreditLedger:
     """Add credits to a company's balance."""
+    await _lock_subscription_for_credits(db, company_id)
     current = await _get_balance_for_update(db, company_id)
     entry = CreditLedger(
         company_id=company_id,
@@ -176,6 +191,7 @@ async def grant_credits(db: AsyncSession, company_id: str, amount: int, reason: 
 
 async def deduct_credits(db: AsyncSession, company_id: str, amount: int, reason: str) -> CreditLedger:
     """Deduct credits from a company's balance. Raises ValueError if insufficient."""
+    await _lock_subscription_for_credits(db, company_id)
     current = await _get_balance_for_update(db, company_id)
     if current < amount:
         raise ValueError(f"Insufficient credits: have {current}, need {amount}")
