@@ -99,13 +99,11 @@ async def setup_mfa(
             is_enabled=False,
         ))
 
-    await db.commit()
-
     await audit.record(
         db, user_id=user.id, company_id=user.company_id,
         action="mfa_setup", resource_type="mfa", resource_id=str(user.id),
     )
-    await db.flush()
+    await db.commit()
 
     return {
         "secret": secret,

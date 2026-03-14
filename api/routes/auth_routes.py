@@ -318,6 +318,14 @@ async def refresh_token(request: Request, body: RefreshRequest, db: AsyncSession
     access = create_access_token(data["user_id"], data["company_id"])
     refresh = await create_refresh_token(db, data["user_id"], data["company_id"])
     csrf = secrets.token_hex(32)
+    await audit.record(
+        db,
+        user_id=data["user_id"],
+        company_id=data["company_id"],
+        action="token_refresh",
+        resource_type="auth",
+        resource_id=data["user_id"],
+    )
     await db.commit()
 
     response = Response(

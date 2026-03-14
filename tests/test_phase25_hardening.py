@@ -143,6 +143,39 @@ class TestAuditLogging:
         ]
         assert len(compliance_entries) >= 1
 
+    async def test_mfa_setup_creates_audit_entry(self, auth_client: AsyncClient):
+        await auth_client.post("/api/v1/auth/mfa/setup")
+        resp = await auth_client.get("/api/v1/audit-logs/", params={"resource_type": "mfa"})
+        data = resp.json()
+        actions = [item["action"] for item in data["items"]]
+        assert "mfa_setup" in actions
+
+    async def test_refresh_creates_audit_entry(self, client: AsyncClient):
+        await client.post("/api/v1/auth/register", json={
+            "email": "refreshaudit@example.com",
+            "password": "Securepass123!",
+            "full_name": "Refresh Audit",
+            "company_name": "RefreshCorp",
+            "industry": "technology",
+            "region": "US",
+        })
+        login = await client.post("/api/v1/auth/login", json={
+            "email": "refreshaudit@example.com",
+            "password": "Securepass123!",
+        })
+        refresh = login.json()["refresh_token"]
+        token = login.json()["access_token"]
+
+        refreshed = await client.post("/api/v1/auth/refresh", json={
+            "refresh_token": refresh,
+        })
+        assert refreshed.status_code == 200
+
+        client.headers["Authorization"] = f"Bearer {token}"
+        logs = await client.get("/api/v1/audit-logs/", params={"resource_type": "auth"})
+        actions = [item["action"] for item in logs.json()["items"]]
+        assert "token_refresh" in actions
+
 
 # ── Session invalidation ────────────────────────────────────────────
 
