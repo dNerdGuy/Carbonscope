@@ -1,5 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen } from "@testing-library/react";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import type { ReactElement } from "react";
 
 const mockPush = vi.fn();
 const mockReplace = vi.fn();
@@ -28,6 +30,20 @@ vi.mock("@/components/ScopeChart", () => ({
 
 import DashboardPage from "@/app/dashboard/page";
 
+function renderWithQueryClient(ui: ReactElement) {
+  const queryClient = new QueryClient({
+    defaultOptions: {
+      queries: {
+        retry: false,
+      },
+    },
+  });
+
+  return render(
+    <QueryClientProvider client={queryClient}>{ui}</QueryClientProvider>,
+  );
+}
+
 const MOCK_DATA = {
   company: { name: "Acme Corp", industry: "Technology" },
   latest_report: {
@@ -49,13 +65,13 @@ describe("DashboardPage", () => {
 
   it("renders loading state initially", () => {
     mockGetDashboard.mockReturnValue(new Promise(() => {})); // never resolves
-    render(<DashboardPage />);
+    renderWithQueryClient(<DashboardPage />);
     expect(screen.getAllByRole("status").length).toBeGreaterThan(0);
   });
 
   it("renders dashboard data", async () => {
     mockGetDashboard.mockResolvedValue(MOCK_DATA);
-    render(<DashboardPage />);
+    renderWithQueryClient(<DashboardPage />);
 
     expect(await screen.findByText("Dashboard")).toBeInTheDocument();
     expect(screen.getByText(/Acme Corp/)).toBeInTheDocument();
@@ -67,14 +83,14 @@ describe("DashboardPage", () => {
 
   it("renders scope chart when report exists", async () => {
     mockGetDashboard.mockResolvedValue(MOCK_DATA);
-    render(<DashboardPage />);
+    renderWithQueryClient(<DashboardPage />);
 
     expect(await screen.findByTestId("scope-chart")).toBeInTheDocument();
   });
 
   it("renders error state", async () => {
     mockGetDashboard.mockRejectedValue(new Error("Network failed"));
-    render(<DashboardPage />);
+    renderWithQueryClient(<DashboardPage />);
 
     expect(await screen.findByText(/Network failed/)).toBeInTheDocument();
   });

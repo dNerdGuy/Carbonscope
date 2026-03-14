@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
 import { useQuery } from "@tanstack/react-query";
@@ -16,7 +16,6 @@ const ScopeChart = dynamic(() => import("@/components/ScopeChart"), {
 export default function DashboardPage() {
   const { user, loading } = useAuth();
   const router = useRouter();
-  const [error, setError] = useState("");
 
   const dashboardQuery = useQuery<DashboardSummary>({
     queryKey: ["dashboard", user?.company_id],
@@ -30,13 +29,14 @@ export default function DashboardPage() {
     }
   }, [user, loading, router]);
 
-  useEffect(() => {
-    if (dashboardQuery.error instanceof Error) {
-      setError(dashboardQuery.error.message);
-    }
-  }, [dashboardQuery.error]);
+  const error =
+    dashboardQuery.error instanceof Error ? dashboardQuery.error.message : "";
 
   const data = dashboardQuery.data ?? null;
+
+  if (!loading && !user) {
+    return null;
+  }
 
   if (loading || (dashboardQuery.isLoading && !data && !error)) {
     return <PageSkeleton />;

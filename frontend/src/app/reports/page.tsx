@@ -72,10 +72,13 @@ export default function ReportsPage() {
 
   const reports: EmissionReport[] = reportsQuery.data?.items ?? [];
   const total = reportsQuery.data?.total ?? 0;
-  const error = reportsQuery.error instanceof Error
-    ? reportsQuery.error.message
-    : "";
+  const error =
+    reportsQuery.error instanceof Error ? reportsQuery.error.message : "";
   const fetching = reportsQuery.isLoading || reportsQuery.isFetching;
+
+  if (!loading && !user) {
+    return null;
+  }
 
   const totalPages = Math.ceil(total / PAGE_SIZE);
   const currentPage = Math.floor(offset / PAGE_SIZE) + 1;
