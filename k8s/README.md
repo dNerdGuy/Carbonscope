@@ -92,6 +92,27 @@ kubectl -n carbonscope logs deploy/frontend -f
 kubectl -n carbonscope top pods
 ```
 
+### Prometheus (optional)
+
+If the [Prometheus Operator](https://prometheus-operator.dev/) is installed in your cluster:
+
+```bash
+kubectl apply -f k8s/monitoring.yaml
+```
+
+This creates a **ServiceMonitor** (scrapes `/metrics` every 30 s) and **PrometheusRule** alerts for high error rate, high latency, pod crash loops, and backup failures.
+
+## Automated Backups
+
+A CronJob runs `pg_dump` at 02:00 UTC daily and stores compressed backups in a 20 Gi PVC. Backups older than 30 days are pruned automatically.
+
+```bash
+kubectl apply -f k8s/cronjob-backup.yaml
+
+# Check backup history
+kubectl -n carbonscope get jobs -l component=backup
+```
+
 ## Customization
 
 - **Domain**: Edit `host` in [ingress.yaml](ingress.yaml)
