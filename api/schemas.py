@@ -119,7 +119,7 @@ class CompanyUpdate(BaseModel):
 class DataUploadCreate(BaseModel):
     year: int = Field(ge=2000, le=2030)
     provided_data: dict[str, Any]
-    notes: str | None = None
+    notes: str | None = Field(default=None, max_length=2000)
 
     @field_validator("provided_data")
     @classmethod
@@ -131,7 +131,7 @@ class DataUploadCreate(BaseModel):
 class DataUploadUpdate(BaseModel):
     year: int | None = Field(default=None, ge=2000, le=2030)
     provided_data: dict[str, Any] | None = None
-    notes: str | None = None
+    notes: str | None = Field(default=None, max_length=2000)
 
 
 class DataUploadOut(BaseModel):
@@ -169,7 +169,7 @@ class EmissionReportOut(BaseModel):
 
 class ReportUpdate(BaseModel):
     year: int | None = Field(default=None, ge=2000, le=2030)
-    notes: str | None = None
+    notes: str | None = Field(default=None, max_length=2000)
 
 
 class EstimateRequest(BaseModel):
@@ -261,7 +261,7 @@ class SupplyChainLinkCreate(BaseModel):
     supplier_company_id: str
     spend_usd: float | None = Field(default=None, ge=0)
     category: str = "purchased_goods"
-    notes: str | None = None
+    notes: str | None = Field(default=None, max_length=2000)
 
 
 class SupplyChainLinkOut(BaseModel):
@@ -414,7 +414,7 @@ class QuestionnaireDetail(BaseModel):
 
 class ScenarioCreate(BaseModel):
     name: str = Field(min_length=1, max_length=255)
-    description: str | None = None
+    description: str | None = Field(default=None, max_length=2000)
     base_report_id: str | None = None
     parameters: dict[str, Any]
 
@@ -427,7 +427,7 @@ class ScenarioCreate(BaseModel):
 
 class ScenarioUpdate(BaseModel):
     name: str | None = Field(default=None, min_length=1, max_length=255)
-    description: str | None = None
+    description: str | None = Field(default=None, max_length=2000)
 
 
 class ScenarioOut(BaseModel):
@@ -503,7 +503,7 @@ class AlertOut(BaseModel):
 
 class DataListingCreate(BaseModel):
     title: str = Field(min_length=1, max_length=500)
-    description: str | None = None
+    description: str | None = Field(default=None, max_length=2000)
     data_type: str = Field(pattern="^(emission_report|benchmark|supply_chain)$")
     report_id: str  # source report to anonymize
     price_credits: int = Field(ge=0, default=0)
@@ -549,7 +549,7 @@ class FinancedAssetCreate(BaseModel):
     data_quality_score: int = Field(ge=1, le=5, default=3)
     industry: str | None = None
     region: str | None = None
-    notes: str | None = None
+    notes: str | None = Field(default=None, max_length=2000)
 
 
 class FinancedAssetOut(BaseModel):
@@ -605,7 +605,7 @@ class DataReviewCreate(BaseModel):
 
 class DataReviewAction(BaseModel):
     action: str = Field(pattern="^(submit|approve|reject)$")
-    notes: str | None = None
+    notes: str | None = Field(default=None, max_length=2000)
 
 
 class DataReviewOut(BaseModel):
