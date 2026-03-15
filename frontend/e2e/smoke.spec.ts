@@ -3,7 +3,8 @@ import { test, expect } from "@playwright/test";
 test.describe("Authentication flow", () => {
   test("login page loads and renders form", async ({ page }) => {
     await page.goto("/login");
-    await expect(page.locator("h1")).toContainText("Sign In");
+    await expect(page.locator("h1")).toContainText("CarbonScope");
+    await expect(page.getByText("Sign in to your account")).toBeVisible();
     await expect(page.locator('input[type="email"]')).toBeVisible();
     await expect(page.locator('input[type="password"]')).toBeVisible();
     await expect(page.locator('button[type="submit"]')).toBeVisible();
@@ -17,7 +18,8 @@ test.describe("Authentication flow", () => {
 
   test("register page loads and renders form", async ({ page }) => {
     await page.goto("/register");
-    await expect(page.locator("h1")).toContainText("Create Account");
+    await expect(page.locator("h1")).toContainText("CarbonScope");
+    await expect(page.getByText("Create your account")).toBeVisible();
   });
 
   test("login with invalid credentials shows error", async ({ page }) => {
@@ -37,10 +39,10 @@ test.describe("Navigation", () => {
     await expect(page).toHaveURL(/login/, { timeout: 5000 });
   });
 
-  test("navbar renders on login page", async ({ page }) => {
+  test("login page renders auth actions", async ({ page }) => {
     await page.goto("/login");
-    const nav = page.locator("nav");
-    await expect(nav).toBeVisible();
+    await expect(page.getByRole("button", { name: "Sign In" })).toBeVisible();
+    await expect(page.getByRole("link", { name: "Register" })).toBeVisible();
   });
 });
 

@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
+import type { InputHTMLAttributes, ReactNode } from "react";
 
 const mockReplace = vi.fn();
 vi.mock("next/navigation", () => ({
@@ -34,8 +35,19 @@ vi.mock("@/lib/auth-context", () => ({
   useAuth: () => ({ user: { email: "u@test.com" }, loading: false }),
 }));
 
+type FormFieldMockProps = InputHTMLAttributes<HTMLInputElement> & {
+  label: string;
+  children?: ReactNode;
+};
+
+type ConfirmDialogProps = {
+  open: boolean;
+  onConfirm: () => void;
+  title: string;
+};
+
 vi.mock("@/components/FormField", () => ({
-  FormField: ({ label, value, onChange, type, children, ...rest }: any) => (
+  FormField: ({ label, value, onChange, type, children, ...rest }: FormFieldMockProps) => (
     <label>
       {label}
       {children || (
@@ -55,7 +67,7 @@ vi.mock("@/components/Skeleton", () => ({
 }));
 
 vi.mock("@/components/ConfirmDialog", () => ({
-  default: ({ open, onConfirm, title }: any) =>
+  default: ({ open, onConfirm, title }: ConfirmDialogProps) =>
     open ? (
       <div data-testid="confirm-dialog">
         <span>{title}</span>

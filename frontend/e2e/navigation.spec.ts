@@ -2,11 +2,25 @@ import { test, expect, Page } from "@playwright/test";
 
 /** Seed localStorage with a fake authenticated session. */
 async function seedAuth(page: Page) {
-  const header = btoa(JSON.stringify({ alg: "HS256", typ: "JWT" }));
-  const payload = btoa(
+  const header = Buffer.from(JSON.stringify({ alg: "HS256", typ: "JWT" })).toString("base64url");
+  const payload = Buffer.from(
     JSON.stringify({ sub: 1, email: "alice@example.com", company_id: 1 }),
-  );
+  ).toString("base64url");
   const fakeToken = `${header}.${payload}.fakesig`;
+
+  // Middleware runs before client code, so we need a request cookie too.
+  await page.context().addCookies([
+    {
+      name: "cs_access_token",
+      value: fakeToken,
+      url: "http://localhost:3000",
+    },
+    {
+      name: "access_token",
+      value: fakeToken,
+      url: "http://localhost:3000",
+    },
+  ]);
 
   await page.addInitScript((token: string) => {
     localStorage.setItem("token", token);
@@ -25,13 +39,24 @@ async function seedAuth(page: Page) {
 
 /** Intercept all /api/v1 calls with empty success responses. */
 async function mockAllApis(page: Page) {
-  await page.route("**/api/v1/**", (route) =>
-    route.fulfill({
+  await page.route("**/api/v1/**", (route) => {
+    const url = route.request().url();
+    const body =
+      url.includes("/auth/me")
+        ? {
+            id: 1,
+            email: "alice@example.com",
+            full_name: "Alice",
+            company_id: 1,
+            role: "admin",
+          }
+        : {};
+    return route.fulfill({
       status: 200,
       contentType: "application/json",
-      body: JSON.stringify([]),
-    }),
-  );
+      body: JSON.stringify(body),
+    });
+  });
 }
 
 const SIDEBAR_SECTIONS = [

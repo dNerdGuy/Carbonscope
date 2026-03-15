@@ -33,8 +33,14 @@ vi.mock("@/components/Skeleton", () => ({
   PageSkeleton: () => <div>Loading...</div>,
 }));
 
+type ConfirmDialogProps = {
+  open: boolean;
+  onConfirm: () => void;
+  title: string;
+};
+
 vi.mock("@/components/ConfirmDialog", () => ({
-  default: ({ open, onConfirm, title }: any) =>
+  default: ({ open, onConfirm, title }: ConfirmDialogProps) =>
     open ? (
       <div data-testid="confirm-dialog">
         <span>{title}</span>
