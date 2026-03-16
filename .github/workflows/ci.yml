@@ -182,6 +182,13 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Run Semgrep SAST
+        uses: semgrep/semgrep-action@v1
+        with:
+          config: >-
+            p/python
+            p/owasp-top-ten
+
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
