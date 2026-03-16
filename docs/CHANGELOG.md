@@ -6,6 +6,19 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ---
 
+## [0.23.2] — 2026-03-16 — Patch: Release Metadata Version Synchronization
+
+### Fixed
+
+- Synchronized backend/runtime version identifiers to `0.23.2` across:
+  - `pyproject.toml` project version
+  - `setup.py` package version
+  - `api/__init__.py` runtime `__version__`
+
+### Notes
+
+- This patch ensures tagged release metadata and runtime-reported version remain consistent.
+
 ## [0.23.1] — 2026-03-16 — Maintenance: Frontend Test Formatting, Docs & Git Hygiene
 
 ### Changed

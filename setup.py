@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="carbonscope",
-    version="0.21.0",
+    version="0.23.2",
     description="Bittensor subnet for decentralized corporate carbon emission estimation",
     packages=find_packages(),
     python_requires=">=3.10",
