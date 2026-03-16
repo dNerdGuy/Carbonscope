@@ -48,6 +48,23 @@ _request_errors: int = 0
 _status_counts: dict[int, int] = {}
 
 
+def _validate_production_smtp() -> None:
+    """Validate SMTP policy at startup for production mode."""
+    if ENV != "production":
+        return
+
+    smtp_configured = bool(
+        os.getenv("SMTP_HOST") and os.getenv("SMTP_USER") and os.getenv("SMTP_PASSWORD")
+    )
+    if smtp_configured:
+        return
+
+    msg = "SMTP not configured in production"
+    if REQUIRE_SMTP_IN_PRODUCTION:
+        raise RuntimeError(f"{msg}; set SMTP_HOST/SMTP_USER/SMTP_PASSWORD")
+    logger.warning("%s — email notifications will be disabled", msg)
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Startup: create DB tables (dev only), start scheduler. Shutdown: stop scheduler."""
@@ -58,17 +75,7 @@ async def lifespan(app: FastAPI):
     _start_time = time.monotonic()
     logger.info("CarbonScope API %s started (env=%s)", APP_VERSION, ENV)
 
-    # Warn if SMTP is not configured in production
-    if ENV == "production":
-        import os as _os
-        smtp_configured = bool(
-            _os.getenv("SMTP_HOST") and _os.getenv("SMTP_USER") and _os.getenv("SMTP_PASSWORD")
-        )
-        if not smtp_configured:
-            msg = "SMTP not configured in production"
-            if REQUIRE_SMTP_IN_PRODUCTION:
-                raise RuntimeError(f"{msg}; set SMTP_HOST/SMTP_USER/SMTP_PASSWORD")
-            logger.warning("%s — email notifications will be disabled", msg)
+    _validate_production_smtp()
 
     from api.services.scheduler import start_scheduler, stop_scheduler
 
