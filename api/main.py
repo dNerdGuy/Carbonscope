@@ -15,7 +15,7 @@ from slowapi import _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 
 from api.config import ALLOWED_ORIGINS, ENV, REQUIRE_SMTP_IN_PRODUCTION
-from api.database import get_db, init_db
+from api.database import get_db, get_db_pool_status, init_db
 from api.limiter import limiter
 from api.middleware import register_middleware
 from api.routes.auth_routes import router as auth_router
@@ -167,6 +167,7 @@ async def health():
     # Bittensor (config present, not a live check)
     from api.config import ESTIMATION_MODE, BT_NETWORK
     checks["bittensor"] = f"{ESTIMATION_MODE}/{BT_NETWORK}"
+    checks["db_pool"] = get_db_pool_status()
 
     all_ok = checks["database"] == "connected"
     return {

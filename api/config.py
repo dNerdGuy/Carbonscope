@@ -26,6 +26,7 @@ DATABASE_URL: str = os.getenv(
     "DATABASE_URL",
     f"sqlite+aiosqlite:///{BASE_DIR / 'carbonscope.db'}",
 )
+DB_SLOW_QUERY_MS: int = int(os.getenv("DB_SLOW_QUERY_MS", "500"))
 
 if ENV == "production" and "sqlite" in DATABASE_URL:
     raise RuntimeError(

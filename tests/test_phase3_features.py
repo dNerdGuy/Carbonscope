@@ -134,6 +134,12 @@ class TestHealthCheck:
         data = resp.json()
         assert data["version"] == APP_VERSION
 
+    async def test_health_has_db_pool_field(self, client: AsyncClient):
+        resp = await client.get("/health")
+        data = resp.json()
+        assert "db_pool" in data
+        assert isinstance(data["db_pool"], str)
+
 
 # ── Metrics endpoint ───────────────────────────────────────────────
 
