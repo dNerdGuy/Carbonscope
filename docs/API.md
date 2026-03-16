@@ -1466,7 +1466,7 @@ POST /alerts/check
 Authorization: Bearer <token>
 ```
 
-Manually triggers alert evaluation for the current company.
+Manually triggers alert evaluation for the current company. Admin role required.
 
 **Response** `200` (list of newly created alerts)
 

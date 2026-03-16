@@ -7,7 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from api.config import RATE_LIMIT_DEFAULT
 from api.database import get_db
-from api.deps import get_current_user
+from api.deps import get_current_user, require_admin
 from api.limiter import limiter
 from api.models import User
 from api.schemas import AlertOut, PaginatedResponse
@@ -53,7 +53,7 @@ async def ack_alert(
 @limiter.limit(RATE_LIMIT_DEFAULT)
 async def trigger_alert_check(
     request: Request,
-    user: User = Depends(get_current_user),
+    user: User = Depends(require_admin),
     db: AsyncSession = Depends(get_db),
 ):
     """Manually trigger alert checks for the current company."""

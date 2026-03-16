@@ -202,6 +202,30 @@ class TestAdminOnlyRoutes:
         )
         assert resp.status_code == 403
 
+    async def test_alert_check_requires_admin(self, client: AsyncClient):
+        token = await _register_and_login(client)
+        await _make_member(REGISTER_PAYLOAD["email"])
+        resp = await client.post(
+            "/api/v1/alerts/check",
+            headers={"Authorization": f"Bearer {token}"},
+        )
+        assert resp.status_code == 403
+
+    async def test_admin_can_trigger_alert_check(self, client: AsyncClient):
+        token = await _register_and_login(client, payload={
+            "email": "admin-alerts@example.com",
+            "password": "Securepass123!",
+            "full_name": "Admin Alerts",
+            "company_name": "AdminAlertCorp",
+            "industry": "technology",
+            "region": "US",
+        })
+        resp = await client.post(
+            "/api/v1/alerts/check",
+            headers={"Authorization": f"Bearer {token}"},
+        )
+        assert resp.status_code == 200
+
     async def test_admin_can_update_company(self, client: AsyncClient):
         """Admin users should be able to update company — positive test."""
         token = await _register_and_login(client)  # admin by default
