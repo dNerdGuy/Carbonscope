@@ -227,6 +227,7 @@ alembic current                                     # Show current revision
 | `SMTP_PORT`                   | `587`                                | SMTP port                                                 |
 | `SMTP_USER` / `SMTP_PASSWORD` | —                                    | SMTP credentials                                          |
 | `EMAIL_FROM`                  | `noreply@carbonscope.io`             | Sender email address                                      |
+| `REQUIRE_SMTP_IN_PRODUCTION`  | `false`                              | Fail startup in production when SMTP credentials are missing |
 | `OPENAI_API_KEY`              | —                                    | OpenAI API key (optional — enables LLM text parsing)      |
 | `ANTHROPIC_API_KEY`           | —                                    | Anthropic API key (optional — enables LLM text parsing)   |
 | `COOKIE_DOMAIN`               | —                                    | Cookie domain for cross-subdomain auth                    |
@@ -828,9 +829,3 @@ See [CHANGELOG.md](docs/CHANGELOG.md) for the full version history.
 ## License
 
 This project is licensed under the [MIT License](LICENSE).
-
----
-
-<p align="center">
-  Built with ❤️ for a sustainable future · Powered by <a href="https://bittensor.com">Bittensor</a>
-</p>

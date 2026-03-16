@@ -81,6 +81,7 @@ SMTP_PORT=587
 SMTP_USER=noreply@example.com
 SMTP_PASSWORD=<smtp-password>
 EMAIL_FROM=noreply@example.com
+REQUIRE_SMTP_IN_PRODUCTION=false   # true = fail fast if SMTP vars are missing
 
 # ── LLM (optional AI features) ─────────────────────────
 OPENAI_API_KEY=sk-...
@@ -96,6 +97,7 @@ The application **refuses to start** in production if:
 - `SECRET_KEY` is the default value or shorter than 32 characters
 - `SECRET_KEY` has fewer than 10 unique characters
 - `DATABASE_URL` contains `sqlite` (PostgreSQL required in production)
+- `REQUIRE_SMTP_IN_PRODUCTION=true` and SMTP credentials are incomplete
 
 ---
 
