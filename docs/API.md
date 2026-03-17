@@ -1762,14 +1762,30 @@ Filterable by action, resource type, and user ID.
 GET /health
 ```
 
-No authentication required.
+No authentication required. Returns minimal status.
 
 **Response** `200`:
 
 ```json
 {
-  "status": "ok",
-  "version": "0.23.0",
+  "status": "healthy"
+}
+```
+
+### Health Detail (Admin)
+
+```
+GET /health/detail
+```
+
+Requires admin authentication.
+
+**Response** `200`:
+
+```json
+{
+  "status": "healthy",
+  "version": "0.24.1",
   "database": "connected",
   "email": "configured",
   "bittensor": "local/test",
@@ -1785,7 +1801,7 @@ No authentication required.
 GET /metrics
 ```
 
-No authentication required.
+Requires admin authentication.
 
 **Response** `200`:
 
@@ -1799,9 +1815,35 @@ No authentication required.
     "401": 28,
     "500": 3
   },
-  "version": "0.23.0"
+  "version": "0.24.1"
 }
 ```
+
+---
+
+### Server-Sent Events (SSE)
+
+```
+GET /api/v1/events/subscribe
+```
+
+Requires authentication (Bearer token or cookie). Opens an SSE stream for real-time push events scoped to the authenticated user's company.
+
+**Event types:**
+
+| Event               | Data                                              |
+| :------------------- | :------------------------------------------------ |
+| `alert.created`      | `{"alert_id": "...", "metric": "...", ...}`       |
+| `alert.acknowledged` | `{"alert_id": "...", "acknowledged_by": "..."}`   |
+
+**Example:**
+
+```
+event: alert.created
+data: {"alert_id": "abc123", "metric": "scope_1", "value": 120.5}
+```
+
+Connection auto-closes after server-defined timeout. Client should reconnect on close.
 
 ---
 
