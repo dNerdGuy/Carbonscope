@@ -14,6 +14,18 @@ export default function ResetPasswordPage() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
+  const missingToken = !token;
+
+  function validatePassword(pw: string): string | null {
+    if (pw.length < 8) return "Password must be at least 8 characters";
+    if (!/[A-Z]/.test(pw)) return "Must contain an uppercase letter";
+    if (!/[a-z]/.test(pw)) return "Must contain a lowercase letter";
+    if (!/\d/.test(pw)) return "Must contain a digit";
+    if (!/[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]/.test(pw))
+      return "Must contain a special character";
+    return null;
+  }
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError("");
@@ -21,8 +33,9 @@ export default function ResetPasswordPage() {
       setError("Passwords do not match");
       return;
     }
-    if (password.length < 8) {
-      setError("Password must be at least 8 characters");
+    const pwError = validatePassword(password);
+    if (pwError) {
+      setError(pwError);
       return;
     }
     if (!token) {
@@ -57,6 +70,12 @@ export default function ResetPasswordPage() {
         ) : (
           <>
             <p className="text-[var(--muted)] mb-6">Enter your new password.</p>
+            {missingToken && (
+              <div className="bg-yellow-500/10 border border-yellow-500 text-yellow-400 px-4 py-2 rounded-lg mb-4 text-sm">
+                No reset token found. Please use the link from your password
+                reset email.
+              </div>
+            )}
             {error && (
               <div className="bg-[var(--danger)]/10 border border-[var(--danger)] text-[var(--danger)] px-4 py-2 rounded-lg mb-4 text-sm">
                 {error}
