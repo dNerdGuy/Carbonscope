@@ -125,11 +125,14 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
       return retry.json();
     } catch (err) {
       refreshPromise = null;
-      // If refresh also failed, clear auth state
+      // If refresh also failed, clear auth state and notify React
       if (err instanceof ApiError && err.status === 401) {
         localStorage.removeItem("token");
         localStorage.removeItem("refresh_token");
         localStorage.removeItem("user");
+        if (typeof window !== "undefined") {
+          window.dispatchEvent(new Event("auth:session-expired"));
+        }
       }
       throw err;
     }
@@ -167,6 +170,38 @@ async function rawRequest(path: string, init?: RequestInit): Promise<Response> {
     headers,
     credentials: "include",
   });
+
+  // Auto-refresh: on 401, try refreshing the token once and retry
+  if (res.status === 401 && token && path !== "/auth/refresh") {
+    try {
+      if (!refreshPromise) refreshPromise = doRefresh();
+      const newToken = await refreshPromise;
+      refreshPromise = null;
+      headers["Authorization"] = `Bearer ${newToken}`;
+      const retry = await fetchWithRetry(`${BASE}${path}`, {
+        ...init,
+        headers,
+        credentials: "include",
+      });
+      if (!retry.ok) {
+        const body = await retry.json().catch(() => ({}));
+        throw new ApiError(retry.status, body.detail ?? retry.statusText);
+      }
+      return retry;
+    } catch (err) {
+      refreshPromise = null;
+      if (err instanceof ApiError && err.status === 401) {
+        localStorage.removeItem("token");
+        localStorage.removeItem("refresh_token");
+        localStorage.removeItem("user");
+        if (typeof window !== "undefined") {
+          window.dispatchEvent(new Event("auth:session-expired"));
+        }
+      }
+      throw err;
+    }
+  }
+
   if (!res.ok) {
     const body = await res.json().catch(() => ({}));
     throw new ApiError(res.status, body.detail ?? res.statusText);

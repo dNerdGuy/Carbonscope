@@ -15,6 +15,7 @@ import {
   register as apiRegister,
   type User,
 } from "@/lib/api";
+import { getQueryClient } from "@/lib/query-client";
 
 interface AuthState {
   user: User | null;
@@ -137,9 +138,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     localStorage.removeItem("refresh_token");
     localStorage.removeItem("user");
     syncClientAuthCookie(null);
+    getQueryClient().clear();
     setToken(null);
     setUser(null);
     router.push("/login");
+  }, [router]);
+
+  // Listen for session-expired events dispatched by the API client
+  useEffect(() => {
+    const onSessionExpired = () => {
+      syncClientAuthCookie(null);
+      getQueryClient().clear();
+      setToken(null);
+      setUser(null);
+      router.push("/login");
+    };
+    window.addEventListener("auth:session-expired", onSessionExpired);
+    return () =>
+      window.removeEventListener("auth:session-expired", onSessionExpired);
   }, [router]);
 
   return (
