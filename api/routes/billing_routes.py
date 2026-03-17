@@ -106,8 +106,11 @@ async def admin_grant_credits(
     db: AsyncSession = Depends(get_db),
 ):
     """Grant credits manually (admin only)."""
+    MAX_GRANT = 1_000_000
     if amount <= 0:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Amount must be positive")
+    if amount > MAX_GRANT:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"Amount must not exceed {MAX_GRANT:,}")
 
     await grant_credits(db, user.company_id, amount, "manual_grant")
     await audit.record(

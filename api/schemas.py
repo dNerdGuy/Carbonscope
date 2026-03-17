@@ -113,11 +113,11 @@ class CompanyOut(BaseModel):
 
 
 class CompanyUpdate(BaseModel):
-    name: str | None = None
-    industry: str | None = None
-    region: str | None = None
-    employee_count: int | None = Field(default=None, ge=0)
-    revenue_usd: float | None = Field(default=None, ge=0)
+    name: str | None = Field(default=None, max_length=255)
+    industry: str | None = Field(default=None, max_length=255)
+    region: str | None = Field(default=None, max_length=255)
+    employee_count: int | None = Field(default=None, ge=0, le=10_000_000)
+    revenue_usd: float | None = Field(default=None, ge=0, le=1e15)
 
 
 # ── Data upload ─────────────────────────────────────────────────────
@@ -139,6 +139,13 @@ class DataUploadUpdate(BaseModel):
     year: int | None = Field(default=None, ge=2000, le=2030)
     provided_data: dict[str, Any] | None = None
     notes: str | None = Field(default=None, max_length=2000)
+
+    @field_validator("provided_data")
+    @classmethod
+    def validate_depth(cls, v: dict | None) -> dict | None:
+        if v is not None:
+            _check_json_depth(v)
+        return v
 
 
 class DataUploadOut(BaseModel):
@@ -402,7 +409,7 @@ class QuestionOut(BaseModel):
 
 
 class QuestionUpdate(BaseModel):
-    human_answer: str | None = None
+    human_answer: str | None = Field(default=None, max_length=10_000)
     status: str | None = Field(default=None, pattern="^(draft|reviewed|approved)$")
 
 
@@ -513,7 +520,7 @@ class DataListingCreate(BaseModel):
     description: str | None = Field(default=None, max_length=2000)
     data_type: str = Field(pattern="^(emission_report|benchmark|supply_chain)$")
     report_id: str  # source report to anonymize
-    price_credits: int = Field(ge=0, default=0)
+    price_credits: int = Field(ge=0, le=1_000_000, default=0)
 
 
 class DataListingOut(BaseModel):
