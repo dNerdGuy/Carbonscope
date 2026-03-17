@@ -37,6 +37,7 @@ export default function ReportsPage() {
     () => searchParams.get("year") ?? "",
   );
   const [actionError, setActionError] = useState("");
+  const [exporting, setExporting] = useState(false);
 
   // Sync state changes back to URL
   useEffect(() => {
@@ -85,6 +86,7 @@ export default function ReportsPage() {
 
   const handleExport = async (format: "csv" | "json") => {
     setActionError("");
+    setExporting(true);
     try {
       const blob = await exportReports(
         format,
@@ -98,6 +100,8 @@ export default function ReportsPage() {
       URL.revokeObjectURL(url);
     } catch (e: unknown) {
       setActionError(e instanceof Error ? e.message : "Export failed");
+    } finally {
+      setExporting(false);
     }
   };
 
@@ -170,14 +174,16 @@ export default function ReportsPage() {
           <button
             onClick={() => handleExport("csv")}
             className="btn-secondary text-sm"
+            disabled={exporting}
           >
-            Export CSV
+            {exporting ? "Exporting..." : "Export CSV"}
           </button>
           <button
             onClick={() => handleExport("json")}
             className="btn-secondary text-sm"
+            disabled={exporting}
           >
-            Export JSON
+            {exporting ? "Exporting..." : "Export JSON"}
           </button>
         </div>
       </div>

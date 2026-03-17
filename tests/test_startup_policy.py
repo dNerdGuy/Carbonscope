@@ -32,7 +32,7 @@ def test_validate_production_smtp_warns_when_not_required(
     monkeypatch.setattr(main, "REQUIRE_SMTP_IN_PRODUCTION", False)
     _clear_smtp_env(monkeypatch)
 
-    with caplog.at_level(logging.WARNING):
+    with caplog.at_level(logging.WARNING, logger="api.main"):
         main._validate_production_smtp()
 
     assert "SMTP not configured in production" in caplog.text

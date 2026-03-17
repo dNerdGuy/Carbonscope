@@ -116,7 +116,7 @@ async def purchase_data(
 
         # Send email notifications (best-effort, don't fail the purchase)
         try:
-            from api.services.email_async import (
+            from api.services.email import (
                 send_marketplace_purchase_email,
                 send_marketplace_sale_email,
             )

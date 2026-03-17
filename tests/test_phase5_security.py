@@ -93,7 +93,7 @@ class TestAuthenticateUserSecurity:
 
 @pytest.mark.asyncio
 class TestPasswordResetTokenDB:
-    @patch("api.services.email_async.send_password_reset_email", new_callable=AsyncMock)
+    @patch("api.services.email.send_password_reset_email", new_callable=AsyncMock)
     async def test_db_backed_reset_flow(self, mock_email, client: AsyncClient):
         await client.post("/api/v1/auth/register", json=REGISTER_PAYLOAD)
 

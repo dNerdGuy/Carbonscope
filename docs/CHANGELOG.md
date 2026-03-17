@@ -355,7 +355,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 - Added `request: Request` parameter to all rate-limited endpoints (scenario compute, marketplace purchase, questionnaire upload/extract) — required by slowapi.
 - Added rate limit decorators on compute-heavy endpoints: scenario compute (5/min), marketplace purchase (10/min), questionnaire upload (5/min), questionnaire extract (5/min).
-- Deprecated unused synchronous `email.py` service module (replaced by `email_async.py` in production routes).
+- Consolidated email service: synchronous `email.py` replaced with async `aiosmtplib`-based implementation.
 
 ### Fixed — Frontend
 
@@ -459,7 +459,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - **Credit deduction timing**: Moved deduction to post-success (was pre-execution). All 6 credit-gated routes updated.
 - **Webhook pagination**: Pushed LIMIT/OFFSET into SQL query; `list_webhooks` now returns `tuple[list, int]`.
 - **Thread-safe lazy init**: Added `threading.Lock` + double-checked locking in `llm_parser.py` and `subnet_bridge.py`.
-- **Bare except blocks**: Narrowed to specific exceptions in `webhooks.py`, `email_async.py`, `marketplace_routes.py`.
+- **Bare except blocks**: Narrowed to specific exceptions in `webhooks.py`, `email.py`, `marketplace_routes.py`.
 - **Import order**: Fixed `from __future__` import position in `scope1.py`.
 
 ### Added

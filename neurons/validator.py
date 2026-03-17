@@ -224,16 +224,82 @@ class CarbonValidator:
 
     # ── Main loop ───────────────────────────────────────────────────
 
+    def _query_miners(self, miner_axons: list, synapse: CarbonSynapse) -> list | None:
+        """Query all miners with retry and circuit breaker logic. Returns responses or None."""
+        query_retry_delays = [0.5, 1.0, 2.0]
+        for q_attempt in range(len(query_retry_delays) + 1):
+            try:
+                responses = self.dendrite.query(
+                    axons=miner_axons,
+                    synapse=synapse,
+                    timeout=self.config.query_timeout,
+                )
+                self._consecutive_failures = 0
+                self._backoff_seconds = getattr(
+                    self.config, "circuit_breaker_base_backoff", 2.0
+                )
+                return responses
+            except Exception:
+                if q_attempt < len(query_retry_delays):
+                    delay = query_retry_delays[q_attempt]
+                    bt.logging.warning(
+                        f"Query attempt {q_attempt + 1} failed, retrying in {delay}s:\n"
+                        f"{traceback.format_exc()}"
+                    )
+                    time.sleep(delay)
+                else:
+                    self._consecutive_failures += 1
+                    bt.logging.error(
+                        f"Query failed after {q_attempt + 1} attempts "
+                        f"({self._consecutive_failures}/{self._max_failures}):\n"
+                        f"{traceback.format_exc()}"
+                    )
+                    if self._consecutive_failures >= self._max_failures:
+                        backoff = min(self._backoff_seconds, self._max_backoff)
+                        bt.logging.warning(
+                            f"Circuit breaker: {self._consecutive_failures} consecutive failures. "
+                            f"Backing off {backoff:.0f}s..."
+                        )
+                        time.sleep(backoff)
+                        self._backoff_seconds = min(self._backoff_seconds * 2, self._max_backoff)
+                    else:
+                        time.sleep(self.config.query_interval)
+        return None
+
+    def _score_and_update(
+        self,
+        miner_uids: list[int],
+        responses: list,
+        synapse: CarbonSynapse,
+        ground_truth: dict | None,
+    ) -> None:
+        """Score each miner response and update EMA scores."""
+        for uid, response in zip(miner_uids, responses):
+            try:
+                if response.confidence is not None and response.confidence < 0:
+                    bt.logging.info(f"  UID {uid}: error response (confidence={response.confidence}), score=0")
+                    self.update_scores(uid, 0.0)
+                    continue
+                sc = self.score_miner_response(synapse, response, ground_truth)
+            except (ValueError, TypeError, KeyError):
+                bt.logging.error(f"Scoring failed for UID {uid}:\n{traceback.format_exc()}")
+                sc = 0.0
+
+            self.update_scores(uid, sc)
+
+            status = "OK" if response.is_success else (
+                "TIMEOUT" if response.is_timeout else "FAIL"
+            )
+            bt.logging.info(f"  UID {uid}: score={sc:.3f} [{status}]")
+
     def run(self) -> None:
         """Run the validator query-score-weight loop."""
         bt.logging.info("Validator started. Beginning query loop...")
 
         try:
             while True:
-                # 1. Sync metagraph
                 self.metagraph.sync(subtensor=self.subtensor)
 
-                # 2. Find active miners (not validators)
                 miner_uids = [
                     uid for uid in range(self.metagraph.n)
                     if not self.metagraph.validator_permit[uid]
@@ -247,84 +313,21 @@ class CarbonValidator:
 
                 miner_axons = [self.metagraph.axons[uid] for uid in miner_uids]
 
-                # 3. Generate query
                 synapse, ground_truth = self.next_query()
                 bt.logging.info(
                     f"Querying {len(miner_uids)} miners. "
                     f"Industry: {synapse.questionnaire.get('industry', '?')}"
                 )
 
-                # 4. Query all miners (with circuit breaker + retry)
-                responses = None
-                query_retry_delays = [0.5, 1.0, 2.0]
-                for q_attempt in range(len(query_retry_delays) + 1):
-                    try:
-                        responses = self.dendrite.query(
-                            axons=miner_axons,
-                            synapse=synapse,
-                            timeout=self.config.query_timeout,
-                        )
-                        # Reset circuit breaker on success
-                        self._consecutive_failures = 0
-                        self._backoff_seconds = getattr(
-                            self.config, "circuit_breaker_base_backoff", 2.0
-                        )
-                        break
-                    except Exception:
-                        if q_attempt < len(query_retry_delays):
-                            delay = query_retry_delays[q_attempt]
-                            bt.logging.warning(
-                                f"Query attempt {q_attempt + 1} failed, retrying in {delay}s:\n"
-                                f"{traceback.format_exc()}"
-                            )
-                            time.sleep(delay)
-                        else:
-                            self._consecutive_failures += 1
-                            bt.logging.error(
-                                f"Query failed after {q_attempt + 1} attempts "
-                                f"({self._consecutive_failures}/{self._max_failures}):\n"
-                                f"{traceback.format_exc()}"
-                            )
-                            if self._consecutive_failures >= self._max_failures:
-                                backoff = min(self._backoff_seconds, self._max_backoff)
-                                bt.logging.warning(
-                                    f"Circuit breaker: {self._consecutive_failures} consecutive failures. "
-                                    f"Backing off {backoff:.0f}s..."
-                                )
-                                time.sleep(backoff)
-                                self._backoff_seconds = min(self._backoff_seconds * 2, self._max_backoff)
-                            else:
-                                time.sleep(self.config.query_interval)
-
+                responses = self._query_miners(miner_axons, synapse)
                 if responses is None:
                     continue
 
-                # 5. Score each response
-                for uid, response in zip(miner_uids, responses):
-                    try:
-                        # Skip error responses (miner signaled failure via confidence < 0)
-                        if response.confidence is not None and response.confidence < 0:
-                            bt.logging.info(f"  UID {uid}: error response (confidence={response.confidence}), score=0")
-                            self.update_scores(uid, 0.0)
-                            continue
+                self._score_and_update(miner_uids, responses, synapse, ground_truth)
 
-                        sc = self.score_miner_response(synapse, response, ground_truth)
-                    except Exception:
-                        bt.logging.error(f"Scoring failed for UID {uid}:\n{traceback.format_exc()}")
-                        sc = 0.0
-
-                    self.update_scores(uid, sc)
-
-                    status = "OK" if response.is_success else (
-                        "TIMEOUT" if response.is_timeout else "FAIL"
-                    )
-                    bt.logging.info(f"  UID {uid}: score={sc:.3f} [{status}]")
-
-                # 6. Set weights if tempo allows
                 if self.should_set_weights():
                     self.set_weights()
 
-                # 7. Wait
                 time.sleep(self.config.query_interval)
 
         except KeyboardInterrupt:

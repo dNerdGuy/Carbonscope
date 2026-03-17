@@ -24,6 +24,16 @@ TestSessionLocal = async_sessionmaker(test_engine, class_=AsyncSession, expire_o
 def _reset_limiter_state() -> None:
     """Reset SlowAPI in-memory counters to avoid cross-test contamination."""
     storage = getattr(limiter, "_storage", None)
+    if storage is None:
+        return
+    # limits >= 3 uses 'storage', 'expirations', 'events' in MemoryStorage
+    if hasattr(storage, "storage"):
+        storage.storage.clear()
+    if hasattr(storage, "expirations"):
+        storage.expirations.clear()
+    if hasattr(storage, "events"):
+        storage.events.clear()
+    # Fallback for old limits versions
     cache = getattr(storage, "_cache", None)
     if isinstance(cache, dict):
         cache.clear()

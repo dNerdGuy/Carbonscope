@@ -256,29 +256,29 @@ Request ──► RequestIDMiddleware ──► RequestLoggingMiddleware ──�
 
 ### Service Layer (21 modules)
 
-| Service                       | Responsibility                                                          |
-| :---------------------------- | :---------------------------------------------------------------------- |
-| `subnet_bridge.py`            | Bridges FastAPI to Bittensor network; local estimation fallback         |
-| `llm_parser.py`               | LLM-powered text extraction (OpenAI/Anthropic with rule-based fallback) |
-| `prediction.py`               | Industry-based statistical prediction for missing data                  |
-| `recommendations.py`          | 11 reduction strategies with cost-benefit analysis                      |
-| `supply_chain.py`             | Buyer↔supplier linking, Scope 3 Category 1 aggregation                  |
-| `compliance.py`               | GHG Protocol, CDP, TCFD, SBTi report templates                          |
-| `webhooks.py`                 | HMAC-SHA256 signing, delivery with exponential backoff                  |
-| `audit.py`                    | Action logging (resource type, IDs, details)                            |
-| `questionnaire.py`            | PDF/DOCX/XLSX/CSV parsing via pdfplumber, python-docx, openpyxl         |
-| `pdf_export.py`               | ReportLab PDF generation for reports and compliance                     |
-| `scenarios.py`                | Parameter-based emission projection engine                              |
-| `subscriptions.py`            | Plan tiers, credit deduction, monthly reset                             |
-| `alerts.py`                   | Emission change detection, alert creation                               |
-| `marketplace.py`              | Data anonymization, listing/purchase workflow                           |
-| `templates.py`                | 5 pre-built questionnaire templates                                     |
-| `email.py` / `email_async.py` | SMTP email notifications (sync and async)                               |
-| `scheduler.py`                | Background task scheduling                                              |
-| `url_validator.py`            | SSRF protection for webhook URLs                                        |
-| `reviews.py`                  | Data review workflow (create, list, approve/reject/request_changes)     |
-| `benchmarks.py`               | Industry benchmark comparison with percentile ranking                   |
-| `mfa.py`                      | TOTP encryption/decryption helpers for MFA secrets at rest              |
+| Service              | Responsibility                                                          |
+| :------------------- | :---------------------------------------------------------------------- |
+| `subnet_bridge.py`   | Bridges FastAPI to Bittensor network; local estimation fallback         |
+| `llm_parser.py`      | LLM-powered text extraction (OpenAI/Anthropic with rule-based fallback) |
+| `prediction.py`      | Industry-based statistical prediction for missing data                  |
+| `recommendations.py` | 11 reduction strategies with cost-benefit analysis                      |
+| `supply_chain.py`    | Buyer↔supplier linking, Scope 3 Category 1 aggregation                  |
+| `compliance.py`      | GHG Protocol, CDP, TCFD, SBTi report templates                          |
+| `webhooks.py`        | HMAC-SHA256 signing, delivery with exponential backoff                  |
+| `audit.py`           | Action logging (resource type, IDs, details)                            |
+| `questionnaire.py`   | PDF/DOCX/XLSX/CSV parsing via pdfplumber, python-docx, openpyxl         |
+| `pdf_export.py`      | ReportLab PDF generation for reports and compliance                     |
+| `scenarios.py`       | Parameter-based emission projection engine                              |
+| `subscriptions.py`   | Plan tiers, credit deduction, monthly reset                             |
+| `alerts.py`          | Emission change detection, alert creation                               |
+| `marketplace.py`     | Data anonymization, listing/purchase workflow                           |
+| `templates.py`       | 5 pre-built questionnaire templates                                     |
+| `email.py`           | Async SMTP email notifications (aiosmtplib)                             |
+| `scheduler.py`       | Background task scheduling                                              |
+| `url_validator.py`   | SSRF protection for webhook URLs                                        |
+| `reviews.py`         | Data review workflow (create, list, approve/reject/request_changes)     |
+| `benchmarks.py`      | Industry benchmark comparison with percentile ranking                   |
+| `mfa.py`             | TOTP encryption/decryption helpers for MFA secrets at rest              |
 
 ### Dependency Injection
 

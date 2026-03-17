@@ -64,7 +64,7 @@ async def update_subscription(
 
         # Send email notification for plan change
         if old_plan != body.plan:
-            from api.services.email_async import send_subscription_change_email
+            from api.services.email import send_subscription_change_email
             await send_subscription_change_email(user.email, old_plan, body.plan)
 
         return sub

@@ -144,6 +144,36 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
   return res.json();
 }
 
+/**
+ * Like `request()` but returns the raw Response for non-JSON bodies (blobs,
+ * file uploads). Uses `fetchWithRetry`, attaches auth & CSRF headers.
+ */
+async function rawRequest(path: string, init?: RequestInit): Promise<Response> {
+  const token =
+    typeof window !== "undefined" ? localStorage.getItem("token") : null;
+
+  const headers: Record<string, string> = {
+    ...(init?.headers as Record<string, string>),
+  };
+  if (token) headers["Authorization"] = `Bearer ${token}`;
+
+  const csrf = getCsrfToken();
+  if (csrf && !token) {
+    headers["X-CSRF-Token"] = csrf;
+  }
+
+  const res = await fetchWithRetry(`${BASE}${path}`, {
+    ...init,
+    headers,
+    credentials: "include",
+  });
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({}));
+    throw new ApiError(res.status, body.detail ?? res.statusText);
+  }
+  return res;
+}
+
 export class ApiError extends Error {
   constructor(
     public status: number,
@@ -431,20 +461,9 @@ export async function exportReports(
   format: "csv" | "json" = "csv",
   year?: number,
 ): Promise<Blob> {
-  const token =
-    typeof window !== "undefined" ? localStorage.getItem("token") : null;
   const q = new URLSearchParams({ format });
   if (year != null) q.set("year", String(year));
-  const headers: Record<string, string> = {};
-  if (token) headers["Authorization"] = `Bearer ${token}`;
-  const res = await fetch(`${BASE}/reports/export?${q}`, {
-    headers,
-    credentials: "include",
-  });
-  if (!res.ok) {
-    const body = await res.json().catch(() => ({}));
-    throw new ApiError(res.status, body.detail ?? res.statusText);
-  }
+  const res = await rawRequest(`/reports/export?${q}`);
   return res.blob();
 }
 
@@ -744,22 +763,12 @@ export interface QuestionnaireDetail {
 export async function uploadQuestionnaire(
   file: File,
 ): Promise<QuestionnaireOut> {
-  const token =
-    typeof window !== "undefined" ? localStorage.getItem("token") : null;
   const formData = new FormData();
   formData.append("file", file);
-  const headers: Record<string, string> = {};
-  if (token) headers["Authorization"] = `Bearer ${token}`;
-  const res = await fetch(`${BASE}/questionnaires/upload`, {
+  const res = await rawRequest("/questionnaires/upload", {
     method: "POST",
-    headers,
     body: formData,
-    credentials: "include",
   });
-  if (!res.ok) {
-    const body = await res.json().catch(() => ({}));
-    throw new ApiError(res.status, body.detail ?? res.statusText);
-  }
   return res.json();
 }
 
@@ -809,34 +818,14 @@ export async function deleteQuestionnaire(id: string): Promise<void> {
 }
 
 export async function exportQuestionnairePdf(id: string): Promise<Blob> {
-  const token =
-    typeof window !== "undefined" ? localStorage.getItem("token") : null;
-  const headers: Record<string, string> = {};
-  if (token) headers["Authorization"] = `Bearer ${token}`;
-  const res = await fetch(
-    `${BASE}/questionnaires/${encodeURIComponent(id)}/export/pdf`,
-    { headers, credentials: "include" },
+  const res = await rawRequest(
+    `/questionnaires/${encodeURIComponent(id)}/export/pdf`,
   );
-  if (!res.ok) {
-    const body = await res.json().catch(() => ({}));
-    throw new ApiError(res.status, body.detail ?? res.statusText);
-  }
   return res.blob();
 }
 
 export async function exportReportPdf(id: string): Promise<Blob> {
-  const token =
-    typeof window !== "undefined" ? localStorage.getItem("token") : null;
-  const headers: Record<string, string> = {};
-  if (token) headers["Authorization"] = `Bearer ${token}`;
-  const res = await fetch(
-    `${BASE}/reports/${encodeURIComponent(id)}/export/pdf`,
-    { headers, credentials: "include" },
-  );
-  if (!res.ok) {
-    const body = await res.json().catch(() => ({}));
-    throw new ApiError(res.status, body.detail ?? res.statusText);
-  }
+  const res = await rawRequest(`/reports/${encodeURIComponent(id)}/export/pdf`);
   return res.blob();
 }
 

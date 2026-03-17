@@ -158,7 +158,7 @@ class TestRefreshTokenFlow:
 
 @pytest.mark.asyncio
 class TestPasswordReset:
-    @patch("api.services.email_async.send_password_reset_email", new_callable=AsyncMock)
+    @patch("api.services.email.send_password_reset_email", new_callable=AsyncMock)
     async def test_forgot_password_existing_email(self, mock_email, client: AsyncClient):
         await client.post("/api/v1/auth/register", json={
             "email": "forgot@example.com",
@@ -181,7 +181,7 @@ class TestPasswordReset:
         # Should still return 204 to prevent email enumeration
         assert resp.status_code == 204
 
-    @patch("api.services.email_async.send_password_reset_email", new_callable=AsyncMock)
+    @patch("api.services.email.send_password_reset_email", new_callable=AsyncMock)
     async def test_reset_password_full_flow(self, mock_email, client: AsyncClient):
         await client.post("/api/v1/auth/register", json={
             "email": "reset@example.com",

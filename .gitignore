@@ -33,3 +33,4 @@ Thumbs.db
 .env.*.local
 k8s/secrets.local.yaml
 .commit_msg.txt
+tests_output.log

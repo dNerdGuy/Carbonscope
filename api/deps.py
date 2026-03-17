@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import hmac
 from typing import Callable
 
 from fastapi import Depends, HTTPException, Request, status
@@ -42,7 +43,7 @@ async def get_current_user(
     if from_cookie and request.method not in ("GET", "HEAD", "OPTIONS"):
         csrf_cookie = request.cookies.get("csrf_token", "")
         csrf_header = request.headers.get("x-csrf-token", "")
-        if not csrf_cookie or not csrf_header or csrf_cookie != csrf_header:
+        if not csrf_cookie or not csrf_header or not hmac.compare_digest(csrf_cookie, csrf_header):
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail="CSRF validation failed",

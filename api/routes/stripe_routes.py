@@ -145,7 +145,7 @@ async def _handle_invoice_payment_failed(data: dict) -> None:
         )
         user = user_result.scalar_one_or_none()
         if user:
-            from api.services.email_async import send_alert_email
+            from api.services.email import send_alert_email
             await send_alert_email(
                 user.email,
                 "Payment Failed",

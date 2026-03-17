@@ -379,25 +379,25 @@ class TestEmailService:
         """In dev mode (no SMTP), send_email logs and returns True."""
         from api.services.email import send_email
 
-        result = send_email("test@example.com", "Test", "<p>Hello</p>")
+        result = await send_email("test@example.com", "Test", "<p>Hello</p>")
         assert result is True
 
     async def test_send_alert_email(self):
         from api.services.email import send_alert_email
 
-        result = send_alert_email("admin@example.com", "Emissions Up", "Total increased by 15%", "warning")
+        result = await send_alert_email("admin@example.com", "Emissions Up", "Total increased by 15%", "warning")
         assert result is True
 
     async def test_send_report_ready_email(self):
         from api.services.email import send_report_ready_email
 
-        result = send_report_ready_email("user@example.com", 2024, 1500.5)
+        result = await send_report_ready_email("user@example.com", 2024, 1500.5)
         assert result is True
 
     async def test_send_subscription_change_email(self):
         from api.services.email import send_subscription_change_email
 
-        result = send_subscription_change_email("user@example.com", "free", "pro")
+        result = await send_subscription_change_email("user@example.com", "free", "pro")
         assert result is True
 
 

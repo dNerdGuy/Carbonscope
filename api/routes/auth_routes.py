@@ -384,7 +384,7 @@ async def forgot_password(
     if user is not None:
         token = await create_reset_token(db, user.id, user.email)
         await db.commit()
-        from api.services.email_async import send_password_reset_email
+        from api.services.email import send_password_reset_email
         sent = await send_password_reset_email(user.email, token)
         if not sent:
             import logging

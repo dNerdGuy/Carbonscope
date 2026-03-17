@@ -186,8 +186,7 @@ async def health():
         checks["database"] = "unavailable"
 
     # Email (SMTP config present)
-    import os as _os
-    smtp_host = _os.getenv("SMTP_HOST", "")
+    smtp_host = os.getenv("SMTP_HOST", "")
     checks["email"] = "configured" if smtp_host else "not_configured"
 
     # Bittensor (config present, not a live check)

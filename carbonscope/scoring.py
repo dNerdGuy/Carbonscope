@@ -6,8 +6,6 @@ and benchmark alignment into a single 0.0–1.0 score.
 
 from __future__ import annotations
 
-from typing import Any
-
 from carbonscope.validation.ghg_protocol import check_ghg_compliance
 from carbonscope.validation.sanity_checks import run_sanity_checks
 from carbonscope.validation.benchmark import check_benchmark_alignment
@@ -98,6 +96,39 @@ def calc_completeness_score(
     return round(score / total_checks, 4)
 
 
+# Overconfidence penalty thresholds
+_CONFIDENCE_TRIGGER = 0.8        # minimum confidence to consider penalizing
+_VERY_SPARSE_MAX_FIELDS = 3      # fields ≤ this with confidence > 0.9 → max penalty
+_SPARSE_MAX_FIELDS = 5           # fields ≤ this with confidence ≥ 0.8 → moderate penalty
+_PENALTY_SEVERE = 0.15           # penalty for very sparse + very confident
+_PENALTY_MODERATE = 0.10         # penalty for sparse + confident
+
+
+def calc_overconfidence_penalty(
+    confidence: float | None,
+    questionnaire: dict,
+) -> float:
+    """Penalize miners that report high confidence on sparse input data.
+
+    The penalty discourages miners from returning inflated confidence scores
+    when they have very little actual data to work with (~15 possible fields).
+
+    Returns 0.0–0.15 (subtracted from the weighted final score).
+    """
+    if confidence is None or confidence < _CONFIDENCE_TRIGGER:
+        return 0.0
+
+    provided_data = questionnaire.get("provided_data", {})
+    fields_provided = len(provided_data)
+
+    if fields_provided <= _VERY_SPARSE_MAX_FIELDS and confidence > 0.9:
+        return _PENALTY_SEVERE
+    if fields_provided <= _SPARSE_MAX_FIELDS and confidence >= _CONFIDENCE_TRIGGER:
+        return _PENALTY_MODERATE
+
+    return 0.0
+
+
 # ── Composite scorer ────────────────────────────────────────────────
 
 
@@ -164,6 +195,10 @@ def score_response(
         + W_ANTI_HALLUCINATION * anti_hallucination
         + W_BENCHMARK * benchmark
     )
+    
+    # Penalties
+    penalty = calc_overconfidence_penalty(confidence, questionnaire)
+    final = max(0.0, final - penalty)
 
     return {
         "accuracy": round(accuracy, 4),
@@ -171,5 +206,6 @@ def score_response(
         "completeness": round(completeness, 4),
         "anti_hallucination": round(anti_hallucination, 4),
         "benchmark": round(benchmark, 4),
+        "penalty": round(penalty, 4),
         "final": round(final, 4),
     }
