@@ -30,13 +30,14 @@ export default function BillingPage() {
       return;
     }
     if (user) {
-      Promise.all([getSubscription(), getCredits(), listPlans()])
-        .then(([s, c, p]) => {
-          setSub(s);
-          setCredits(c);
-          setPlans(p);
-        })
-        .catch((e) => setError(e.message));
+      Promise.allSettled([getSubscription(), getCredits(), listPlans()])
+        .then(([sResult, cResult, pResult]) => {
+          if (sResult.status === "fulfilled") setSub(sResult.value);
+          if (cResult.status === "fulfilled") setCredits(cResult.value);
+          if (pResult.status === "fulfilled") setPlans(pResult.value);
+          const failed = [sResult, cResult, pResult].filter(r => r.status === "rejected");
+          if (failed.length) setError("Some billing data failed to load");
+        });
     }
   }, [user, loading, router]);
 

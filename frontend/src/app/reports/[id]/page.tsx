@@ -31,7 +31,7 @@ export default function ReportDetailPage() {
     if (user && id) {
       getReport(id)
         .then(setReport)
-        .catch((e) => setError(e.message));
+        .catch((e) => setError(e instanceof Error ? e.message : "Failed to load report"));
     }
   }, [user, loading, router, id]);
 
