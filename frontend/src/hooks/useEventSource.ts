@@ -19,6 +19,9 @@ export function useEventSource(
   const handlersRef = useRef(handlers);
   handlersRef.current = handlers;
 
+  const reconnectTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const mountedRef = useRef(true);
+
   const connect = useCallback(() => {
     if (!enabled) return undefined;
 
@@ -38,15 +41,25 @@ export function useEventSource(
 
     es.onerror = () => {
       es.close();
-      // Reconnect after 5 seconds
-      setTimeout(() => connect(), 5000);
+      // Reconnect after 5 seconds, but only if still mounted
+      if (mountedRef.current) {
+        reconnectTimer.current = setTimeout(() => connect(), 5000);
+      }
     };
 
     return es;
   }, [enabled]);
 
   useEffect(() => {
+    mountedRef.current = true;
     const es = connect();
-    return () => es?.close();
+    return () => {
+      mountedRef.current = false;
+      if (reconnectTimer.current) {
+        clearTimeout(reconnectTimer.current);
+        reconnectTimer.current = null;
+      }
+      es?.close();
+    };
   }, [connect]);
 }
