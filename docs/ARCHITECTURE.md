@@ -29,13 +29,13 @@ CarbonScope is a three-tier application built on top of the Bittensor decentrali
 │                        Client Layer                                     │
 │  ┌──────────────────────────────────────────────────────────────────┐   │
 │  │  Next.js 15 Dashboard (React 19, Tailwind CSS 4, Recharts)       │   │
-│  │  22 App Router pages · Typed API client · JWT auth context       │   │
+│  │  26 App Router pages · Typed API client · JWT auth context       │   │
 │  └──────────────────────────────────────────────────────────────────┘   │
 ├─────────────────────────────────────────────────────────────────────────┤
 │                        API Layer                                        │
 │  ┌──────────────────────────────────────────────────────────────────┐   │
 │  │  FastAPI Backend (Python 3.10+)                                  │   │
-│  │  18 Route Modules · 22 Services · 97+ Endpoints                  │   │
+│  │  19 Route Modules · 26 Services · 100+ Endpoints                 │   │
 │  │  JWT Auth · Rate Limiting · CORS · Security Headers              │   │
 │  └──────────────────────────────────────────────────────────────────┘   │
 ├─────────────────────────────────────────────────────────────────────────┤
@@ -43,7 +43,7 @@ CarbonScope is a three-tier application built on top of the Bittensor decentrali
 │  ┌────────────────┐  ┌────────────────┐  ┌─────────────────────────┐    │
 │  │  PostgreSQL /  │  │  Bittensor     │  │  Emission Factor        │    │
 │  │  SQLite (dev)  │  │  Subnet        │  │  Datasets (JSON)        │    │
-│  │  19 models     │  │  Miners +      │  │  EPA, eGRID, IEA,       │    │
+│  │  24 models     │  │  Miners +      │  │  EPA, eGRID, IEA,       │    │
 │  │  Alembic mgr.  │  │  Validators    │  │  DEFRA, GLEC, IPCC      │    │
 │  └────────────────┘  └────────────────┘  └─────────────────────────┘    │
 └─────────────────────────────────────────────────────────────────────────┘
@@ -208,7 +208,7 @@ App Startup
     ├── Start background scheduler
     │       ├── Alert check task (periodic)
     │       └── Monthly credit reset task
-    └── Register 13 route modules at /api/v1/
+    └── Register 19 route modules at /api/v1/
 
 App Shutdown
     └── Stop background scheduler
@@ -217,21 +217,22 @@ App Shutdown
 ### Middleware Stack (execution order)
 
 ```
-Request ──► RequestIDMiddleware ──► RequestLoggingMiddleware ──► SecurityHeadersMiddleware
-        ──► CORS Middleware ──► Rate Limiter ──► Route Handler
-        ──► Global Exception Handler ──► Response
+Request ──► RequestIDMiddleware ──► RequestBodyLimitMiddleware ──► RequestLoggingMiddleware
+        ──► SecurityHeadersMiddleware ──► CORS Middleware ──► Rate Limiter
+        ──► Route Handler ──► Global Exception Handler ──► Response
 ```
 
-| Middleware                    | Purpose                                                          |
-| :---------------------------- | :--------------------------------------------------------------- |
-| **RequestIDMiddleware**       | Generates/propagates `X-Request-ID` header for tracing           |
-| **RequestLoggingMiddleware**  | Logs `METHOD PATH STATUS DURATION [request_id]`                  |
-| **SecurityHeadersMiddleware** | Injects CSP, X-Frame-Options, HSTS, X-Content-Type-Options, etc. |
-| **CORSMiddleware**            | `ALLOWED_ORIGINS` enforcement with credentials support           |
-| **SlowAPI Rate Limiter**      | IP-based rate limiting (auth: 10/min, default: 60/min)           |
-| **Global Exception Handler**  | Catches unhandled exceptions → 500 JSON with request ID          |
+| Middleware                      | Purpose                                                          |
+| :------------------------------ | :--------------------------------------------------------------- |
+| **RequestIDMiddleware**         | Generates/propagates `X-Request-ID` header for tracing           |
+| **RequestBodyLimitMiddleware**  | Rejects payloads > 10 MB before route processing                 |
+| **RequestLoggingMiddleware**    | Logs `METHOD PATH STATUS DURATION [request_id]`                  |
+| **SecurityHeadersMiddleware**   | Injects CSP, X-Frame-Options, HSTS, X-Content-Type-Options, etc. |
+| **CORSMiddleware**              | `ALLOWED_ORIGINS` enforcement with credentials support           |
+| **SlowAPI Rate Limiter**        | IP-based rate limiting (auth: 10/min, default: 60/min)           |
+| **Global Exception Handler**    | Catches unhandled exceptions → 500 JSON with request ID          |
 
-### Route Modules (18)
+### Route Modules (19)
 
 | Module                 | Prefix            | Endpoints | Auth Required |
 | :--------------------- | :---------------- | :-------: | :-----------: |
@@ -253,8 +254,9 @@ Request ──► RequestIDMiddleware ──► RequestLoggingMiddleware ──�
 | `mfa_routes`           | `/mfa`            |     5     |      Yes      |
 | `pcaf_routes`          | `/pcaf`           |     6     |      Yes      |
 | `review_routes`        | `/reviews`        |     4     |      Yes      |
+| `events_routes`        | `/events`         |     1     |      Yes      |
 
-### Service Layer (22 modules)
+### Service Layer (26 modules)
 
 | Service              | Responsibility                                                          |
 | :------------------- | :---------------------------------------------------------------------- |
@@ -280,6 +282,10 @@ Request ──► RequestIDMiddleware ──► RequestLoggingMiddleware ──�
 | `reviews.py`         | Data review workflow (create, list, approve/reject/request_changes)     |
 | `benchmarks.py`      | Industry benchmark comparison with percentile ranking                   |
 | `mfa.py`             | TOTP encryption/decryption helpers for MFA secrets at rest              |
+| `ai.py`              | AI-powered analysis, parsing orchestration, multi-provider support      |
+| `carbon.py`          | Core carbon calculation logic and emission factor lookups               |
+| `company.py`         | Company CRUD, tenant-scoped data operations                             |
+| `pcaf.py`            | PCAF financed emissions portfolio & asset calculations                  |
 
 ### Dependency Injection
 
@@ -306,7 +312,7 @@ Request ──► RequestIDMiddleware ──► RequestLoggingMiddleware ──�
 | Vitest       | 4.0     | Unit testing framework          |
 | TypeScript   | 5.9     | Type safety                     |
 
-### Page Routes (22)
+### Page Routes (26)
 
 ```
 /                        → Dashboard (KPI cards, scope charts, trends)
@@ -330,11 +336,15 @@ Request ──► RequestIDMiddleware ──► RequestLoggingMiddleware ──�
 /register                → Account creation
 /forgot-password         → Password reset flow
 /reset-password          → Password reset with token
+/mfa                     → MFA setup & management
+/pcaf                    → PCAF financed emissions portfolios
+/benchmarks              → Industry benchmark comparisons
+/reviews                 → Data review & approval workflow
 ```
 
 ### API Client Architecture
 
-The frontend uses a typed API client (`lib/api.ts`) with 55+ functions that:
+The frontend uses a typed API client (`lib/api.ts`) with 65+ functions that:
 
 1. Automatically attaches JWT Bearer tokens from `localStorage`
 2. Handles 401 responses with automatic token refresh
@@ -416,7 +426,7 @@ The frontend uses a typed API client (`lib/api.ts`) with 55+ functions that:
 
 The following models support soft deletion via `deleted_at` timestamp:
 
-- Company, DataUpload, EmissionReport, Webhook, Questionnaire, Scenario
+- Company, User, DataUpload, EmissionReport, SupplyChainLink, Webhook, Questionnaire, Scenario, Subscription, DataListing, FinancedPortfolio
 
 Soft-deleted records are excluded from queries by default but retained in the database for audit purposes.
 
@@ -542,6 +552,9 @@ See [SECURITY.md](SECURITY.md) for the complete security policy and vulnerabilit
 | **Audit Logging**          | All state-changing operations logged with user, action, resource    |
 | **Webhook Security**       | HMAC-SHA256 signature on all payloads                               |
 | **Production Enforcement** | SECRET_KEY validation, SQLite rejection, structured logging         |
+| **MFA (TOTP)**             | Optional two-factor via TOTP; encrypted secrets at rest (Fernet)    |
+| **Request Body Limit**     | 10 MB payload cap enforced before route processing                  |
+| **PII Masking**            | Email addresses redacted in production logs                         |
 
 ---
 
@@ -586,3 +599,29 @@ See [SECURITY.md](SECURITY.md) for the complete security policy and vulnerabilit
 ```
 
 > **Full deployment instructions:** See [DEPLOYMENT.md](DEPLOYMENT.md) for Nginx, systemd, TLS, and scaling guides.
+
+### Kubernetes Deployment
+
+Production Kubernetes manifests in `k8s/` include:
+
+| Resource             | Purpose                                                             |
+| :------------------- | :------------------------------------------------------------------ |
+| **backend.yaml**     | Deployment (2 replicas) + Service; startup/readiness/liveness probes |
+| **frontend.yaml**    | Deployment (2 replicas) + Service; readOnly root filesystem          |
+| **postgres.yaml**    | StatefulSet with persistent volume                                  |
+| **redis.yaml**       | Deployment for optional caching layer                               |
+| **hpa.yaml**         | HPA for backend (2-8 pods, CPU/memory) + frontend (2-4 pods)        |
+| **pdb.yaml**         | PodDisruptionBudgets for zero-downtime rollouts                     |
+| **ingress.yaml**     | Ingress with TLS termination                                        |
+| **monitoring.yaml**  | Prometheus ServiceMonitor + PrometheusRule alerts                    |
+| **network-policy.yaml** | Namespace-scoped network isolation                                |
+| **cronjob-backup.yaml** | Scheduled PostgreSQL backups to S3                                |
+| **external-secrets.yaml** | AWS Secrets Manager integration via ExternalSecrets operator    |
+
+#### Health Probes
+
+| Probe         | Path            | Purpose                               |
+| :------------ | :-------------- | :------------------------------------ |
+| **Liveness**  | `/health/live`  | Process alive (no dependency checks)  |
+| **Readiness** | `/health`       | DB connected, ready to serve traffic  |
+| **Startup**   | `/health/live`  | Allows 60s for cold start before liveness kicks in |
