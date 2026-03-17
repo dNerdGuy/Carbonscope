@@ -13,9 +13,9 @@
   <a href="https://opensource.org/licenses/MIT"><img src="https://img.shields.io/badge/License-MIT-blue.svg?style=flat-square" alt="License: MIT"></a>
   <img src="https://img.shields.io/badge/python-3.10%2B-3776AB?style=flat-square&logo=python&logoColor=white" alt="Python 3.10+">
   <img src="https://img.shields.io/badge/node-18%2B-339933?style=flat-square&logo=node.js&logoColor=white" alt="Node 18+">
-  <img src="https://img.shields.io/badge/version-0.22.0-orange?style=flat-square" alt="Version 0.22.0">
-  <img src="https://img.shields.io/badge/tests-729%20backend%20%7C%20142%20frontend-brightgreen?style=flat-square" alt="Tests">
-  <img src="https://img.shields.io/badge/endpoints-97%2B-7B61FF?style=flat-square" alt="97+ API Endpoints">
+  <img src="https://img.shields.io/badge/version-0.24.0-orange?style=flat-square" alt="Version 0.24.0">
+  <img src="https://img.shields.io/badge/tests-740%20backend%20%7C%20142%20frontend-brightgreen?style=flat-square" alt="Tests">
+  <img src="https://img.shields.io/badge/endpoints-99%2B-7B61FF?style=flat-square" alt="99+ API Endpoints">
   <img src="https://img.shields.io/badge/Bittensor-Subnet-000000?style=flat-square" alt="Bittensor Subnet">
 </p>
 
@@ -34,7 +34,7 @@
 
 CarbonScope is a **Bittensor subnet** that combines decentralized AI with enterprise carbon accounting. Miners estimate corporate carbon emissions across Scope 1, 2, and 3 categories, while validators score report quality against the **GHG Protocol Corporate Standard** using curated benchmarks.
 
-The platform ships with a production-ready **FastAPI** backend (97+ endpoints), a **Next.js 15** dashboard, and a complete carbon management suite — covering emission estimation, compliance reporting, supply chain tracking, AI-powered document processing, and a data marketplace.
+The platform ships with a production-ready **FastAPI** backend (99+ endpoints), a **Next.js 15** dashboard, and a complete carbon management suite — covering emission estimation, compliance reporting, supply chain tracking, AI-powered document processing, and a data marketplace.
 
 ### Why CarbonScope?
 
@@ -83,7 +83,7 @@ The platform ships with a production-ready **FastAPI** backend (97+ endpoints), 
              v
   ┌─────────────────────────────────────────┐
   │            FastAPI Backend              │
-  │      18 Route Modules · 97+ Endpoints   │
+  │      18 Route Modules · 99+ Endpoints   │
   │   JWT Auth · Rate Limiting · Audit Logs │
   └──────────┬─────────────────────┬────────┘
              │                     │
@@ -490,7 +490,7 @@ npm run test:watch        # Watch mode for development
 
 ## Platform API
 
-The platform exposes **97+ RESTful endpoints** across 18 route modules. All endpoints are prefixed with `/api/v1/` and documented via OpenAPI.
+The platform exposes **99+ RESTful endpoints** across 18 route modules. All endpoints are prefixed with `/api/v1/` and documented via OpenAPI.
 
 ### Endpoint Summary
 
