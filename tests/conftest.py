@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import asyncio
 from typing import AsyncGenerator
 
 import pytest
@@ -37,13 +36,6 @@ def _reset_limiter_state() -> None:
     cache = getattr(storage, "_cache", None)
     if isinstance(cache, dict):
         cache.clear()
-
-
-@pytest.fixture(scope="session")
-def event_loop():
-    loop = asyncio.new_event_loop()
-    yield loop
-    loop.close()
 
 
 @pytest_asyncio.fixture(autouse=True)
