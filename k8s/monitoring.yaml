@@ -9,8 +9,7 @@ metadata:
 spec:
   selector:
     matchLabels:
-      app: carbonscope
-      component: backend
+      app: backend
   endpoints:
     - port: http
       path: /metrics

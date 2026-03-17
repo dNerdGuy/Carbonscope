@@ -172,9 +172,15 @@ app.include_router(benchmark_router, prefix="/api/v1")
 app.include_router(events_router, prefix="/api/v1")
 
 
+@app.get("/health/live")
+async def health_live():
+    """Liveness probe — always 200 if the process is running."""
+    return {"status": "alive"}
+
+
 @app.get("/health")
 async def health():
-    """Health check — lightweight liveness probe (no sensitive details)."""
+    """Readiness probe — checks DB connectivity (no sensitive details)."""
     from sqlalchemy import text as sa_text
 
     db_ok = False
