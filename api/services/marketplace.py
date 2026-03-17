@@ -121,13 +121,15 @@ async def purchase_listing(
     buyer_company_id: str,
 ) -> DataPurchase:
     """Purchase a marketplace listing using credits."""
-    # Fetch the listing
+    # Fetch the listing with row-level lock to prevent double-purchase race
     result = await db.execute(
-        select(DataListing).where(
+        select(DataListing)
+        .where(
             DataListing.id == listing_id,
             DataListing.status == "active",
             DataListing.deleted_at.is_(None),
         )
+        .with_for_update()
     )
     listing = result.scalar_one_or_none()
     if listing is None:
