@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "@/lib/auth-context";
 import { PageSkeleton } from "@/components/Skeleton";
 import {
@@ -16,26 +17,23 @@ import {
 export default function MFAPage() {
   const { user, loading } = useAuth();
   const router = useRouter();
-  const [status, setStatus] = useState<MFAStatus | null>(null);
   const [setup, setSetup] = useState<MFASetup | null>(null);
   const [totpCode, setTotpCode] = useState("");
   const [disableCode, setDisableCode] = useState("");
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
 
-  const fetchStatus = useCallback(async () => {
-    try {
-      const s = await getMFAStatus();
-      setStatus(s);
-    } catch (e: unknown) {
-      setError(e instanceof Error ? e.message : "Failed to load MFA status");
-    }
-  }, []);
+  const statusQuery = useQuery<MFAStatus>({
+    queryKey: ["mfa-status"],
+    queryFn: getMFAStatus,
+    enabled: !!user && !loading,
+  });
+
+  const status = statusQuery.data ?? null;
 
   useEffect(() => {
     if (!loading && !user) router.push("/login");
-    if (user) fetchStatus();
-  }, [user, loading, router, fetchStatus]);
+  }, [user, loading, router]);
 
   const handleSetup = async () => {
     setError("");
@@ -55,7 +53,7 @@ export default function MFAPage() {
       setSuccess("MFA enabled successfully!");
       setSetup(null);
       setTotpCode("");
-      fetchStatus();
+      statusQuery.refetch();
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : "Invalid TOTP code");
     }
@@ -67,7 +65,7 @@ export default function MFAPage() {
       await disableMFA(disableCode);
       setSuccess("MFA disabled.");
       setDisableCode("");
-      fetchStatus();
+      statusQuery.refetch();
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : "Failed to disable MFA");
     }

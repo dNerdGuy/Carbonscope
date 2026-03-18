@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "@/lib/auth-context";
 import {
   listReports,
@@ -38,7 +39,6 @@ const FRAMEWORKS: { id: Framework; label: string; desc: string }[] = [
 export default function CompliancePage() {
   const { user, loading } = useAuth();
   const router = useRouter();
-  const [reports, setReports] = useState<EmissionReport[]>([]);
   const [selectedReport, setSelectedReport] = useState("");
   const [selectedFramework, setSelectedFramework] =
     useState<Framework>("ghg_protocol");
@@ -46,18 +46,26 @@ export default function CompliancePage() {
   const [generating, setGenerating] = useState(false);
   const [error, setError] = useState("");
 
+  const reportsQuery = useQuery({
+    queryKey: ["reports", user?.company_id],
+    queryFn: () => listReports(),
+    enabled: !!user && !loading,
+  });
+
+  const reports: EmissionReport[] = reportsQuery.data?.items ?? [];
+
   useEffect(() => {
     if (!loading && !user) {
       router.replace("/login");
       return;
     }
-    if (user) {
-      listReports().then((r) => {
-        setReports(r.items);
-        if (r.items.length > 0) setSelectedReport(r.items[0].id);
-      });
-    }
   }, [user, loading, router]);
+
+  useEffect(() => {
+    if (reports.length > 0 && !selectedReport) {
+      setSelectedReport(reports[0].id);
+    }
+  }, [reports, selectedReport]);
 
   async function handleGenerate() {
     if (!selectedReport) return;
