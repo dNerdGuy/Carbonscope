@@ -13,7 +13,7 @@
   <a href="https://opensource.org/licenses/MIT"><img src="https://img.shields.io/badge/License-MIT-blue.svg?style=flat-square" alt="License: MIT"></a>
   <img src="https://img.shields.io/badge/python-3.10%2B-3776AB?style=flat-square&logo=python&logoColor=white" alt="Python 3.10+">
   <img src="https://img.shields.io/badge/node-18%2B-339933?style=flat-square&logo=node.js&logoColor=white" alt="Node 18+">
-  <img src="https://img.shields.io/badge/version-0.24.2-orange?style=flat-square" alt="Version 0.24.2">
+  <img src="https://img.shields.io/badge/version-0.24.3-orange?style=flat-square" alt="Version 0.24.3">
   <img src="https://img.shields.io/badge/tests-745%20backend%20%7C%20142%20frontend-brightgreen?style=flat-square" alt="Tests">
   <img src="https://img.shields.io/badge/endpoints-100%2B-7B61FF?style=flat-square" alt="100+ API Endpoints">
   <img src="https://img.shields.io/badge/Bittensor-Subnet-000000?style=flat-square" alt="Bittensor Subnet">
@@ -450,7 +450,7 @@ npm run test:watch        # Watch mode for development
 | `test_pdf_export.py`                 | PDF generation for reports and questionnaires               |
 | `test_url_validator.py`              | SSRF protection: scheme, hostname, private IP, DNS          |
 | `test_templates.py`                  | Questionnaire template catalog: list, get, parametrized     |
-| `test_startup_policy.py`            | Production startup enforcement, config validation           |
+| `test_startup_policy.py`             | Production startup enforcement, config validation           |
 
 </details>
 
@@ -512,7 +512,7 @@ The platform exposes **100+ RESTful endpoints** across 19 route modules. All end
 | **Stripe**            |     1     | Stripe webhook endpoint for subscription events                        |
 | **PCAF**              |     6     | Financed emissions portfolios, asset management, calculations          |
 | **Reviews**           |     4     | Data review workflow (create, list, approve/reject)                    |
-| **MFA**               |     5     | TOTP setup, verify, disable, status check                             |
+| **MFA**               |     5     | TOTP setup, verify, disable, status check                              |
 | **Benchmarks**        |     2     | Industry benchmark comparison and percentile ranking                   |
 | **Events (SSE)**      |     1     | Server-Sent Events subscription for real-time push                     |
 | **Audit & Health**    |     4     | Audit logs (admin), health check, liveness probe, detailed health      |
@@ -547,7 +547,7 @@ The platform uses **24 SQLAlchemy models** with full async support, soft deletes
 | **RevokedToken**          | Access token blacklist (JTI-based, for logout)                                    |
 | **PasswordResetToken**    | Short-lived password reset token (15-minute expiry)                               |
 | **FinancedPortfolio**     | PCAF financed emissions portfolio (asset class, methodology)                      |
-| **FinancedAsset**         | Individual financed asset within a portfolio (attribution, emissions)              |
+| **FinancedAsset**         | Individual financed asset within a portfolio (attribution, emissions)             |
 | **DataReview**            | Data review workflow record (status, reviewer, comments)                          |
 | **MFASecret**             | Encrypted TOTP secret for multi-factor authentication (Fernet at rest)            |
 | **IndustryBenchmark**     | Industry benchmark data for percentile comparison                                 |
@@ -783,11 +783,11 @@ alembic current
 
 ### Monitoring
 
-| Endpoint       | Purpose                                                            |
-| :------------- | :----------------------------------------------------------------- |
+| Endpoint           | Purpose                                                                     |
+| :----------------- | :-------------------------------------------------------------------------- |
 | `GET /health/live` | Liveness check — returns `200` if process is running (no dependency checks) |
-| `GET /health`  | Readiness check — returns `200` with version and DB connectivity status     |
-| `GET /metrics` | Prometheus text format — request counts, error rates, status codes |
+| `GET /health`      | Readiness check — returns `200` with version and DB connectivity status     |
+| `GET /metrics`     | Prometheus text format — request counts, error rates, status codes          |
 
 Connect Prometheus to scrape `/metrics` every 15s. Import the Grafana dashboard from `docs/grafana-dashboard.json` (if available) or create panels for `carbonscope_requests_total`, `carbonscope_errors_total`, and `carbonscope_http_requests_by_status`.
 
@@ -818,16 +818,16 @@ Set `SENTRY_DSN` to enable error tracking and performance monitoring. Adjust `SE
 
 ## Documentation
 
-| Document                                 | Description                                                               |
-| :--------------------------------------- | :------------------------------------------------------------------------ |
-| [README.md](README.md)                   | Project overview, quick start, and feature summary (this file)            |
+| Document                                 | Description                                                                |
+| :--------------------------------------- | :------------------------------------------------------------------------- |
+| [README.md](README.md)                   | Project overview, quick start, and feature summary (this file)             |
 | [API.md](docs/API.md)                    | Complete API reference — all 100+ endpoints with request/response examples |
-| [ARCHITECTURE.md](docs/ARCHITECTURE.md)  | System design, data flow, database schema, service architecture           |
-| [DEPLOYMENT.md](docs/DEPLOYMENT.md)      | Production deployment guide (Nginx, Docker, systemd, TLS, scaling)        |
-| [CONTRIBUTING.md](docs/CONTRIBUTING.md)  | Development workflow, code style, testing, and PR process                 |
-| [CHANGELOG.md](docs/CHANGELOG.md)        | Version history and release notes                                         |
-| [SECURITY.md](docs/SECURITY.md)          | Security policy, vulnerability reporting, and security architecture       |
-| [frontend/README.md](frontend/README.md) | Frontend setup, components, testing, and development guide                |
+| [ARCHITECTURE.md](docs/ARCHITECTURE.md)  | System design, data flow, database schema, service architecture            |
+| [DEPLOYMENT.md](docs/DEPLOYMENT.md)      | Production deployment guide (Nginx, Docker, systemd, TLS, scaling)         |
+| [CONTRIBUTING.md](docs/CONTRIBUTING.md)  | Development workflow, code style, testing, and PR process                  |
+| [CHANGELOG.md](docs/CHANGELOG.md)        | Version history and release notes                                          |
+| [SECURITY.md](docs/SECURITY.md)          | Security policy, vulnerability reporting, and security architecture        |
+| [frontend/README.md](frontend/README.md) | Frontend setup, components, testing, and development guide                 |
 
 ---
 
@@ -835,7 +835,7 @@ Set `SENTRY_DSN` to enable error tracking and performance monitoring. Adjust `SE
 
 See [CHANGELOG.md](docs/CHANGELOG.md) for the full version history.
 
-**Latest — v0.24.2** (Security Hardening Round 3): K8s probe splitting, pagination bounds, PII masking, deprecated fixture removal, architecture refresh. See [CHANGELOG.md](docs/CHANGELOG.md) for the full history.
+**Latest — v0.24.3** (Security Hardening Round 4): Rate-limit auth/billing endpoints, schema input bounds, error boundaries, useQuery migration, K8s security contexts, Docker read-only filesystems. See [CHANGELOG.md](docs/CHANGELOG.md) for the full history.
 
 ---
 

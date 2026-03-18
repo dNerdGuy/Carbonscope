@@ -6,6 +6,27 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ---
 
+## [0.24.3] — 2026-03-18 — Security Hardening Round 4
+
+### Fixed
+
+- **Missing rate limits**: Added `@limiter.limit(RATE_LIMIT_AUTH)` to `GET /auth/me`, `PATCH /auth/me`, `DELETE /auth/me`, and `POST /billing/credits/grant`; added `@limiter.limit(RATE_LIMIT_DEFAULT)` to all billing GET endpoints — prevents account-deletion DoS and credit-grant abuse
+- **Silent exception**: `recommendations.py` strategy evaluation `except Exception: continue` now logs `logger.warning()` with full traceback instead of silently swallowing errors
+- **Unbounded event_types**: `WebhookCreate.event_types` limited to `max_length=50` (was unbounded list)
+- **Unbounded dict keys**: `DataUploadCreate.provided_data` and `ScenarioCreate.parameters` now reject payloads with >200 top-level keys
+- **K8s security contexts**: Added `runAsNonRoot`, `allowPrivilegeEscalation: false`, `drop: [ALL]` to `postgres.yaml` and `redis.yaml` (redis also gets `readOnlyRootFilesystem`)
+- **Docker read-only**: Added `read_only: true` + tmpfs mounts to nginx and frontend containers in `docker-compose.prod.yml`
+
+### Added
+
+- **Error boundaries**: New `error.tsx` files for reviews, benchmarks, pcaf, and mfa pages — catch runtime errors locally with contextual retry buttons
+
+### Changed
+
+- **useQuery migration**: Compliance and MFA pages migrated from `useEffect` + `setState` to `@tanstack/react-query` for caching, retry, and stale-while-revalidate behavior
+
+---
+
 ## [0.24.2] — 2025-07-25 — Security Hardening Round 3
 
 ### Fixed
