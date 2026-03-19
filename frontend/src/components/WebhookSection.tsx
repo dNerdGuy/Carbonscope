@@ -6,7 +6,10 @@ import {
   createWebhook,
   deleteWebhook,
   toggleWebhook,
+  listDeliveries,
+  retryDelivery,
   type WebhookConfig,
+  type WebhookDelivery,
 } from "@/lib/api";
 import ConfirmDialog from "@/components/ConfirmDialog";
 import { StatusMessage } from "@/components/StatusMessage";
@@ -28,6 +31,10 @@ export default function WebhookSection() {
   const [deleteWhTarget, setDeleteWhTarget] = useState<string | null>(null);
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [error, setError] = useState("");
+  const [selectedWh, setSelectedWh] = useState<string | null>(null);
+  const [deliveries, setDeliveries] = useState<WebhookDelivery[]>([]);
+  const [loadingDeliveries, setLoadingDeliveries] = useState(false);
+  const [retryingId, setRetryingId] = useState<string | null>(null);
 
   useEffect(() => {
     listWebhooks()
@@ -42,6 +49,35 @@ export default function WebhookSection() {
       setTimeout(() => setCopiedId(null), 2000);
     } catch {
       // Clipboard not available
+    }
+  }, []);
+
+  const loadDeliveries = useCallback(async (webhookId: string) => {
+    setLoadingDeliveries(true);
+    setError("");
+    try {
+      const res = await listDeliveries(webhookId, { limit: 20 });
+      setDeliveries(res.items);
+      setSelectedWh(webhookId);
+    } catch {
+      setError("Failed to load delivery logs");
+    } finally {
+      setLoadingDeliveries(false);
+    }
+  }, []);
+
+  const handleRetry = useCallback(async (webhookId: string, deliveryId: string) => {
+    setRetryingId(deliveryId);
+    setError("");
+    try {
+      const updated = await retryDelivery(webhookId, deliveryId);
+      setDeliveries((prev) =>
+        prev.map((d) => (d.id === deliveryId ? updated : d)),
+      );
+    } catch {
+      setError("Failed to retry delivery");
+    } finally {
+      setRetryingId(null);
     }
   }, []);
 
@@ -194,17 +230,102 @@ export default function WebhookSection() {
                     </button>
                   </td>
                   <td className="py-2">
-                    <button
-                      onClick={() => setDeleteWhTarget(wh.id)}
-                      className="text-xs text-[var(--danger)] hover:underline"
-                    >
-                      Delete
-                    </button>
+                    <span className="flex items-center gap-2">
+                      <button
+                        onClick={() => loadDeliveries(wh.id)}
+                        className="text-xs text-[var(--primary)] hover:underline"
+                      >
+                        Deliveries
+                      </button>
+                      <button
+                        onClick={() => setDeleteWhTarget(wh.id)}
+                        className="text-xs text-[var(--danger)] hover:underline"
+                      >
+                        Delete
+                      </button>
+                    </span>
                   </td>
                 </tr>
               ))}
             </tbody>
           </table>
+        </div>
+      )}
+
+      {selectedWh && (
+        <div className="card mt-4">
+          <div className="flex items-center justify-between mb-3">
+            <h3 className="text-sm font-semibold">
+              Delivery Log
+              {loadingDeliveries && (
+                <span className="text-[var(--muted)] ml-2">Loading...</span>
+              )}
+            </h3>
+            <button
+              onClick={() => {
+                setSelectedWh(null);
+                setDeliveries([]);
+              }}
+              className="text-xs text-[var(--muted)] hover:underline"
+            >
+              Close
+            </button>
+          </div>
+          {deliveries.length === 0 && !loadingDeliveries ? (
+            <p className="text-sm text-[var(--muted)]">No deliveries yet.</p>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full text-xs">
+                <thead>
+                  <tr className="text-[var(--muted)] text-left border-b border-[var(--card-border)]">
+                    <th className="pb-1">Event</th>
+                    <th className="pb-1">Status</th>
+                    <th className="pb-1">Code</th>
+                    <th className="pb-1">Latency</th>
+                    <th className="pb-1">Time</th>
+                    <th className="pb-1"></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {deliveries.map((d) => (
+                    <tr
+                      key={d.id}
+                      className="border-b border-[var(--card-border)]"
+                    >
+                      <td className="py-1">{d.event_type}</td>
+                      <td className="py-1">
+                        <span
+                          className={
+                            d.success ? "text-green-400" : "text-[var(--danger)]"
+                          }
+                        >
+                          {d.success ? "OK" : d.error || "Failed"}
+                        </span>
+                      </td>
+                      <td className="py-1">{d.status_code ?? "—"}</td>
+                      <td className="py-1">
+                        {d.duration_ms != null ? `${d.duration_ms}ms` : "—"}
+                      </td>
+                      <td className="py-1">
+                        {new Date(d.created_at).toLocaleString()}
+                      </td>
+                      <td className="py-1">
+                        {!d.success && (
+                          <button
+                            disabled={retryingId === d.id}
+                            onClick={() => handleRetry(selectedWh, d.id)}
+                            className="text-[var(--primary)] hover:underline disabled:opacity-50"
+                          >
+                            {retryingId === d.id ? "Retrying..." : "Retry"}
+                          </button>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
         </div>
       )}
 

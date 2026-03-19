@@ -763,6 +763,41 @@ export async function deleteWebhook(id: string): Promise<void> {
   });
 }
 
+export interface WebhookDelivery {
+  id: string;
+  webhook_id: string;
+  event_type: string;
+  payload: Record<string, unknown>;
+  status_code: number | null;
+  success: boolean;
+  error: string | null;
+  duration_ms: number | null;
+  created_at: string;
+}
+
+export async function listDeliveries(
+  webhookId: string,
+  params?: { limit?: number; offset?: number },
+): Promise<PaginatedResponse<WebhookDelivery>> {
+  const q = new URLSearchParams();
+  if (params?.limit != null) q.set("limit", String(params.limit));
+  if (params?.offset != null) q.set("offset", String(params.offset));
+  const qs = q.toString();
+  return request(
+    `/webhooks/${encodeURIComponent(webhookId)}/deliveries${qs ? `?${qs}` : ""}`,
+  );
+}
+
+export async function retryDelivery(
+  webhookId: string,
+  deliveryId: string,
+): Promise<WebhookDelivery> {
+  return request<WebhookDelivery>(
+    `/webhooks/${encodeURIComponent(webhookId)}/deliveries/${encodeURIComponent(deliveryId)}/retry`,
+    { method: "POST" },
+  );
+}
+
 // ── Questionnaires ──────────────────────────────────────────────────
 
 export interface QuestionnaireOut {

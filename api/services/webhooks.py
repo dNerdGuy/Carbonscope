@@ -342,3 +342,68 @@ async def process_pending_retries(db: AsyncSession) -> int:
 
     await db.commit()
     return processed
+
+
+async def retry_delivery(
+    db: AsyncSession,
+    delivery_id: str,
+    company_id: str,
+) -> WebhookDelivery | None:
+    """Manually retry a specific failed delivery (admin action).
+
+    Returns the updated delivery or None if not found / not owned.
+    """
+    result = await db.execute(
+        select(WebhookDelivery)
+        .join(Webhook, WebhookDelivery.webhook_id == Webhook.id)
+        .where(
+            WebhookDelivery.id == delivery_id,
+            Webhook.company_id == company_id,
+            Webhook.deleted_at.is_(None),
+        )
+    )
+    delivery = result.scalar_one_or_none()
+    if not delivery:
+        return None
+
+    wh_result = await db.execute(
+        select(Webhook).where(Webhook.id == delivery.webhook_id)
+    )
+    wh = wh_result.scalar_one_or_none()
+    if not wh or not wh.active:
+        return None
+
+    payload = json.dumps(delivery.payload, default=str).encode()
+    signature = _sign_payload(wh.secret, payload)
+    headers = {
+        "Content-Type": "application/json",
+        "X-CarbonScope-Signature": f"sha256={signature}",
+        "X-CarbonScope-Event": delivery.event_type,
+    }
+
+    delivery.retry_count += 1
+    start = time.monotonic()
+    try:
+        async with httpx.AsyncClient(timeout=10.0) as client:
+            resp = await client.post(wh.url, content=payload, headers=headers)
+        elapsed_ms = int((time.monotonic() - start) * 1000)
+        delivery.status_code = resp.status_code
+        delivery.response_body = resp.text[:2048]
+        delivery.success = resp.status_code < 400
+        delivery.duration_ms = elapsed_ms
+        delivery.error = None
+    except (httpx.RequestError, httpx.TimeoutException, OSError) as exc:
+        elapsed_ms = int((time.monotonic() - start) * 1000)
+        delivery.duration_ms = elapsed_ms
+        delivery.error = str(exc)[:2048]
+        delivery.success = False
+
+    if delivery.success:
+        delivery.next_retry_at = None
+    else:
+        delay = _RETRY_DELAYS[min(delivery.retry_count, len(_RETRY_DELAYS) - 1)]
+        delivery.next_retry_at = datetime.now(timezone.utc) + timedelta(seconds=delay)
+
+    await db.commit()
+    await db.refresh(delivery)
+    return delivery

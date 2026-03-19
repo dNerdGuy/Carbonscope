@@ -13,7 +13,7 @@ from api.deps import get_current_user, require_admin
 from api.limiter import limiter
 from api.models import User
 from api.schemas import PaginatedResponse, WebhookCreate, WebhookDeliveryOut, WebhookOut, WebhookOutPublic, WebhookToggle
-from api.services.webhooks import create_webhook, delete_webhook, list_deliveries, list_webhooks, toggle_webhook
+from api.services.webhooks import create_webhook, delete_webhook, list_deliveries, list_webhooks, retry_delivery, toggle_webhook
 from api.services import audit
 
 logger = logging.getLogger(__name__)
@@ -117,3 +117,23 @@ async def get_deliveries(
         if result.scalar_one_or_none() is None:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Webhook not found")
     return PaginatedResponse(items=items, total=total, limit=limit, offset=offset)
+
+
+@router.post("/{webhook_id}/deliveries/{delivery_id}/retry", response_model=WebhookDeliveryOut)
+@limiter.limit(RATE_LIMIT_DEFAULT)
+async def retry_webhook_delivery(
+    request: Request,
+    webhook_id: str,
+    delivery_id: str,
+    user: User = Depends(require_admin),
+    db: AsyncSession = Depends(get_db),
+):
+    """Manually retry a failed webhook delivery."""
+    delivery = await retry_delivery(db, delivery_id, user.company_id)
+    if not delivery:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Delivery not found")
+    await audit.record(
+        db, user_id=user.id, company_id=user.company_id,
+        action="retry", resource_type="webhook_delivery", resource_id=delivery_id,
+    )
+    return delivery
