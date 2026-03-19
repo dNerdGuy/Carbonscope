@@ -321,19 +321,22 @@ class TestAdminOnlyRoutes:
 
 @pytest.mark.asyncio
 class TestDeletedAtFilters:
-    async def test_ai_audit_trail_excludes_deleted_report(self, auth_client: AsyncClient):
-        """Soft-deleted reports should not be accessible via /ai/audit-trail."""
-        # Create data + estimate to get a report
-        await auth_client.post("/api/v1/data", json={
+    @staticmethod
+    async def _create_report(auth_client: AsyncClient) -> str:
+        """Create a data upload + estimate and return the report ID."""
+        upload = await auth_client.post("/api/v1/data", json={
             "year": 2023,
             "provided_data": {"electricity_kwh": 100000},
         })
-        est = await auth_client.post("/api/v1/estimate", json={"year": 2023})
-        if est.status_code != 200:
-            pytest.skip("Estimate endpoint not returning report")
-        report_id = est.json().get("id")
-        if not report_id:
-            pytest.skip("No report ID returned")
+        upload_id = upload.json()["id"]
+        est = await auth_client.post("/api/v1/estimate", json={"data_upload_id": upload_id})
+        assert est.status_code == 201, f"Estimate failed: {est.status_code} {est.text}"
+        report_id = est.json()["id"]
+        return report_id
+
+    async def test_ai_audit_trail_excludes_deleted_report(self, auth_client: AsyncClient):
+        """Soft-deleted reports should not be accessible via /ai/audit-trail."""
+        report_id = await self._create_report(auth_client)
 
         # Soft-delete the report
         await auth_client.delete(f"/api/v1/reports/{report_id}")
@@ -343,32 +346,14 @@ class TestDeletedAtFilters:
         assert resp.status_code == 404
 
     async def test_ai_recommendations_excludes_deleted_report(self, auth_client: AsyncClient):
-        await auth_client.post("/api/v1/data", json={
-            "year": 2023,
-            "provided_data": {"electricity_kwh": 100000},
-        })
-        est = await auth_client.post("/api/v1/estimate", json={"year": 2023})
-        if est.status_code != 200:
-            pytest.skip("Estimate endpoint not returning report")
-        report_id = est.json().get("id")
-        if not report_id:
-            pytest.skip("No report ID returned")
+        report_id = await self._create_report(auth_client)
 
         await auth_client.delete(f"/api/v1/reports/{report_id}")
         resp = await auth_client.get(f"/api/v1/ai/recommendations/{report_id}")
         assert resp.status_code == 404
 
     async def test_compliance_excludes_deleted_report(self, auth_client: AsyncClient):
-        await auth_client.post("/api/v1/data", json={
-            "year": 2023,
-            "provided_data": {"electricity_kwh": 100000},
-        })
-        est = await auth_client.post("/api/v1/estimate", json={"year": 2023})
-        if est.status_code != 200:
-            pytest.skip("Estimate endpoint not returning report")
-        report_id = est.json().get("id")
-        if not report_id:
-            pytest.skip("No report ID returned")
+        report_id = await self._create_report(auth_client)
 
         await auth_client.delete(f"/api/v1/reports/{report_id}")
         resp = await auth_client.post("/api/v1/compliance/report", json={

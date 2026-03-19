@@ -180,20 +180,27 @@ class TestApplyTemplate:
 
 @pytest.mark.asyncio
 class TestUpdateQuestion:
+    # CSV with clear question patterns the rule-based extractor can match
+    _QUESTION_CSV = (
+        "Number,Question\n"
+        "Q1. What are the total scope 1 greenhouse gas emissions in metric tons?\n"
+        "Q2. How does your company measure and report its carbon footprint each year?\n"
+    )
+
     async def _setup(self, auth_client: AsyncClient):
-        upload = await auth_client.post("/api/v1/questionnaires/upload", files=_csv_file())
+        csv_file = {"file": ("questions.csv", io.BytesIO(self._QUESTION_CSV.encode()), "text/csv")}
+        upload = await auth_client.post("/api/v1/questionnaires/upload", files=csv_file)
         qid = upload.json()["id"]
         # extract to get questions
         await auth_client.post(f"/api/v1/questionnaires/{qid}/extract")
         detail = await auth_client.get(f"/api/v1/questionnaires/{qid}")
         data = detail.json()
         questions = data.get("questions", [])
+        assert questions, "Expected rule-based extractor to find questions from CSV with Q1./Q2. patterns"
         return qid, questions
 
     async def test_update_human_answer(self, auth_client: AsyncClient):
         qid, questions = await self._setup(auth_client)
-        if not questions:
-            pytest.skip("No questions extracted")
         question_id = questions[0]["id"]
         resp = await auth_client.patch(
             f"/api/v1/questionnaires/{qid}/questions/{question_id}",
@@ -204,8 +211,6 @@ class TestUpdateQuestion:
 
     async def test_update_question_status(self, auth_client: AsyncClient):
         qid, questions = await self._setup(auth_client)
-        if not questions:
-            pytest.skip("No questions extracted")
         question_id = questions[0]["id"]
         resp = await auth_client.patch(
             f"/api/v1/questionnaires/{qid}/questions/{question_id}",

@@ -247,9 +247,7 @@ class TestMarketplaceEmailResilience:
             result = await db.execute(
                 select(UserModel).where(UserModel.email == "test@example.com")
             )
-            buyer = result.scalar_one_or_none()
-            if buyer is None:
-                pytest.skip("auth_client user not found in DB")
+            buyer = result.scalar_one()
 
             # Update existing subscription to enterprise (registration creates a free one)
             sub_result = await db.execute(
