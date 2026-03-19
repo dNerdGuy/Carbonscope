@@ -293,6 +293,13 @@ async def change_password(
     )
     await db.commit()
 
+    # Fire-and-forget notification — failure should not block the response
+    try:
+        from api.services.email import send_password_changed_email
+        await send_password_changed_email(user.email)
+    except Exception:
+        logger.warning("Failed to send password-change notification email")
+
 
 @router.delete("/me", status_code=status.HTTP_204_NO_CONTENT)
 @limiter.limit(RATE_LIMIT_AUTH)

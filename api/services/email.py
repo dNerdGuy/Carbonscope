@@ -197,3 +197,24 @@ async def send_marketplace_sale_email(
     return await send_email(
         to, f"[CarbonScope] Your listing was purchased: {_esc(listing_title)}", html_body,
     )
+
+
+async def send_password_changed_email(to: str) -> bool:
+    """Send email notifying the user their password was changed."""
+    html_body = """
+    <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
+        <div style="background: #dc2626; color: white; padding: 16px; border-radius: 8px 8px 0 0;">
+            <h2 style="margin: 0;">&#128274; Password Changed</h2>
+        </div>
+        <div style="border: 1px solid #e5e7eb; padding: 24px; border-radius: 0 0 8px 8px;">
+            <p>Your CarbonScope password was recently changed.</p>
+            <p>If you made this change, no action is needed.</p>
+            <p><strong>If you did not change your password</strong>, please reset it immediately
+               and contact support.</p>
+            <p style="color: #6b7280; font-size: 12px;">
+                This is an automated security notification from CarbonScope.
+            </p>
+        </div>
+    </div>
+    """
+    return await send_email(to, "[CarbonScope] Your password was changed", html_body)
