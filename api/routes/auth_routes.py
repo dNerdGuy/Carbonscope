@@ -317,6 +317,29 @@ async def change_password(
         logger.warning("Failed to send password-change notification email")
 
 
+@router.get("/me/export")
+@limiter.limit(RATE_LIMIT_AUTH)
+async def export_my_data(
+    request: Request,
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Download all personal and company data (GDPR Art. 20 portability)."""
+    from fastapi.responses import JSONResponse
+
+    from api.services.data_export import gather_user_export
+
+    data = await gather_user_export(db, user)
+    await audit.record(
+        db, user_id=user.id, company_id=user.company_id,
+        action="export", resource_type="user_data", resource_id=user.id,
+    )
+    return JSONResponse(
+        content=data,
+        headers={"Content-Disposition": f'attachment; filename="carbonscope-export-{user.id}.json"'},
+    )
+
+
 @router.delete("/me", status_code=status.HTTP_204_NO_CONTENT)
 @limiter.limit(RATE_LIMIT_AUTH)
 async def delete_account(
