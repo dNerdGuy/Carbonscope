@@ -32,9 +32,11 @@ from api.auth import (
 )
 from api.config import (
     ACCESS_TOKEN_EXPIRE_MINUTES,
+    ACCOUNT_LOCKOUT_MINUTES,
     COOKIE_DOMAIN,
     COOKIE_SAMESITE,
     COOKIE_SECURE,
+    MAX_FAILED_LOGIN_ATTEMPTS,
     RATE_LIMIT_AUTH,
 )
 from api.database import get_db
@@ -193,9 +195,9 @@ async def login(request: Request, body: UserLogin, db: AsyncSession = Depends(ge
         # Increment failed attempts if user exists
         if user_row is not None:
             user_row.failed_login_attempts = (user_row.failed_login_attempts or 0) + 1
-            if user_row.failed_login_attempts >= 5:
+            if user_row.failed_login_attempts >= MAX_FAILED_LOGIN_ATTEMPTS:
                 from datetime import timedelta
-                user_row.locked_until = datetime.now(timezone.utc) + timedelta(minutes=15)
+                user_row.locked_until = datetime.now(timezone.utc) + timedelta(minutes=ACCOUNT_LOCKOUT_MINUTES)
             await db.commit()
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,

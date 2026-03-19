@@ -78,6 +78,11 @@ RATE_LIMIT_MFA_VALIDATE: str = os.getenv("RATE_LIMIT_MFA_VALIDATE", "5/minute")
 RATE_LIMIT_DEFAULT: str = os.getenv("RATE_LIMIT_DEFAULT", "60/minute")
 TRUST_PROXY: bool = os.getenv("TRUST_PROXY", "false").lower() in ("true", "1", "yes")
 
+# ── Account Lockout ─────────────────────────────────────────────────
+
+MAX_FAILED_LOGIN_ATTEMPTS: int = int(os.getenv("MAX_FAILED_LOGIN_ATTEMPTS", "5"))
+ACCOUNT_LOCKOUT_MINUTES: int = int(os.getenv("ACCOUNT_LOCKOUT_MINUTES", "15"))
+
 # ── Cookies / CSRF ──────────────────────────────────────────────────
 
 COOKIE_SECURE: bool = ENV == "production"
