@@ -670,3 +670,28 @@ class IndustryBenchmark(Base):
     __table_args__ = (
         UniqueConstraint("industry", "region", "year", name="uq_benchmark_industry_region_year"),
     )
+
+
+# ── Team Invitations ────────────────────────────────────────────────
+
+
+class Invitation(Base):
+    """Pending team member invitation."""
+    __tablename__ = "invitations"
+    __table_args__ = (
+        Index("ix_invitations_token_hash", "token_hash"),
+        Index("ix_invitations_email_company", "email", "company_id"),
+    )
+
+    id: str = Column(String(32), primary_key=True, default=_new_id)
+    company_id: str = Column(String(32), ForeignKey("companies.id", ondelete="CASCADE"), nullable=False)
+    email: str = Column(String(255), nullable=False)
+    role: str = Column(Enum(UserRole, native_enum=False, length=50), nullable=False, default=UserRole.member)
+    invited_by: str = Column(String(32), ForeignKey("users.id"), nullable=False)
+    token_hash: str = Column(String(128), nullable=False, unique=True)
+    expires_at: datetime = Column(DateTime(timezone=True), nullable=False)
+    accepted_at: datetime | None = Column(DateTime(timezone=True), nullable=True)
+    created_at: datetime = Column(DateTime(timezone=True), default=_utcnow)
+
+    company = relationship("Company")
+    inviter = relationship("User")

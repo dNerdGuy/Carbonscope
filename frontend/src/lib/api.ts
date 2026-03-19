@@ -798,6 +798,76 @@ export async function retryDelivery(
   );
 }
 
+// ── Team Management ─────────────────────────────────────────────────
+
+export interface TeamMember {
+  id: string;
+  email: string;
+  full_name: string;
+  role: string;
+  is_active: boolean;
+  last_login: string | null;
+  created_at: string;
+}
+
+export interface TeamInvite {
+  id: string;
+  email: string;
+  role: string;
+  invited_by: string;
+  expires_at: string;
+  accepted_at: string | null;
+  created_at: string;
+}
+
+export async function listTeamMembers(params?: {
+  limit?: number;
+  offset?: number;
+}): Promise<PaginatedResponse<TeamMember>> {
+  const q = new URLSearchParams();
+  if (params?.limit != null) q.set("limit", String(params.limit));
+  if (params?.offset != null) q.set("offset", String(params.offset));
+  const qs = q.toString();
+  return request(`/team/members${qs ? `?${qs}` : ""}`);
+}
+
+export async function inviteTeamMember(data: {
+  email: string;
+  role: string;
+}): Promise<TeamInvite> {
+  return request<TeamInvite>("/team/invite", {
+    method: "POST",
+    body: JSON.stringify(data),
+  });
+}
+
+export async function listInvitations(params?: {
+  limit?: number;
+  offset?: number;
+}): Promise<PaginatedResponse<TeamInvite>> {
+  const q = new URLSearchParams();
+  if (params?.limit != null) q.set("limit", String(params.limit));
+  if (params?.offset != null) q.set("offset", String(params.offset));
+  const qs = q.toString();
+  return request(`/team/invitations${qs ? `?${qs}` : ""}`);
+}
+
+export async function updateMemberRole(
+  memberId: string,
+  role: string,
+): Promise<TeamMember> {
+  return request<TeamMember>(
+    `/team/members/${encodeURIComponent(memberId)}/role?role=${encodeURIComponent(role)}`,
+    { method: "PATCH" },
+  );
+}
+
+export async function removeMember(memberId: string): Promise<void> {
+  return request(`/team/members/${encodeURIComponent(memberId)}`, {
+    method: "DELETE",
+  });
+}
+
 // ── Questionnaires ──────────────────────────────────────────────────
 
 export interface QuestionnaireOut {

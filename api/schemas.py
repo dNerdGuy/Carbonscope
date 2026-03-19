@@ -98,6 +98,49 @@ class PasswordChange(BaseModel):
         return _check_password_strength(v)
 
 
+# ── Team / Invitations ──────────────────────────────────────────────
+
+
+class InviteCreate(BaseModel):
+    email: EmailStr
+    role: str = Field(default="member", pattern="^(admin|member)$")
+
+
+class InviteOut(BaseModel):
+    id: str
+    email: str
+    role: str
+    invited_by: str
+    expires_at: datetime
+    accepted_at: datetime | None = None
+    created_at: datetime
+
+    model_config = {"from_attributes": True}
+
+
+class InviteAccept(BaseModel):
+    token: str = Field(min_length=1, max_length=128)
+    full_name: str = Field(min_length=1, max_length=255)
+    password: str = Field(min_length=8, max_length=128)
+
+    @field_validator("password")
+    @classmethod
+    def password_strength(cls, v: str) -> str:
+        return _check_password_strength(v)
+
+
+class TeamMemberOut(BaseModel):
+    id: str
+    email: str
+    full_name: str
+    role: str
+    is_active: bool
+    last_login: datetime | None = None
+    created_at: datetime
+
+    model_config = {"from_attributes": True}
+
+
 # ── Company ─────────────────────────────────────────────────────────
 
 
