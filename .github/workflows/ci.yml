@@ -89,6 +89,16 @@ jobs:
           SECRET_KEY: ci-test-secret-key-12345
           DATABASE_URL: "postgresql+asyncpg://carbonscope:ci_test_password@localhost:5432/carbonscope_test"
 
+      - name: Validate backup & restore (PostgreSQL)
+        run: |
+          PGPASSWORD=ci_test_password pg_dump -h localhost -U carbonscope carbonscope_test -Fc -f /tmp/ci_backup.dump
+          PGPASSWORD=ci_test_password dropdb -h localhost -U carbonscope carbonscope_test
+          PGPASSWORD=ci_test_password createdb -h localhost -U carbonscope carbonscope_test
+          PGPASSWORD=ci_test_password pg_restore -h localhost -U carbonscope -d carbonscope_test /tmp/ci_backup.dump
+          # Verify tables survived the round-trip
+          PGPASSWORD=ci_test_password psql -h localhost -U carbonscope carbonscope_test \
+            -c "SELECT count(*) FROM alembic_version;"
+
   lint:
     runs-on: ubuntu-latest
     steps:
