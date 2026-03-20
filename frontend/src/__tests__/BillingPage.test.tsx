@@ -14,6 +14,22 @@ vi.mock("@/components/Toast", () => ({
   useToast: () => ({ toast: vi.fn() }),
 }));
 
+type ConfirmDialogProps = {
+  open: boolean;
+  onConfirm: () => void;
+  title: string;
+};
+
+vi.mock("@/components/ConfirmDialog", () => ({
+  default: ({ open, onConfirm, title }: ConfirmDialogProps) =>
+    open ? (
+      <div data-testid="confirm-dialog">
+        <span>{title}</span>
+        <button onClick={onConfirm}>Confirm</button>
+      </div>
+    ) : null,
+}));
+
 const mockGetSubscription = vi.fn();
 const mockGetCredits = vi.fn();
 const mockListPlans = vi.fn();
@@ -92,6 +108,9 @@ describe("BillingPage", () => {
       .find((btn) => btn.textContent?.toLowerCase().includes("pro"));
     if (upgradeBtn) {
       fireEvent.click(upgradeBtn);
+      // ConfirmDialog now opens; click its Confirm button
+      const confirmBtn = await screen.findByText("Confirm");
+      fireEvent.click(confirmBtn);
       await waitFor(() => {
         expect(mockChangePlan).toHaveBeenCalledWith("pro");
       });
@@ -113,6 +132,9 @@ describe("BillingPage", () => {
     );
     if (changeable) {
       fireEvent.click(changeable);
+      // ConfirmDialog now opens; click its Confirm button
+      const confirmBtn = await screen.findByText("Confirm");
+      fireEvent.click(confirmBtn);
       expect(
         await screen.findByText(/plan change failed/i),
       ).toBeInTheDocument();
