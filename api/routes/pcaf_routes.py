@@ -43,13 +43,13 @@ async def create_portfolio(
         year=body.year,
     )
     db.add(portfolio)
-    await db.commit()
-    await db.refresh(portfolio)
+    await db.flush()
     await audit.record(
         db, user_id=user.id, company_id=user.company_id,
         action="create", resource_type="pcaf_portfolio", resource_id=portfolio.id,
     )
     await db.commit()
+    await db.refresh(portfolio)
     return portfolio
 
 

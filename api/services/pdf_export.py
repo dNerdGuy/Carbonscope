@@ -85,9 +85,9 @@ def generate_report_pdf(
     elements.append(Paragraph("Greenhouse Gas Emissions (tCO2e)", styles["Heading2"]))
     emission_data = [
         ["Scope", "Emissions (tCO2e)", "% of Total"],
-        ["Scope 1 — Direct", f"{scope1:,.2f}", f"{scope1/total*100:.1f}%" if total else "—"],
-        ["Scope 2 — Indirect (Energy)", f"{scope2:,.2f}", f"{scope2/total*100:.1f}%" if total else "—"],
-        ["Scope 3 — Value Chain", f"{scope3:,.2f}", f"{scope3/total*100:.1f}%" if total else "—"],
+        ["Scope 1 — Direct", f"{scope1:,.2f}", f"{scope1/total*100:.1f}%" if total > 0 else "—"],
+        ["Scope 2 — Indirect (Energy)", f"{scope2:,.2f}", f"{scope2/total*100:.1f}%" if total > 0 else "—"],
+        ["Scope 3 — Value Chain", f"{scope3:,.2f}", f"{scope3/total*100:.1f}%" if total > 0 else "—"],
         ["Total", f"{total:,.2f}", "100.0%"],
     ]
     emission_table = Table(emission_data, colWidths=[2.5 * inch, 2 * inch, 1.5 * inch])

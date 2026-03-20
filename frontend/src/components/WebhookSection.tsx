@@ -35,6 +35,7 @@ export default function WebhookSection() {
   const [deliveries, setDeliveries] = useState<WebhookDelivery[]>([]);
   const [loadingDeliveries, setLoadingDeliveries] = useState(false);
   const [retryingId, setRetryingId] = useState<string | null>(null);
+  const [newSecret, setNewSecret] = useState<string | null>(null);
 
   useEffect(() => {
     listWebhooks()
@@ -148,6 +149,9 @@ export default function WebhookSection() {
                 url: whUrl,
                 event_types: whEvents,
               });
+              if ((wh as Record<string, unknown>).secret) {
+                setNewSecret((wh as Record<string, unknown>).secret as string);
+              }
               setWebhooks((prev) => [...prev, wh]);
               setWhUrl("");
               setWhEvents(["report.created"]);
@@ -161,6 +165,38 @@ export default function WebhookSection() {
           {addingWh ? "Adding..." : "Add Webhook"}
         </button>
       </div>
+
+      {newSecret && (
+        <div className="card mb-4 border-yellow-500/50 bg-yellow-900/10 p-4">
+          <div className="flex items-start justify-between gap-2">
+            <div>
+              <p className="font-semibold text-sm text-yellow-300">Webhook Signing Secret</p>
+              <p className="text-xs text-[var(--muted)] mt-1">
+                Copy this secret now — it won&apos;t be shown again.
+              </p>
+              <code className="mt-2 block rounded bg-[var(--background)] px-3 py-2 text-xs font-mono break-all">
+                {newSecret}
+              </code>
+            </div>
+            <div className="flex gap-2 shrink-0">
+              <button
+                type="button"
+                className="text-xs px-3 py-1 rounded bg-[var(--card-border)] hover:bg-[var(--primary)] hover:text-black transition-colors"
+                onClick={() => { navigator.clipboard.writeText(newSecret).catch(() => {}); }}
+              >
+                Copy
+              </button>
+              <button
+                type="button"
+                className="text-xs px-3 py-1 rounded text-[var(--muted)] hover:text-[var(--foreground)] transition-colors"
+                onClick={() => setNewSecret(null)}
+              >
+                Dismiss
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {webhooks.length > 0 && (
         <div className="card overflow-x-auto">

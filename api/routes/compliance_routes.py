@@ -22,6 +22,7 @@ from api.services.compliance import (
     generate_tcfd_disclosure,
 )
 from api.services.recommendations import generate_recommendations
+from api.services.subscriptions import deduct_operation_credits
 from api.services import audit
 
 router = APIRouter(prefix="/compliance", tags=["compliance"])
@@ -50,18 +51,10 @@ async def create_compliance_report(
     company_result = await db.execute(select(Company).where(Company.id == user.company_id, Company.deleted_at.is_(None)))
     company = company_result.scalar_one()
 
-    # Deduct credits only after successful validation
-    from api.services.subscriptions import deduct_operation_credits
-    await deduct_operation_credits(db, user.company_id, "estimate")
-    await audit.record(
-        db, user_id=user.id, company_id=user.company_id,
-        action="generate", resource_type="compliance_report",
-        resource_id=body.report_id, detail=f"framework: {body.framework}",
-    )
-    await db.commit()
-
+    # Generate report FIRST, then deduct credits only on success
+    result = None
     if body.framework == "ghg_protocol":
-        return generate_ghg_inventory(
+        result = generate_ghg_inventory(
             company_name=company.name,
             industry=company.industry,
             region=company.region,
@@ -76,7 +69,7 @@ async def create_compliance_report(
             confidence=report.confidence,
         )
     elif body.framework == "cdp":
-        return generate_cdp_responses(
+        result = generate_cdp_responses(
             company_name=company.name,
             industry=company.industry,
             year=report.year,
@@ -93,7 +86,7 @@ async def create_compliance_report(
             breakdown=report.breakdown,
             industry=company.industry,
         )
-        return generate_tcfd_disclosure(
+        result = generate_tcfd_disclosure(
             company_name=company.name,
             industry=company.industry,
             year=report.year,
@@ -104,7 +97,7 @@ async def create_compliance_report(
             recommendations=recs,
         )
     elif body.framework == "sbti":
-        return generate_sbti_pathway(
+        result = generate_sbti_pathway(
             company_name=company.name,
             year=report.year,
             scope1=report.scope1,
@@ -113,7 +106,7 @@ async def create_compliance_report(
             total=report.total,
         )
     elif body.framework == "csrd":
-        return generate_csrd_report(
+        result = generate_csrd_report(
             company_name=company.name,
             industry=company.industry,
             region=company.region,
@@ -135,7 +128,7 @@ async def create_compliance_report(
             breakdown=report.breakdown,
             industry=company.industry,
         )
-        return generate_issb_report(
+        result = generate_issb_report(
             company_name=company.name,
             industry=company.industry,
             region=company.region,
@@ -152,7 +145,7 @@ async def create_compliance_report(
             recommendations=recs,
         )
     elif body.framework == "secr":
-        return generate_secr_report(
+        result = generate_secr_report(
             company_name=company.name,
             industry=company.industry,
             region=company.region,
@@ -167,5 +160,16 @@ async def create_compliance_report(
             employee_count=company.employee_count,
             revenue_usd=company.revenue_usd,
         )
+    else:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Unknown framework")
 
-    raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Unknown framework")
+    # Report generated successfully — now deduct credits and record audit
+    await deduct_operation_credits(db, user.company_id, "estimate")
+    await audit.record(
+        db, user_id=user.id, company_id=user.company_id,
+        action="generate", resource_type="compliance_report",
+        resource_id=body.report_id, detail=f"framework: {body.framework}",
+    )
+    await db.commit()
+
+    return result

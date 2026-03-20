@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
+import { useDocumentTitle } from "@/hooks/useDocumentTitle";
 import { useAuth } from "@/lib/auth-context";
 import { PageSkeleton } from "@/components/Skeleton";
 import ConfirmDialog from "@/components/ConfirmDialog";
@@ -18,6 +19,7 @@ import {
 } from "@/lib/api";
 
 export default function PCAFPage() {
+  useDocumentTitle("PCAF Portfolios");
   const { user, loading } = useAuth();
   const router = useRouter();
   const [portfolios, setPortfolios] = useState<FinancedPortfolio[]>([]);

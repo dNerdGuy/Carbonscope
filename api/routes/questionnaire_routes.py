@@ -116,8 +116,7 @@ async def upload_questionnaire(
         extracted_text=extracted_text,
     )
     db.add(questionnaire)
-    await db.commit()
-    await db.refresh(questionnaire)
+    await db.flush()
 
     await audit.record(
         db, user_id=user.id, company_id=user.company_id,
@@ -125,6 +124,7 @@ async def upload_questionnaire(
         resource_id=str(questionnaire.id),
     )
     await db.commit()
+    await db.refresh(questionnaire)
 
     return questionnaire
 

@@ -166,7 +166,6 @@ async function rawRequest(path: string, init?: RequestInit): Promise<Response> {
     try {
       if (!refreshPromise) refreshPromise = doRefresh();
       await refreshPromise;
-      refreshPromise = null;
       const retry = await fetchWithRetry(`${BASE}${path}`, {
         ...init,
         headers,
@@ -178,7 +177,6 @@ async function rawRequest(path: string, init?: RequestInit): Promise<Response> {
       }
       return retry;
     } catch (err) {
-      refreshPromise = null;
       if (err instanceof ApiError && err.status === 401) {
         localStorage.removeItem("user");
         if (typeof window !== "undefined") {
@@ -186,6 +184,8 @@ async function rawRequest(path: string, init?: RequestInit): Promise<Response> {
         }
       }
       throw err;
+    } finally {
+      refreshPromise = null;
     }
   }
 

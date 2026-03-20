@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { useDocumentTitle } from "@/hooks/useDocumentTitle";
 import Link from "next/link";
 import { useAuth } from "@/lib/auth-context";
 import { listReports, type EmissionReport } from "@/lib/api";
@@ -9,6 +10,7 @@ import Breadcrumbs from "@/components/Breadcrumbs";
 import { PageSkeleton } from "@/components/Skeleton";
 
 export default function RecommendationsIndexPage() {
+  useDocumentTitle("Recommendations");
   const { user, loading } = useAuth();
   const router = useRouter();
   const [reports, setReports] = useState<EmissionReport[]>([]);

@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from datetime import datetime
+
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -38,6 +40,8 @@ async def list_logs(
     action: str | None = None,
     resource_type: str | None = None,
     user_id: str | None = None,
+    start_date: datetime | None = None,
+    end_date: datetime | None = None,
     limit: int = 50,
     offset: int = 0,
 ) -> dict:
@@ -49,6 +53,10 @@ async def list_logs(
         base = base.where(AuditLog.resource_type == resource_type)
     if user_id is not None:
         base = base.where(AuditLog.user_id == user_id)
+    if start_date is not None:
+        base = base.where(AuditLog.created_at >= start_date)
+    if end_date is not None:
+        base = base.where(AuditLog.created_at <= end_date)
 
     total = (await db.execute(select(func.count()).select_from(base.subquery()))).scalar() or 0
     rows = (await db.execute(

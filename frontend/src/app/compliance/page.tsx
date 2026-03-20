@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
+import { useDocumentTitle } from "@/hooks/useDocumentTitle";
 import Breadcrumbs from "@/components/Breadcrumbs";
 import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "@/lib/auth-context";
@@ -38,6 +39,7 @@ const FRAMEWORKS: { id: Framework; label: string; desc: string }[] = [
 ];
 
 export default function CompliancePage() {
+  useDocumentTitle("Compliance Reports");
   const { user, loading } = useAuth();
   const router = useRouter();
   const [selectedReport, setSelectedReport] = useState("");
@@ -46,6 +48,11 @@ export default function CompliancePage() {
   const [result, setResult] = useState<Record<string, unknown> | null>(null);
   const [generating, setGenerating] = useState(false);
   const [error, setError] = useState("");
+
+  const resultJson = useMemo(
+    () => (result ? JSON.stringify(result, null, 2) : ""),
+    [result],
+  );
 
   const reportsQuery = useQuery({
     queryKey: ["reports", user?.company_id],
@@ -90,7 +97,12 @@ export default function CompliancePage() {
 
   return (
     <div className="max-w-5xl mx-auto p-8 space-y-8">
-      <Breadcrumbs items={[{ label: "Dashboard", href: "/dashboard" }, { label: "Compliance" }]} />
+      <Breadcrumbs
+        items={[
+          { label: "Dashboard", href: "/dashboard" },
+          { label: "Compliance" },
+        ]}
+      />
       <h1 className="text-2xl font-bold">Compliance Reports</h1>
 
       {/* Controls */}
@@ -157,7 +169,7 @@ export default function CompliancePage() {
             </h2>
             <button
               onClick={() => {
-                const blob = new Blob([JSON.stringify(result, null, 2)], {
+                const blob = new Blob([resultJson], {
                   type: "application/json",
                 });
                 const url = URL.createObjectURL(blob);
@@ -173,7 +185,7 @@ export default function CompliancePage() {
             </button>
           </div>
           <pre className="bg-[var(--background)] border border-[var(--card-border)] rounded-lg p-4 text-xs overflow-auto max-h-[600px]">
-            {JSON.stringify(result, null, 2)}
+            {resultJson}
           </pre>
         </div>
       )}

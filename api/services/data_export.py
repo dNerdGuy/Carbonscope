@@ -30,6 +30,9 @@ from api.models import (
     WebhookDelivery,
 )
 
+# Maximum rows per table to prevent OOM on large accounts
+_MAX_ROWS_PER_TABLE = 10_000
+
 
 def _row_to_dict(obj: Any) -> dict[str, Any]:
     """Convert an ORM model instance to a JSON-serialisable dict."""
@@ -64,7 +67,7 @@ async def gather_user_export(db: AsyncSession, user: User) -> dict[str, Any]:
         col = getattr(model, filter_col, None)
         if col is None or not company_id:
             return []
-        rows = (await db.execute(select(model).where(col == company_id))).scalars().all()
+        rows = (await db.execute(select(model).where(col == company_id).limit(_MAX_ROWS_PER_TABLE))).scalars().all()
         return [_row_to_dict(r) for r in rows]
 
     export["data_uploads"] = await _collect(DataUpload)
@@ -80,7 +83,7 @@ async def gather_user_export(db: AsyncSession, user: User) -> dict[str, Any]:
 
     # Financed portfolios + assets (batch load to avoid N+1)
     portfolios = (
-        await db.execute(select(FinancedPortfolio).where(FinancedPortfolio.company_id == company_id))
+        await db.execute(select(FinancedPortfolio).where(FinancedPortfolio.company_id == company_id).limit(_MAX_ROWS_PER_TABLE))
     ).scalars().all()
     portfolio_ids = [p.id for p in portfolios]
     assets_by_pf: dict[str, list] = {}

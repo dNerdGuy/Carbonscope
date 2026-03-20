@@ -30,6 +30,17 @@ class Subscription:
         return self.queue
 
     def __exit__(self, *exc: object) -> None:
+        self._cleanup()
+
+    async def __aenter__(self) -> asyncio.Queue[dict[str, Any]]:
+        subs = _subscribers.setdefault(self.company_id, set())
+        subs.add(self.queue)
+        return self.queue
+
+    async def __aexit__(self, *exc: object) -> None:
+        self._cleanup()
+
+    def _cleanup(self) -> None:
         subs = _subscribers.get(self.company_id)
         if subs:
             subs.discard(self.queue)

@@ -19,6 +19,9 @@ We aim to acknowledge reports within 48 hours and provide a resolution timeline 
 
 | Version | Supported |
 | :------ | :-------: |
+| 0.27.x  |    ✅     |
+| 0.26.x  |    ✅     |
+| 0.25.x  |    ✅     |
 | 0.24.x  |    ✅     |
 | 0.23.x  |    ✅     |
 | 0.22.x  |    ✅     |

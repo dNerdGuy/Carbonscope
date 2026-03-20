@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { useDocumentTitle } from "@/hooks/useDocumentTitle";
 import { useAuth } from "@/lib/auth-context";
 import { PageSkeleton } from "@/components/Skeleton";
 import {
@@ -12,6 +13,7 @@ import {
 } from "@/lib/api";
 
 export default function BenchmarksPage() {
+  useDocumentTitle("Benchmarks");
   const { user, loading } = useAuth();
   const router = useRouter();
   const [benchmarks, setBenchmarks] = useState<IndustryBenchmark | null>(null);
@@ -78,16 +80,23 @@ export default function BenchmarksPage() {
             {industry.charAt(0).toUpperCase() + industry.slice(1)} Benchmarks
           </h2>
           <div className="grid gap-4 sm:grid-cols-3">
-            {Object.entries(benchmarks).map(([key, val]) => (
-              <div key={key} className="card">
-                <p className="text-sm text-[var(--muted)]">
-                  {key.replace(/_/g, " ")}
-                </p>
-                <p className="mt-1 text-2xl font-bold">
-                  {typeof val === "number" ? val.toLocaleString() : String(val)}
-                </p>
-              </div>
-            ))}
+            {Object.entries(benchmarks)
+              .filter(
+                ([, val]) =>
+                  typeof val === "number" || typeof val === "string",
+              )
+              .map(([key, val]) => (
+                <div key={key} className="card">
+                  <p className="text-sm text-[var(--muted)]">
+                    {key.replace(/_/g, " ")}
+                  </p>
+                  <p className="mt-1 text-2xl font-bold">
+                    {typeof val === "number"
+                      ? val.toLocaleString()
+                      : String(val)}
+                  </p>
+                </div>
+              ))}
           </div>
         </section>
       )}
@@ -100,22 +109,32 @@ export default function BenchmarksPage() {
             <table className="w-full text-left text-sm">
               <thead className="bg-[var(--card)] text-[var(--muted)]">
                 <tr>
-                  {Object.keys(peers).map((key) => (
-                    <th key={key} className="px-4 py-3">
-                      {key.replace(/_/g, " ")}
-                    </th>
-                  ))}
+                  {Object.entries(peers)
+                    .filter(
+                      ([, val]) =>
+                        typeof val === "number" || typeof val === "string",
+                    )
+                    .map(([key]) => (
+                      <th key={key} className="px-4 py-3">
+                        {key.replace(/_/g, " ")}
+                      </th>
+                    ))}
                 </tr>
               </thead>
               <tbody className="divide-y divide-[var(--card-border)]">
                 <tr>
-                  {Object.values(peers).map((val, i) => (
-                    <td key={i} className="px-4 py-3">
-                      {typeof val === "number"
-                        ? val.toLocaleString()
-                        : String(val)}
-                    </td>
-                  ))}
+                  {Object.entries(peers)
+                    .filter(
+                      ([, val]) =>
+                        typeof val === "number" || typeof val === "string",
+                    )
+                    .map(([key, val]) => (
+                      <td key={key} className="px-4 py-3">
+                        {typeof val === "number"
+                          ? val.toLocaleString()
+                          : String(val)}
+                      </td>
+                    ))}
                 </tr>
               </tbody>
             </table>

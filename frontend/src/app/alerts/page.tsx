@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback, useMemo } from "react";
 import { useRouter } from "next/navigation";
+import { useDocumentTitle } from "@/hooks/useDocumentTitle";
 import { useAuth } from "@/lib/auth-context";
 import { PageSkeleton } from "@/components/Skeleton";
 import { useToast } from "@/components/Toast";
@@ -27,6 +28,7 @@ const SEVERITY_BADGES: Record<string, string> = {
 };
 
 export default function AlertsPage() {
+  useDocumentTitle("Alerts");
   const { user, loading } = useAuth();
   const router = useRouter();
   const { toast } = useToast();

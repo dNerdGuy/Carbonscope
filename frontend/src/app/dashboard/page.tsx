@@ -2,6 +2,7 @@
 
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { useDocumentTitle } from "@/hooks/useDocumentTitle";
 import dynamic from "next/dynamic";
 import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "@/lib/auth-context";
@@ -14,6 +15,7 @@ const ScopeChart = dynamic(() => import("@/components/ScopeChart"), {
 });
 
 export default function DashboardPage() {
+  useDocumentTitle("Dashboard");
   const { user, loading } = useAuth();
   const router = useRouter();
 

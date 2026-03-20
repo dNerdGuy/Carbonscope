@@ -4,7 +4,7 @@
 
 <h1 align="center">CarbonScope</h1>
 
-<p align="center">
+<p align="center">  
   <strong>Decentralized Carbon Intelligence on Bittensor</strong><br>
   <em>Enterprise-grade carbon accounting platform powered by decentralized AI</em>
 </p>
@@ -13,8 +13,8 @@
   <a href="https://opensource.org/licenses/MIT"><img src="https://img.shields.io/badge/License-MIT-blue.svg?style=flat-square" alt="License: MIT"></a>
   <img src="https://img.shields.io/badge/python-3.10%2B-3776AB?style=flat-square&logo=python&logoColor=white" alt="Python 3.10+">
   <img src="https://img.shields.io/badge/node-18%2B-339933?style=flat-square&logo=node.js&logoColor=white" alt="Node 18+">
-  <img src="https://img.shields.io/badge/version-0.26.0-orange?style=flat-square" alt="Version 0.26.0">
-  <img src="https://img.shields.io/badge/tests-768%20backend%20%7C%20214%20frontend-brightgreen?style=flat-square" alt="Tests">
+  <img src="https://img.shields.io/badge/version-0.27.0-orange?style=flat-square" alt="Version 0.27.0">
+  <img src="https://img.shields.io/badge/tests-778%20backend%20%7C%20215%20frontend-brightgreen?style=flat-square" alt="Tests">
   <img src="https://img.shields.io/badge/endpoints-100%2B-7B61FF?style=flat-square" alt="100+ API Endpoints">
   <img src="https://img.shields.io/badge/Bittensor-Subnet-000000?style=flat-square" alt="Bittensor Subnet">
 </p>

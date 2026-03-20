@@ -89,7 +89,7 @@ async def invite_member(
 
 
 @router.post("/invite/accept", response_model=UserOut)
-@limiter.limit(RATE_LIMIT_DEFAULT)
+@limiter.limit("5/minute")
 async def accept_invite(
     request: Request,
     body: InviteAccept,
@@ -244,7 +244,7 @@ async def remove_member(
 
     target.is_active = False
     target.deleted_at = _utcnow()
-    target.email = f"removed_{target.id}@removed.local"
+    target.email = f"removed_{target.id}_{secrets.token_hex(4)}@removed.local"
     target.full_name = "Removed User"
     await db.commit()
 

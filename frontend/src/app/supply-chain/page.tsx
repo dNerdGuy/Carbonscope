@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import Breadcrumbs from "@/components/Breadcrumbs";
+import { useDocumentTitle } from "@/hooks/useDocumentTitle";
 import { useAuth } from "@/lib/auth-context";
 import ConfirmDialog from "@/components/ConfirmDialog";
 import {
@@ -42,6 +43,7 @@ interface Scope3Summary {
 }
 
 export default function SupplyChainPage() {
+  useDocumentTitle("Supply Chain");
   const { user, loading } = useAuth();
   const router = useRouter();
   const [suppliers, setSuppliers] = useState<Supplier[]>([]);
@@ -126,7 +128,12 @@ export default function SupplyChainPage() {
 
   return (
     <div className="max-w-6xl mx-auto p-8 space-y-8">
-      <Breadcrumbs items={[{ label: "Dashboard", href: "/dashboard" }, { label: "Supply Chain" }]} />
+      <Breadcrumbs
+        items={[
+          { label: "Dashboard", href: "/dashboard" },
+          { label: "Supply Chain" },
+        ]}
+      />
       <h1 className="text-2xl font-bold">Supply Chain Network</h1>
 
       {error && (
@@ -168,10 +175,14 @@ export default function SupplyChainPage() {
         <h2 className="text-lg font-semibold mb-4">Add Supplier</h2>
         <form onSubmit={handleAdd} className="flex flex-wrap gap-3 items-end">
           <div>
-            <label className="block text-xs text-[var(--muted)] mb-1">
+            <label
+              htmlFor="supplier-company-id"
+              className="block text-xs text-[var(--muted)] mb-1"
+            >
               Supplier Company ID
             </label>
             <input
+              id="supplier-company-id"
               value={supplierId}
               onChange={(e) => setSupplierId(e.target.value)}
               required
@@ -179,10 +190,14 @@ export default function SupplyChainPage() {
             />
           </div>
           <div>
-            <label className="block text-xs text-[var(--muted)] mb-1">
+            <label
+              htmlFor="supplier-spend"
+              className="block text-xs text-[var(--muted)] mb-1"
+            >
               Annual Spend (USD)
             </label>
             <input
+              id="supplier-spend"
               type="number"
               value={spend}
               onChange={(e) => setSpend(e.target.value)}
@@ -192,10 +207,14 @@ export default function SupplyChainPage() {
             />
           </div>
           <div>
-            <label className="block text-xs text-[var(--muted)] mb-1">
+            <label
+              htmlFor="supplier-category"
+              className="block text-xs text-[var(--muted)] mb-1"
+            >
               Category
             </label>
             <select
+              id="supplier-category"
               value={category}
               onChange={(e) => setCategory(e.target.value)}
               className="bg-[var(--background)] border border-[var(--card-border)] rounded-md px-3 py-2 text-sm"

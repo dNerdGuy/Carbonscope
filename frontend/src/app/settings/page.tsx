@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { useDocumentTitle } from "@/hooks/useDocumentTitle";
 import { useAuth } from "@/lib/auth-context";
 import {
   getCompany,
@@ -20,6 +21,7 @@ import WebhookSection from "@/components/WebhookSection";
 import { INDUSTRIES, industryLabel } from "@/lib/constants";
 
 export default function SettingsPage() {
+  useDocumentTitle("Settings");
   const { user, loading } = useAuth();
   const router = useRouter();
   const [company, setCompany] = useState<Company | null>(null);

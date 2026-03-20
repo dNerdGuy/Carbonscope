@@ -196,7 +196,7 @@ def generate_recommendations(
             if not strategy["applicable_when"](provided_data, breakdown):
                 continue
         except (TypeError, KeyError, AttributeError, ValueError):
-            logger.warning("Strategy %s evaluation failed", strategy.get("name", "unknown"), exc_info=True)
+            logger.warning("Strategy %s evaluation failed", strategy.get("id", "unknown"), exc_info=True)
             continue
 
         scope_val = scope_map.get(strategy["scope"], 0)

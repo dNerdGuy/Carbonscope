@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { Suspense, useEffect, useState, useCallback } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
+import { useDocumentTitle } from "@/hooks/useDocumentTitle";
 import { useAuth } from "@/lib/auth-context";
 import ConfirmDialog from "@/components/ConfirmDialog";
 import { PageSkeleton } from "@/components/Skeleton";
@@ -19,6 +20,15 @@ import {
 } from "@/lib/api";
 
 export default function MarketplacePage() {
+  return (
+    <Suspense fallback={<PageSkeleton />}>
+      <MarketplacePageInner />
+    </Suspense>
+  );
+}
+
+function MarketplacePageInner() {
+  useDocumentTitle("Data Marketplace");
   const { user, loading } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -170,20 +180,28 @@ export default function MarketplacePage() {
 
       {/* Filters */}
       <div className="flex gap-3 flex-wrap">
-        <input
-          type="text"
-          placeholder="Filter by industry..."
-          value={industry}
-          onChange={(e) => setIndustry(e.target.value)}
-          className="input text-sm px-3 py-1.5 w-48"
-        />
-        <input
-          type="text"
-          placeholder="Filter by region..."
-          value={region}
-          onChange={(e) => setRegion(e.target.value)}
-          className="input text-sm px-3 py-1.5 w-48"
-        />
+        <div>
+          <label htmlFor="filter-industry" className="sr-only">Filter by industry</label>
+          <input
+            id="filter-industry"
+            type="text"
+            placeholder="Filter by industry..."
+            value={industry}
+            onChange={(e) => setIndustry(e.target.value)}
+            className="input text-sm px-3 py-1.5 w-48"
+          />
+        </div>
+        <div>
+          <label htmlFor="filter-region" className="sr-only">Filter by region</label>
+          <input
+            id="filter-region"
+            type="text"
+            placeholder="Filter by region..."
+            value={region}
+            onChange={(e) => setRegion(e.target.value)}
+            className="input text-sm px-3 py-1.5 w-48"
+          />
+        </div>
         <button
           onClick={() => fetchListings(industry, region)}
           className="text-sm px-4 py-1.5 rounded-md bg-[var(--card-border)] hover:bg-[var(--primary)] hover:text-black transition-colors"

@@ -5,7 +5,7 @@ from __future__ import annotations
 import asyncio
 import logging
 
-from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query, Request, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from api.database import get_db
@@ -93,6 +93,7 @@ async def get_listing(
 async def purchase_data(
     request: Request,
     listing_id: str,
+    background_tasks: BackgroundTasks,
     user: User = Depends(require_plan("marketplace")),
     db: AsyncSession = Depends(get_db),
 ):
@@ -116,31 +117,34 @@ async def purchase_data(
             action="create", resource_type="data_purchase", resource_id=purchase.id,
         )
 
-        # Send email notifications (best-effort, don't fail the purchase)
-        try:
-            from api.services.email import (
-                send_marketplace_purchase_email,
-                send_marketplace_sale_email,
-            )
-            listing = purchase.listing
-            # Notify buyer
-            await send_marketplace_purchase_email(
-                user.email, listing.title, listing.price_credits, listing.data_type,
-            )
-            # Notify seller
-            seller_result = await db.execute(
-                select(UserModel).where(
-                    UserModel.company_id == listing.seller_company_id,
-                    UserModel.is_active.is_(True),
-                ).limit(1)
-            )
-            seller_user = seller_result.scalar_one_or_none()
-            if seller_user:
-                await send_marketplace_sale_email(
-                    seller_user.email, listing.title, listing.price_credits,
+        # Send email notifications in background (don't delay the purchase response)
+        listing = purchase.listing
+        # Lookup seller email in the request context (using the existing db session)
+        seller_result = await db.execute(
+            select(UserModel).where(
+                UserModel.company_id == listing.seller_company_id,
+                UserModel.is_active.is_(True),
+            ).limit(1)
+        )
+        seller_user = seller_result.scalar_one_or_none()
+        seller_email = seller_user.email if seller_user else None
+
+        async def _send_purchase_emails(buyer_email: str, listing_title: str, price: int, data_type: str, _seller_email: str | None):
+            try:
+                from api.services.email import (
+                    send_marketplace_purchase_email,
+                    send_marketplace_sale_email,
                 )
-        except (OSError, ConnectionError, asyncio.TimeoutError) as exc:
-            logger.warning("Email notification failed for marketplace purchase %s: %s", purchase.id, exc)
+                await send_marketplace_purchase_email(buyer_email, listing_title, price, data_type)
+                if _seller_email:
+                    await send_marketplace_sale_email(_seller_email, listing_title, price)
+            except (OSError, ConnectionError, asyncio.TimeoutError) as exc:
+                logger.warning("Email notification failed for marketplace purchase: %s", exc)
+
+        background_tasks.add_task(
+            _send_purchase_emails,
+            user.email, listing.title, listing.price_credits, listing.data_type, seller_email,
+        )
 
         return purchase
     except ValueError as e:

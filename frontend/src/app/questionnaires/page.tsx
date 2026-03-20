@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
+import { useDocumentTitle } from "@/hooks/useDocumentTitle";
 import { useAuth } from "@/lib/auth-context";
 import ConfirmDialog from "@/components/ConfirmDialog";
 import {
@@ -17,6 +18,7 @@ import {
 import { PageSkeleton } from "@/components/Skeleton";
 
 export default function QuestionnairesPage() {
+  useDocumentTitle("Questionnaires");
   const { user, loading } = useAuth();
   const router = useRouter();
   const [questionnaires, setQuestionnaires] = useState<QuestionnaireOut[]>([]);

@@ -106,7 +106,11 @@ class TestEventsRoute:
 
         # Pre-publish an event so the generator can pick it up immediately
         # We need to create the subscription first, then publish, then read
-        gen = _event_stream(company_id)
+        # Create a mock request that reports not-disconnected
+        class _FakeRequest:
+            async def is_disconnected(self):
+                return False
+        gen = _event_stream(_FakeRequest(), company_id)
 
         # The generator opens a Subscription context. By calling __anext__,
         # it enters the context and waits. We need to publish concurrently.

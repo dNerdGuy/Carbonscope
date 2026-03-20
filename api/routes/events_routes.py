@@ -21,16 +21,20 @@ router = APIRouter(prefix="/events", tags=["events"])
 _HEARTBEAT_INTERVAL = 30  # seconds
 
 
-async def _event_stream(company_id: str):
+async def _event_stream(request: Request, company_id: str):
     """Async generator that yields SSE-formatted events."""
     with Subscription(company_id) as queue:
         while True:
             try:
+                if await request.is_disconnected():
+                    break
                 payload = await asyncio.wait_for(queue.get(), timeout=_HEARTBEAT_INTERVAL)
                 event_type = payload.get("event", "message")
                 data = json.dumps(payload.get("data", {}))
                 yield f"event: {event_type}\ndata: {data}\n\n"
             except asyncio.TimeoutError:
+                if await request.is_disconnected():
+                    break
                 # Send heartbeat to keep the connection alive
                 yield ": heartbeat\n\n"
             except asyncio.CancelledError:
@@ -50,7 +54,7 @@ async def subscribe(
     - alert.acknowledged: an alert was marked as read
     """
     return StreamingResponse(
-        _event_stream(user.company_id),
+        _event_stream(request, user.company_id),
         media_type="text/event-stream",
         headers={
             "Cache-Control": "no-cache",

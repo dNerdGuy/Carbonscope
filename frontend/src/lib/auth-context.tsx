@@ -35,23 +35,14 @@ interface AuthState {
 
 const AuthContext = createContext<AuthState | null>(null);
 
-function decodeBase64UrlPayload(raw: string): Record<string, unknown> {
-  const base64 = raw.replace(/-/g, "+").replace(/_/g, "/");
-  const padded = base64.padEnd(
-    base64.length + ((4 - (base64.length % 4)) % 4),
-    "=",
-  );
-  const decoded = atob(padded);
-  return JSON.parse(decoded) as Record<string, unknown>;
-}
-
 function syncLoggedInCookie(loggedIn: boolean): void {
   if (typeof document === "undefined") return;
   if (!loggedIn) {
     document.cookie = "cs_access_token=; Path=/; Max-Age=0; SameSite=Lax";
     return;
   }
-  document.cookie = "cs_access_token=1; Path=/; SameSite=Lax; Secure";
+  const secure = window.location.protocol === "https:" ? "; Secure" : "";
+  document.cookie = `cs_access_token=1; Path=/; SameSite=Lax${secure}`;
 }
 
 export function AuthProvider({ children }: { children: ReactNode }) {

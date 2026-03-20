@@ -2,9 +2,11 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { useDocumentTitle } from "@/hooks/useDocumentTitle";
 import { forgotPassword, ApiError } from "@/lib/api";
 
 export default function ForgotPasswordPage() {
+  useDocumentTitle("Forgot Password");
   const [email, setEmail] = useState("");
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState("");

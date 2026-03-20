@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { useDocumentTitle } from "@/hooks/useDocumentTitle";
 import { useAuth } from "@/lib/auth-context";
 import {
   getSubscription,
@@ -18,6 +19,7 @@ import ConfirmDialog from "@/components/ConfirmDialog";
 import { useToast } from "@/components/Toast";
 
 export default function BillingPage() {
+  useDocumentTitle("Billing");
   const { user, loading } = useAuth();
   const router = useRouter();
   const { toast } = useToast();

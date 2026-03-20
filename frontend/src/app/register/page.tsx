@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { useDocumentTitle } from "@/hooks/useDocumentTitle";
 import { useAuth } from "@/lib/auth-context";
 import { FormField } from "@/components/FormField";
 import {
@@ -12,6 +13,7 @@ import {
 import { INDUSTRIES, REGIONS, industryLabel } from "@/lib/constants";
 
 export default function RegisterPage() {
+  useDocumentTitle("Register");
   const { register } = useAuth();
   const [form, setForm] = useState<RegisterFormValues>({
     email: "",

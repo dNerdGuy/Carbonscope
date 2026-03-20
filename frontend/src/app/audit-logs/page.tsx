@@ -1,14 +1,24 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { Suspense, useEffect, useState, useCallback } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { listAuditLogs, AuditLogEntry, ApiError } from "@/lib/api";
 import { SkeletonRows } from "@/components/Skeleton";
+import { useDocumentTitle } from "@/hooks/useDocumentTitle";
 import { useAuth } from "@/lib/auth-context";
 
 const PAGE_SIZE = 25;
 
 export default function AuditLogsPage() {
+  return (
+    <Suspense fallback={<div className="p-6 max-w-6xl mx-auto"><SkeletonRows /></div>}>
+      <AuditLogsPageInner />
+    </Suspense>
+  );
+}
+
+function AuditLogsPageInner() {
+  useDocumentTitle("Audit Logs");
   const { user, loading: authLoading } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();

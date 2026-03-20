@@ -35,7 +35,7 @@ CarbonScope is a three-tier application built on top of the Bittensor decentrali
 │                        API Layer                                        │
 │  ┌──────────────────────────────────────────────────────────────────┐   │
 │  │  FastAPI Backend (Python 3.10+)                                  │   │
-│  │  19 Route Modules · 26 Services · 100+ Endpoints                 │   │
+│  │  21 Route Modules · 28 Services · 100+ Endpoints                 │   │
 │  │  JWT Auth · Rate Limiting · CORS · Security Headers              │   │
 │  └──────────────────────────────────────────────────────────────────┘   │
 ├─────────────────────────────────────────────────────────────────────────┤
@@ -43,7 +43,7 @@ CarbonScope is a three-tier application built on top of the Bittensor decentrali
 │  ┌────────────────┐  ┌────────────────┐  ┌─────────────────────────┐    │
 │  │  PostgreSQL /  │  │  Bittensor     │  │  Emission Factor        │    │
 │  │  SQLite (dev)  │  │  Subnet        │  │  Datasets (JSON)        │    │
-│  │  24 models     │  │  Miners +      │  │  EPA, eGRID, IEA,       │    │
+│  │  25 models     │  │  Miners +      │  │  EPA, eGRID, IEA,       │    │
 │  │  Alembic mgr.  │  │  Validators    │  │  DEFRA, GLEC, IPCC      │    │
 │  └────────────────┘  └────────────────┘  └─────────────────────────┘    │
 └─────────────────────────────────────────────────────────────────────────┘

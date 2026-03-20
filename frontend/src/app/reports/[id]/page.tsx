@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter, useParams } from "next/navigation";
 import Link from "next/link";
 import dynamic from "next/dynamic";
+import { useDocumentTitle } from "@/hooks/useDocumentTitle";
 import { useAuth } from "@/lib/auth-context";
 import { getReport, exportReportPdf, type EmissionReport } from "@/lib/api";
 import Breadcrumbs from "@/components/Breadcrumbs";
@@ -15,6 +16,7 @@ const ScopeChart = dynamic(() => import("@/components/ScopeChart"), {
 });
 
 export default function ReportDetailPage() {
+  useDocumentTitle("Report Details");
   const { user, loading } = useAuth();
   const router = useRouter();
   const params = useParams();

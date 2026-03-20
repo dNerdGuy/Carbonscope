@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { Suspense, useEffect, useState, useCallback } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Breadcrumbs from "@/components/Breadcrumbs";
+import { useDocumentTitle } from "@/hooks/useDocumentTitle";
 import { useAuth } from "@/lib/auth-context";
 import ConfirmDialog from "@/components/ConfirmDialog";
 import {
@@ -16,6 +17,14 @@ import {
 } from "@/lib/api";
 import { PageSkeleton } from "@/components/Skeleton";
 import { useToast } from "@/components/Toast";
+
+export default function ScenariosPage() {
+  return (
+    <Suspense fallback={<PageSkeleton />}>
+      <ScenariosPageInner />
+    </Suspense>
+  );
+}
 
 const ADJUSTMENT_TYPES = [
   {
@@ -61,7 +70,8 @@ const ADJUSTMENT_TYPES = [
   },
 ];
 
-export default function ScenariosPage() {
+function ScenariosPageInner() {
+  useDocumentTitle("Scenarios");
   const { user, loading } = useAuth();
   const router = useRouter();
   const { toast } = useToast();
@@ -194,7 +204,12 @@ export default function ScenariosPage() {
 
   return (
     <div className="max-w-5xl mx-auto p-8">
-      <Breadcrumbs items={[{ label: "Dashboard", href: "/dashboard" }, { label: "Scenarios" }]} />
+      <Breadcrumbs
+        items={[
+          { label: "Dashboard", href: "/dashboard" },
+          { label: "Scenarios" },
+        ]}
+      />
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-bold">What-If Scenarios</h1>
         <button
@@ -285,13 +300,16 @@ export default function ScenariosPage() {
             {ADJUSTMENT_TYPES.map((adj) => {
               const active = !!adjustments[adj.key];
               return (
-                <div
+                <button
+                  type="button"
                   key={adj.key}
-                  className={`rounded border p-4 cursor-pointer transition-colors ${
+                  className={`rounded border p-4 text-left transition-colors ${
                     active
                       ? "border-[var(--primary)] bg-green-900/10"
                       : "border-[var(--card-border)] bg-[var(--background)]/50"
                   }`}
+                  role="checkbox"
+                  aria-checked={active}
                   onClick={() =>
                     toggleAdjustment(adj.key, adj.param, adj.default)
                   }
@@ -327,7 +345,7 @@ export default function ScenariosPage() {
                       />
                     </div>
                   )}
-                </div>
+                </button>
               );
             })}
           </div>

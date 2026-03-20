@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import "./globals.css";
 import { AuthProvider } from "@/lib/auth-context";
 import { QueryProvider } from "@/lib/query-provider";
@@ -33,7 +34,8 @@ export default function RootLayout({
         <ThemeProvider>
           <QueryProvider>
             <ToastProvider>
-              <AuthProvider>
+              <Suspense>
+                <AuthProvider>
                 <a
                   href="#main-content"
                   className="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-50 focus:bg-[var(--primary)] focus:text-black focus:px-4 focus:py-2 focus:rounded-lg"
@@ -49,6 +51,7 @@ export default function RootLayout({
                   {children}
                 </main>
               </AuthProvider>
+              </Suspense>
             </ToastProvider>
           </QueryProvider>
         </ThemeProvider>

@@ -1,9 +1,10 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { Suspense, useEffect, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
+import { useDocumentTitle } from "@/hooks/useDocumentTitle";
 import { useAuth } from "@/lib/auth-context";
 import { listReports, exportReports, type EmissionReport } from "@/lib/api";
 import { CardSkeleton } from "@/components/Skeleton";
@@ -12,6 +13,15 @@ import Breadcrumbs from "@/components/Breadcrumbs";
 const PAGE_SIZE = 10;
 
 export default function ReportsPage() {
+  return (
+    <Suspense fallback={<div className="max-w-5xl mx-auto p-8 space-y-3"><CardSkeleton /><CardSkeleton /><CardSkeleton /></div>}>
+      <ReportsPageInner />
+    </Suspense>
+  );
+}
+
+function ReportsPageInner() {
+  useDocumentTitle("Reports");
   const { user, loading } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -127,7 +137,12 @@ export default function ReportsPage() {
 
   return (
     <div className="max-w-5xl mx-auto p-8">
-      <Breadcrumbs items={[{ label: "Dashboard", href: "/dashboard" }, { label: "Reports" }]} />
+      <Breadcrumbs
+        items={[
+          { label: "Dashboard", href: "/dashboard" },
+          { label: "Reports" },
+        ]}
+      />
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-bold">Emission Reports</h1>
         <button

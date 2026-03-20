@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
+import { useDocumentTitle } from "@/hooks/useDocumentTitle";
 import { useAuth } from "@/lib/auth-context";
 import { PageSkeleton } from "@/components/Skeleton";
 import {
@@ -15,6 +16,7 @@ import {
 } from "@/lib/api";
 
 export default function MFAPage() {
+  useDocumentTitle("Multi-Factor Authentication");
   const { user, loading } = useAuth();
   const router = useRouter();
   const [setup, setSetup] = useState<MFASetup | null>(null);

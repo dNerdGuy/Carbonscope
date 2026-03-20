@@ -24,6 +24,10 @@ from carbonscope.test_cases.generator import get_curated_cases, generate_synthet
 
 # Path for persisting EMA scores across restarts
 _SCORES_FILE = os.getenv("VALIDATOR_SCORES_PATH", "validator_scores.json")
+# Validate the score file path to prevent directory traversal
+_SCORES_DIR = os.path.abspath(os.path.dirname(_SCORES_FILE) or ".")
+if not os.path.abspath(_SCORES_FILE).startswith(_SCORES_DIR):
+    raise SystemExit(f"VALIDATOR_SCORES_PATH resolves outside its parent directory: {_SCORES_FILE}")
 _SCORES_HMAC_FILE = _SCORES_FILE + ".sig"
 
 
@@ -31,8 +35,11 @@ def _score_hmac_key() -> bytes:
     """Derive HMAC key from the validator wallet hotkey (unique per validator)."""
     key = os.getenv("VALIDATOR_SCORE_HMAC_KEY", "")
     if not key:
-        # Fallback: use a static salt — better than nothing
-        key = "carbonscope-validator-scores-v1"
+        bt.logging.error(
+            "VALIDATOR_SCORE_HMAC_KEY not set — score file integrity cannot be verified. "
+            "Set this env var to a secure random string."
+        )
+        raise SystemExit("Missing VALIDATOR_SCORE_HMAC_KEY")
     return key.encode("utf-8")
 
 

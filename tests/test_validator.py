@@ -70,7 +70,8 @@ class TestUpdateScores:
 
 
 class TestScorePersistence:
-    def test_save_and_load_roundtrip(self, tmp_path):
+    def test_save_and_load_roundtrip(self, tmp_path, monkeypatch):
+        monkeypatch.setenv("VALIDATOR_SCORE_HMAC_KEY", "test-hmac-key-for-ci")
         path = str(tmp_path / "scores.json")
         v = _make_validator(scores={1: 0.5, 2: 0.9})
         with patch("neurons.validator._SCORES_FILE", path):
