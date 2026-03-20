@@ -132,10 +132,10 @@ class TestPasswordResetTokenDB:
 class TestRefreshRateLimit:
     async def test_refresh_endpoint_exists_with_rate_limit(self, client: AsyncClient):
         """Refresh endpoint should accept request param and be decorated with limiter.
-        We just verify the endpoint exists and requires a body."""
+        We just verify the endpoint exists and rejects unauthenticated requests."""
         resp = await client.post("/api/v1/auth/refresh", json={})
-        # Missing refresh_token field should give 422
-        assert resp.status_code == 422
+        # No valid refresh token in body or cookie → 401
+        assert resp.status_code == 401
 
 
 # ── A1-A5: Admin-only route enforcement ────────────────────────

@@ -71,8 +71,16 @@ class TokenWithRefresh(BaseModel):
     mfa_required: bool = False
 
 
-def _set_auth_cookies(response: Response, access_token: str, csrf_token: str) -> None:
-    """Set httpOnly access token cookie and readable CSRF cookie."""
+REFRESH_TOKEN_COOKIE_MAX_AGE = 30 * 24 * 60 * 60  # 30 days
+
+
+def _set_auth_cookies(
+    response: Response,
+    access_token: str,
+    csrf_token: str,
+    refresh_token: str | None = None,
+) -> None:
+    """Set httpOnly access + refresh token cookies and a readable CSRF cookie."""
     response.set_cookie(
         key="access_token",
         value=access_token,
@@ -93,10 +101,21 @@ def _set_auth_cookies(response: Response, access_token: str, csrf_token: str) ->
         max_age=ACCESS_TOKEN_EXPIRE_MINUTES * 60,
         path="/",
     )
+    if refresh_token:
+        response.set_cookie(
+            key="refresh_token",
+            value=refresh_token,
+            httponly=True,
+            secure=COOKIE_SECURE,
+            samesite=COOKIE_SAMESITE,
+            domain=COOKIE_DOMAIN,
+            max_age=REFRESH_TOKEN_COOKIE_MAX_AGE,
+            path="/api/v1/auth",
+        )
 
 
 class RefreshRequest(BaseModel):
-    refresh_token: str
+    refresh_token: str = ""
 
 
 class ForgotPasswordRequest(BaseModel):
@@ -225,13 +244,16 @@ async def login(request: Request, body: UserLogin, db: AsyncSession = Depends(ge
         )
         await db.commit()
 
-        return Response(
+        response = Response(
             content=TokenWithRefresh(
                 access_token=mfa_token, refresh_token="", csrf_token=None,
                 mfa_required=True,
             ).model_dump_json(),
             media_type="application/json",
         )
+        # Set mfa_pending token as httpOnly cookie so /mfa/validate can read it
+        _set_auth_cookies(response, mfa_token, "")
+        return response
 
     access = create_access_token(user.id, user.company_id)
     refresh = await create_refresh_token(db, user.id, user.company_id)
@@ -249,7 +271,7 @@ async def login(request: Request, body: UserLogin, db: AsyncSession = Depends(ge
         ).model_dump_json(),
         media_type="application/json",
     )
-    _set_auth_cookies(response, access, csrf)
+    _set_auth_cookies(response, access, csrf, refresh_token=refresh)
     return response
 
 
@@ -407,8 +429,17 @@ async def gdpr_hard_delete(
 @router.post("/refresh", response_model=TokenWithRefresh)
 @limiter.limit(RATE_LIMIT_AUTH)
 async def refresh_token(request: Request, body: RefreshRequest, db: AsyncSession = Depends(get_db)):
-    """Exchange a refresh token for a new access + refresh token pair (rotation)."""
-    data = await validate_refresh_token(db, body.refresh_token)
+    """Exchange a refresh token for a new access + refresh token pair (rotation).
+
+    The refresh token can be provided in the request body or as an httpOnly cookie.
+    """
+    token_value = body.refresh_token or request.cookies.get("refresh_token", "")
+    if not token_value:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="No refresh token provided",
+        )
+    data = await validate_refresh_token(db, token_value)
     if data is None:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -433,7 +464,7 @@ async def refresh_token(request: Request, body: RefreshRequest, db: AsyncSession
         ).model_dump_json(),
         media_type="application/json",
     )
-    _set_auth_cookies(response, access, csrf)
+    _set_auth_cookies(response, access, csrf, refresh_token=refresh)
     return response
 
 
@@ -467,6 +498,7 @@ async def logout(
     response = Response(status_code=status.HTTP_204_NO_CONTENT)
     response.delete_cookie("access_token", path="/", domain=COOKIE_DOMAIN)
     response.delete_cookie("csrf_token", path="/", domain=COOKIE_DOMAIN)
+    response.delete_cookie("refresh_token", path="/api/v1/auth", domain=COOKIE_DOMAIN)
     return response
 
 

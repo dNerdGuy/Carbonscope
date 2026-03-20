@@ -21,7 +21,7 @@ describe("API Client request function", () => {
     vi.restoreAllMocks();
   });
 
-  it("includes Authorization header when token exists", async () => {
+  it("sends request with credentials (cookies) instead of Bearer token", async () => {
     const mockFetch = vi.fn().mockResolvedValue({
       ok: true,
       status: 200,
@@ -29,7 +29,7 @@ describe("API Client request function", () => {
     });
     vi.stubGlobal("fetch", mockFetch);
     vi.stubGlobal("localStorage", {
-      getItem: vi.fn().mockReturnValue("my-token"),
+      getItem: vi.fn().mockReturnValue(null),
       setItem: vi.fn(),
       removeItem: vi.fn(),
     });
@@ -40,7 +40,10 @@ describe("API Client request function", () => {
 
     expect(mockFetch).toHaveBeenCalledOnce();
     const [, init] = mockFetch.mock.calls[0];
-    expect(init.headers["Authorization"]).toBe("Bearer my-token");
+    // Should NOT have Authorization header (cookies are used instead)
+    expect(init.headers["Authorization"]).toBeUndefined();
+    // Should include credentials for cookie-based auth
+    expect(init.credentials).toBe("include");
   });
 
   it("throws ApiError on non-ok response", async () => {
@@ -52,7 +55,7 @@ describe("API Client request function", () => {
     });
     vi.stubGlobal("fetch", mockFetch);
     vi.stubGlobal("localStorage", {
-      getItem: vi.fn().mockReturnValue("bad-token"),
+      getItem: vi.fn().mockReturnValue(null),
       setItem: vi.fn(),
       removeItem: vi.fn(),
     });
@@ -81,7 +84,7 @@ describe("API Client request function", () => {
 
     vi.stubGlobal("fetch", mockFetch);
     vi.stubGlobal("localStorage", {
-      getItem: vi.fn().mockReturnValue("my-token"),
+      getItem: vi.fn().mockReturnValue(null),
       setItem: vi.fn(),
       removeItem: vi.fn(),
     });

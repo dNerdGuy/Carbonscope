@@ -37,8 +37,8 @@ def _sanitize_header(value: str) -> str:
     return value.replace("\r", "").replace("\n", "").replace("\x00", "")
 
 
-async def send_email(to: str, subject: str, html_body: str) -> bool:
-    """Send an email asynchronously. Returns True on success, False on failure."""
+async def send_email(to: str, subject: str, html_body: str, *, _max_retries: int = 3) -> bool:
+    """Send an email asynchronously with exponential backoff. Returns True on success, False on failure."""
     to = _sanitize_header(to)
     subject = _sanitize_header(subject)
     if not _smtp_configured:
@@ -46,31 +46,42 @@ async def send_email(to: str, subject: str, html_body: str) -> bool:
         logger.debug("Email body: %s", html_body[:200])
         return True
 
-    try:
-        import aiosmtplib
-        from email.mime.multipart import MIMEMultipart
-        from email.mime.text import MIMEText
+    import asyncio
+    import aiosmtplib
+    from email.mime.multipart import MIMEMultipart
+    from email.mime.text import MIMEText
 
-        msg = MIMEMultipart("alternative")
-        msg["Subject"] = subject
-        msg["From"] = EMAIL_FROM
-        msg["To"] = to
-        msg.attach(MIMEText(html_body, "html"))
+    for attempt in range(_max_retries):
+        try:
+            msg = MIMEMultipart("alternative")
+            msg["Subject"] = subject
+            msg["From"] = EMAIL_FROM
+            msg["To"] = to
+            msg.attach(MIMEText(html_body, "html"))
 
-        await aiosmtplib.send(
-            msg,
-            hostname=SMTP_HOST,
-            port=SMTP_PORT,
-            username=SMTP_USER,
-            password=SMTP_PASSWORD,
-            start_tls=True,
-        )
+            await aiosmtplib.send(
+                msg,
+                hostname=SMTP_HOST,
+                port=SMTP_PORT,
+                username=SMTP_USER,
+                password=SMTP_PASSWORD,
+                start_tls=True,
+            )
 
-        logger.info("Email sent: to=%s subject=%s", _mask_email(to), subject)
-        return True
-    except Exception:
-        logger.exception("Failed to send email to %s — subject=%s", _mask_email(to), subject)
-        return False
+            logger.info("Email sent: to=%s subject=%s", _mask_email(to), subject)
+            return True
+        except Exception:
+            if attempt < _max_retries - 1:
+                delay = 2 ** attempt  # 1s, 2s, 4s …
+                logger.warning(
+                    "Email attempt %d/%d failed for %s — retrying in %ds",
+                    attempt + 1, _max_retries, _mask_email(to), delay,
+                )
+                await asyncio.sleep(delay)
+            else:
+                logger.exception("Failed to send email to %s — subject=%s", _mask_email(to), subject)
+
+    return False
 
 
 def _esc(text: str) -> str:

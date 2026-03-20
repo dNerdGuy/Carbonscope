@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
-describe("Auto token refresh", () => {
+describe("Auto token refresh (cookie-based)", () => {
   beforeEach(() => {
     vi.resetModules();
     vi.restoreAllMocks();
@@ -10,14 +10,11 @@ describe("Auto token refresh", () => {
     let callCount = 0;
     const mockFetch = vi.fn().mockImplementation((url: string) => {
       if (url.includes("/auth/refresh")) {
+        // refresh endpoint — server sets httpOnly cookies in the response
         return Promise.resolve({
           ok: true,
           status: 200,
-          json: () =>
-            Promise.resolve({
-              access_token: "new-token",
-              refresh_token: "new-refresh-token",
-            }),
+          json: () => Promise.resolve({}),
         });
       }
       callCount++;
@@ -30,7 +27,7 @@ describe("Auto token refresh", () => {
           json: () => Promise.resolve({ detail: "Token expired" }),
         });
       }
-      // Retry call: success
+      // Retry call: success (cookies auto-sent by browser)
       return Promise.resolve({
         ok: true,
         status: 200,
@@ -39,11 +36,9 @@ describe("Auto token refresh", () => {
     });
 
     vi.stubGlobal("fetch", mockFetch);
+    // localStorage still used for user display data (not tokens)
     vi.stubGlobal("localStorage", {
-      getItem: vi.fn((key: string) => {
-        if (key === "refresh_token") return "expired-refresh-token";
-        return "expired-token";
-      }),
+      getItem: vi.fn().mockReturnValue(null),
       setItem: vi.fn(),
       removeItem: vi.fn(),
     });
@@ -54,19 +49,15 @@ describe("Auto token refresh", () => {
     expect(result).toEqual({ id: "123", email: "test@test.com" });
     // Should have called: original request, refresh, retry
     expect(mockFetch).toHaveBeenCalledTimes(3);
+    // Refresh now sends empty body (cookies used for auth)
     const [, refreshInit] = mockFetch.mock.calls[1];
-    expect(refreshInit.body).toBe(
-      JSON.stringify({ refresh_token: "expired-refresh-token" }),
-    );
-    // Token should be saved
-    expect(localStorage.setItem).toHaveBeenCalledWith("token", "new-token");
-    expect(localStorage.setItem).toHaveBeenCalledWith(
-      "refresh_token",
-      "new-refresh-token",
-    );
+    expect(refreshInit.body).toBe(JSON.stringify({}));
   });
 
-  it("clears auth state when refresh also fails with 401", async () => {
+  it("clears user state when refresh also fails with 401", async () => {
+    const dispatchSpy = vi.fn();
+    vi.stubGlobal("dispatchEvent", dispatchSpy);
+
     const mockFetch = vi.fn().mockResolvedValue({
       ok: false,
       status: 401,
@@ -76,19 +67,18 @@ describe("Auto token refresh", () => {
 
     vi.stubGlobal("fetch", mockFetch);
     vi.stubGlobal("localStorage", {
-      getItem: vi.fn().mockReturnValue("expired-token"),
+      getItem: vi.fn().mockReturnValue(null),
       setItem: vi.fn(),
       removeItem: vi.fn(),
     });
 
     const { getProfile } = await import("@/lib/api");
     await expect(getProfile()).rejects.toThrow("Session expired");
-    expect(localStorage.removeItem).toHaveBeenCalledWith("token");
-    expect(localStorage.removeItem).toHaveBeenCalledWith("refresh_token");
+    // Only user display data is cleared from localStorage (tokens are in httpOnly cookies)
     expect(localStorage.removeItem).toHaveBeenCalledWith("user");
   });
 
-  it("does not attempt refresh when no token exists", async () => {
+  it("attempts refresh on 401 even without localStorage tokens", async () => {
     const mockFetch = vi.fn().mockResolvedValue({
       ok: false,
       status: 401,
@@ -104,8 +94,9 @@ describe("Auto token refresh", () => {
     });
 
     const { getProfile } = await import("@/lib/api");
-    await expect(getProfile()).rejects.toThrow("Not authenticated");
-    // Should only have made the one original request (no refresh attempt)
-    expect(mockFetch).toHaveBeenCalledTimes(1);
+    await expect(getProfile()).rejects.toThrow("Session expired");
+    // With cookie-based auth, refresh is always attempted on 401:
+    // 1. original request → 401, 2. refresh attempt → 401 (fails)
+    expect(mockFetch).toHaveBeenCalledTimes(2);
   });
 });

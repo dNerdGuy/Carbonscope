@@ -60,43 +60,32 @@ function getCsrfToken(): string | null {
 }
 
 /** Prevent multiple concurrent refresh attempts. */
-let refreshPromise: Promise<string> | null = null;
+let refreshPromise: Promise<void> | null = null;
 
-async function doRefresh(): Promise<string> {
-  const refreshToken = localStorage.getItem("refresh_token");
-  if (!refreshToken) {
-    throw new ApiError(401, "Session expired");
-  }
-
+async function doRefresh(): Promise<void> {
   const res = await fetchWithRetry(`${BASE}/auth/refresh`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ refresh_token: refreshToken }),
+    body: JSON.stringify({}),
     credentials: "include",
   });
   if (!res.ok) throw new ApiError(res.status, "Session expired");
-  const data = await res.json();
-  localStorage.setItem("token", data.access_token);
-  if (typeof data.refresh_token === "string" && data.refresh_token.length > 0) {
-    localStorage.setItem("refresh_token", data.refresh_token);
-  }
-  return data.access_token;
+  // Cookies are set by the server response — nothing to store
 }
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
-  const token =
-    typeof window !== "undefined" ? localStorage.getItem("token") : null;
-
   const headers: Record<string, string> = {
     "Content-Type": "application/json",
     ...(init?.headers as Record<string, string>),
   };
-  if (token) headers["Authorization"] = `Bearer ${token}`;
 
-  // Attach CSRF token for mutating requests when using cookie auth
-  const csrf = getCsrfToken();
-  if (csrf && !token) {
-    headers["X-CSRF-Token"] = csrf;
+  // Always attach CSRF token on mutating requests (cookie-based auth)
+  const method = (init?.method ?? "GET").toUpperCase();
+  if (method !== "GET" && method !== "HEAD" && method !== "OPTIONS") {
+    const csrf = getCsrfToken();
+    if (csrf) {
+      headers["X-CSRF-Token"] = csrf;
+    }
   }
 
   const res = await fetchWithRetry(`${BASE}${path}`, {
@@ -105,13 +94,13 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
     credentials: "include",
   });
 
-  // Auto-refresh: on 401, try refreshing the token once and retry
-  if (res.status === 401 && token && path !== "/auth/refresh") {
+  // Auto-refresh: on 401, try refreshing the cookie-based session once and retry
+  if (res.status === 401 && path !== "/auth/refresh") {
     try {
       if (!refreshPromise) refreshPromise = doRefresh();
-      const newToken = await refreshPromise;
+      await refreshPromise;
       refreshPromise = null;
-      headers["Authorization"] = `Bearer ${newToken}`;
+      // Retry with fresh cookies (set by doRefresh server response)
       const retry = await fetchWithRetry(`${BASE}${path}`, {
         ...init,
         headers,
@@ -125,10 +114,8 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
       return retry.json();
     } catch (err) {
       refreshPromise = null;
-      // If refresh also failed, clear auth state and notify React
+      // If refresh also failed, clear display state and notify React
       if (err instanceof ApiError && err.status === 401) {
-        localStorage.removeItem("token");
-        localStorage.removeItem("refresh_token");
         localStorage.removeItem("user");
         if (typeof window !== "undefined") {
           window.dispatchEvent(new Event("auth:session-expired"));
@@ -152,17 +139,16 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
  * file uploads). Uses `fetchWithRetry`, attaches auth & CSRF headers.
  */
 async function rawRequest(path: string, init?: RequestInit): Promise<Response> {
-  const token =
-    typeof window !== "undefined" ? localStorage.getItem("token") : null;
-
   const headers: Record<string, string> = {
     ...(init?.headers as Record<string, string>),
   };
-  if (token) headers["Authorization"] = `Bearer ${token}`;
 
-  const csrf = getCsrfToken();
-  if (csrf && !token) {
-    headers["X-CSRF-Token"] = csrf;
+  const method = (init?.method ?? "GET").toUpperCase();
+  if (method !== "GET" && method !== "HEAD" && method !== "OPTIONS") {
+    const csrf = getCsrfToken();
+    if (csrf) {
+      headers["X-CSRF-Token"] = csrf;
+    }
   }
 
   const res = await fetchWithRetry(`${BASE}${path}`, {
@@ -171,13 +157,12 @@ async function rawRequest(path: string, init?: RequestInit): Promise<Response> {
     credentials: "include",
   });
 
-  // Auto-refresh: on 401, try refreshing the token once and retry
-  if (res.status === 401 && token && path !== "/auth/refresh") {
+  // Auto-refresh: on 401, try refreshing the cookie-based session once and retry
+  if (res.status === 401 && path !== "/auth/refresh") {
     try {
       if (!refreshPromise) refreshPromise = doRefresh();
-      const newToken = await refreshPromise;
+      await refreshPromise;
       refreshPromise = null;
-      headers["Authorization"] = `Bearer ${newToken}`;
       const retry = await fetchWithRetry(`${BASE}${path}`, {
         ...init,
         headers,
@@ -191,8 +176,6 @@ async function rawRequest(path: string, init?: RequestInit): Promise<Response> {
     } catch (err) {
       refreshPromise = null;
       if (err instanceof ApiError && err.status === 401) {
-        localStorage.removeItem("token");
-        localStorage.removeItem("refresh_token");
         localStorage.removeItem("user");
         if (typeof window !== "undefined") {
           window.dispatchEvent(new Event("auth:session-expired"));

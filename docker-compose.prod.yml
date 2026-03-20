@@ -94,6 +94,9 @@ services:
           cpus: "2.0"
     security_opt:
       - no-new-privileges:true
+    read_only: true
+    tmpfs:
+      - /tmp
 
   frontend:
     build:

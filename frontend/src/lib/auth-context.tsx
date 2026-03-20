@@ -20,7 +20,6 @@ import { useToast } from "@/components/Toast";
 
 interface AuthState {
   user: User | null;
-  token: string | null;
   loading: boolean;
   login: (email: string, password: string) => Promise<void>;
   register: (data: {
@@ -46,29 +45,25 @@ function decodeBase64UrlPayload(raw: string): Record<string, unknown> {
   return JSON.parse(decoded) as Record<string, unknown>;
 }
 
-function syncClientAuthCookie(token: string | null): void {
+function syncLoggedInCookie(loggedIn: boolean): void {
   if (typeof document === "undefined") return;
-  if (!token) {
+  if (!loggedIn) {
     document.cookie = "cs_access_token=; Path=/; Max-Age=0; SameSite=Lax";
     return;
   }
-  document.cookie = `cs_access_token=${encodeURIComponent(token)}; Path=/; SameSite=Lax`;
+  document.cookie = "cs_access_token=1; Path=/; SameSite=Lax";
 }
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
-  const [token, setToken] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  // Restore from localStorage on mount
+  // Restore user display data from localStorage on mount
   useEffect(() => {
-    const saved = localStorage.getItem("token");
     const savedUser = localStorage.getItem("user");
-    if (saved && savedUser) {
-      setToken(saved);
-      syncClientAuthCookie(saved);
+    if (savedUser) {
       try {
         setUser(JSON.parse(savedUser));
       } catch {
@@ -84,17 +79,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       // If server requests MFA, redirect to MFA verification instead of granting access
       if (resp.mfa_required) {
-        localStorage.setItem("mfa_pending_token", resp.access_token);
         router.push("/mfa-verify");
         return;
       }
 
-      localStorage.setItem("token", resp.access_token);
-      if (resp.refresh_token) {
-        localStorage.setItem("refresh_token", resp.refresh_token);
-      }
-      setToken(resp.access_token);
-      syncClientAuthCookie(resp.access_token);
+      // Server sets httpOnly cookies (access_token, refresh_token) automatically
+      syncLoggedInCookie(true);
 
       // Decode JWT payload — handle base64url encoding (RFC 7519)
       const raw = resp.access_token.split(".")[1];
@@ -127,16 +117,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       region?: string;
     }) => {
       const u = await apiRegister(data);
-      // Auto-login after registration
-      const resp = await apiLogin(data.email, data.password);
-      localStorage.setItem("token", resp.access_token);
-      if (resp.refresh_token) {
-        localStorage.setItem("refresh_token", resp.refresh_token);
-      }
+      // Auto-login after registration — server sets httpOnly cookies
+      await apiLogin(data.email, data.password);
+      syncLoggedInCookie(true);
       localStorage.setItem("user", JSON.stringify(u));
-      setToken(resp.access_token);
       setUser(u);
-      syncClientAuthCookie(resp.access_token);
       router.push("/dashboard");
     },
     [router],
@@ -148,12 +133,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     } catch {
       // Proceed with local cleanup even if server-side logout fails
     }
-    localStorage.removeItem("token");
-    localStorage.removeItem("refresh_token");
     localStorage.removeItem("user");
-    syncClientAuthCookie(null);
+    syncLoggedInCookie(false);
     getQueryClient().clear();
-    setToken(null);
     setUser(null);
     router.push("/login");
   }, [router]);
@@ -162,9 +144,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const { toast } = useToast();
   useEffect(() => {
     const onSessionExpired = () => {
-      syncClientAuthCookie(null);
+      syncLoggedInCookie(false);
       getQueryClient().clear();
-      setToken(null);
       setUser(null);
       toast("Your session has expired. Please log in again.", "warning");
       router.push("/login");
@@ -176,7 +157,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   return (
     <AuthContext.Provider
-      value={{ user, token, loading, login, register, logout }}
+      value={{ user, loading, login, register, logout }}
     >
       {children}
     </AuthContext.Provider>

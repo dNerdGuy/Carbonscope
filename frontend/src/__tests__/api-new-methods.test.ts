@@ -4,7 +4,7 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 const mockFetch = vi.fn();
 vi.stubGlobal("fetch", mockFetch);
 vi.stubGlobal("localStorage", {
-  getItem: vi.fn().mockReturnValue("test-token"),
+  getItem: vi.fn().mockReturnValue(null),
   setItem: vi.fn(),
   removeItem: vi.fn(),
 });

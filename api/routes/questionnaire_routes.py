@@ -86,6 +86,12 @@ async def upload_questionnaire(
         chunks.append(chunk)
     content = b"".join(chunks)
 
+    if total_size == 0:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="File is empty",
+        )
+
     # Verify magic bytes to prevent disguised file uploads
     expected_magic = _MAGIC_BYTES.get(file_type)
     if expected_magic and not content.startswith(expected_magic):
@@ -112,6 +118,14 @@ async def upload_questionnaire(
     db.add(questionnaire)
     await db.commit()
     await db.refresh(questionnaire)
+
+    await audit.record(
+        db, user_id=user.id, company_id=user.company_id,
+        action="questionnaire_upload", resource_type="questionnaire",
+        resource_id=str(questionnaire.id),
+    )
+    await db.commit()
+
     return questionnaire
 
 
@@ -402,6 +416,13 @@ async def delete_questionnaire(
     if not q:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Questionnaire not found")
     q.deleted_at = _utcnow()
+
+    await audit.record(
+        db, user_id=user.id, company_id=user.company_id,
+        action="questionnaire_delete", resource_type="questionnaire",
+        resource_id=questionnaire_id,
+    )
+
     await db.commit()
 
 

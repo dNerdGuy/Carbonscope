@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
@@ -36,8 +36,17 @@ export default function ReportsPage() {
   const [yearFilter, setYearFilter] = useState<string>(
     () => searchParams.get("year") ?? "",
   );
+  const [debouncedYear, setDebouncedYear] = useState(yearFilter);
+  const yearTimerRef = useRef<ReturnType<typeof setTimeout>>();
   const [actionError, setActionError] = useState("");
   const [exporting, setExporting] = useState(false);
+
+  // Debounce year filter input (400ms)
+  useEffect(() => {
+    clearTimeout(yearTimerRef.current);
+    yearTimerRef.current = setTimeout(() => setDebouncedYear(yearFilter), 400);
+    return () => clearTimeout(yearTimerRef.current);
+  }, [yearFilter]);
 
   // Sync state changes back to URL
   useEffect(() => {
@@ -46,20 +55,20 @@ export default function ReportsPage() {
     if (page > 1) params.set("page", String(page));
     if (sortBy !== "created_at") params.set("sort", sortBy);
     if (order !== "desc") params.set("order", order);
-    if (yearFilter) params.set("year", yearFilter);
+    if (debouncedYear) params.set("year", debouncedYear);
     const qs = params.toString();
     router.replace(`/reports${qs ? `?${qs}` : ""}`, { scroll: false });
-  }, [offset, sortBy, order, yearFilter, router]);
+  }, [offset, sortBy, order, debouncedYear, router]);
 
   const reportsQuery = useQuery({
-    queryKey: ["reports", offset, sortBy, order, yearFilter],
+    queryKey: ["reports", offset, sortBy, order, debouncedYear],
     queryFn: () =>
       listReports({
         limit: PAGE_SIZE,
         offset,
         sortBy,
         order,
-        year: yearFilter ? Number(yearFilter) : undefined,
+        year: debouncedYear ? Number(debouncedYear) : undefined,
       }),
     enabled: !!user && !loading,
     placeholderData: (prev) => prev,

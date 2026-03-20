@@ -65,6 +65,7 @@ Autoscaling is handled by HorizontalPodAutoscalers defined in `hpa.yaml`:
 
 - **Backend**: 2–8 replicas, scales on CPU (70%) and memory (80%)
 - **Frontend**: 2–4 replicas, scales on CPU (70%)
+- **Redis**: 1–3 replicas, scales on memory (75%) and CPU (70%)
 
 ```bash
 # Check HPA status
@@ -78,7 +79,26 @@ kubectl -n carbonscope scale deployment backend --replicas=4
 
 - **PodDisruptionBudgets** (`pdb.yaml`): Ensure at least 1 pod stays available during node drains
 - **NetworkPolicies** (`network-policy.yaml`): Deny-by-default ingress, allow only required traffic
-- **ResourceQuota** (`resource-quota.yaml`): Caps namespace at 8 CPU / 8Gi RAM requests, 30 pods
+- **ResourceQuota** (`resource-quota.yaml`): Caps namespace at 8 CPU / 8Gi RAM requests, 16 CPU / 16Gi RAM limits, 30 pods, 5 PVCs
+
+### Resource Quota Details
+
+The namespace-level quota prevents runaway resource consumption:
+
+| Resource | Limit |
+|---|---|
+| CPU requests | 8 cores |
+| Memory requests | 8 Gi |
+| CPU limits | 16 cores |
+| Memory limits | 16 Gi |
+| Pods | 30 |
+| PVCs | 5 |
+
+To check current usage:
+
+```bash
+kubectl -n carbonscope describe resourcequota carbonscope-quota
+```
 
 ## Database Migrations
 

@@ -180,16 +180,8 @@ async def validate_totp(
         ).model_dump_json(),
         media_type="application/json",
     )
-    response.set_cookie(
-        key="access_token", value=access, httponly=True,
-        secure=COOKIE_SECURE, samesite=COOKIE_SAMESITE,
-        domain=COOKIE_DOMAIN, max_age=ACCESS_TOKEN_EXPIRE_MINUTES * 60, path="/",
-    )
-    response.set_cookie(
-        key="csrf_token", value=csrf, httponly=False,
-        secure=COOKIE_SECURE, samesite=COOKIE_SAMESITE,
-        domain=COOKIE_DOMAIN, max_age=ACCESS_TOKEN_EXPIRE_MINUTES * 60, path="/",
-    )
+    from api.routes.auth_routes import _set_auth_cookies
+    _set_auth_cookies(response, access, csrf, refresh_token=refresh)
     return response
 
 

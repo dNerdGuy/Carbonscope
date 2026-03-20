@@ -1,5 +1,6 @@
 "use client";
 
+import { memo } from "react";
 import {
   BarChart,
   Bar,
@@ -16,7 +17,7 @@ interface Datum {
   fill: string;
 }
 
-export default function ScopeChart({ data }: { data: Datum[] }) {
+export default memo(function ScopeChart({ data }: { data: Datum[] }) {
   return (
     <ResponsiveContainer width="100%" height={260}>
       <BarChart data={data} margin={{ top: 8, right: 8, bottom: 0, left: 0 }}>
@@ -41,4 +42,4 @@ export default function ScopeChart({ data }: { data: Datum[] }) {
       </BarChart>
     </ResponsiveContainer>
   );
-}
+});
