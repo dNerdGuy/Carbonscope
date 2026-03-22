@@ -25,6 +25,7 @@ import Breadcrumbs from "@/components/Breadcrumbs";
 import WebhookSection from "@/components/WebhookSection";
 import ConfirmDialog from "@/components/ConfirmDialog";
 import { useAuth } from "@/lib/auth-context";
+import { QRCodeSVG } from "qrcode.react";
 
 import { INDUSTRIES, industryLabel } from "@/lib/constants";
 
@@ -445,11 +446,19 @@ function SettingsPage() {
         {mfaSetup && (
           <div className="space-y-4">
             <div>
-              <p className="text-sm text-[var(--muted)] mb-1">
+              <p className="text-sm text-[var(--muted)] mb-4">
                 Scan this QR code with your authenticator app, or enter the
                 secret manually:
               </p>
-              <code className="block rounded bg-[var(--background)] p-3 text-sm text-[var(--primary)] break-all">
+              <div className="flex justify-center mb-4 bg-white p-4 rounded-xl border border-[var(--card-border)] w-fit mx-auto">
+                <QRCodeSVG
+                  value={mfaSetup.provisioning_uri}
+                  size={180}
+                  level="M"
+                  marginSize={0}
+                />
+              </div>
+              <code className="block rounded bg-[var(--background)] p-3 text-center text-sm text-[var(--primary)] font-mono tracking-wider break-all">
                 {mfaSetup.secret}
               </code>
             </div>
