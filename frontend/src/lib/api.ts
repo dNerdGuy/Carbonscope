@@ -98,8 +98,14 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
     credentials: "include",
   });
 
-  // Auto-refresh: on 401, try refreshing the cookie-based session once and retry
-  if (res.status === 401 && path !== "/auth/refresh") {
+  // Auto-refresh: on 401, try refreshing the cookie-based session once and retry.
+  // Exclude auth endpoints — a 401 from login/register means wrong credentials, not session expiry.
+  if (
+    res.status === 401 &&
+    path !== "/auth/refresh" &&
+    path !== "/auth/login" &&
+    path !== "/auth/register"
+  ) {
     try {
       if (!refreshPromise) refreshPromise = doRefresh();
       await refreshPromise;
@@ -116,9 +122,8 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
       if (retry.status === 204) return undefined as T;
       return retry.json();
     } catch (err) {
-      // If refresh also failed, clear display state and notify React
+      // If refresh also failed, notify React to clear auth state
       if (err instanceof ApiError && err.status === 401) {
-        localStorage.removeItem("user");
         if (typeof window !== "undefined") {
           window.dispatchEvent(new Event("auth:session-expired"));
         }
@@ -161,8 +166,14 @@ async function rawRequest(path: string, init?: RequestInit): Promise<Response> {
     credentials: "include",
   });
 
-  // Auto-refresh: on 401, try refreshing the cookie-based session once and retry
-  if (res.status === 401 && path !== "/auth/refresh") {
+  // Auto-refresh: on 401, try refreshing the cookie-based session once and retry.
+  // Exclude auth endpoints — a 401 from login/register means wrong credentials, not session expiry.
+  if (
+    res.status === 401 &&
+    path !== "/auth/refresh" &&
+    path !== "/auth/login" &&
+    path !== "/auth/register"
+  ) {
     try {
       if (!refreshPromise) refreshPromise = doRefresh();
       await refreshPromise;
@@ -178,7 +189,6 @@ async function rawRequest(path: string, init?: RequestInit): Promise<Response> {
       return retry;
     } catch (err) {
       if (err instanceof ApiError && err.status === 401) {
-        localStorage.removeItem("user");
         if (typeof window !== "undefined") {
           window.dispatchEvent(new Event("auth:session-expired"));
         }
@@ -908,7 +918,7 @@ export async function listQuestionnaires(params?: {
   if (params?.limit != null) q.set("limit", String(params.limit));
   if (params?.offset != null) q.set("offset", String(params.offset));
   const qs = q.toString();
-  return request(`/questionnaires/${qs ? `?${qs}` : ""}`);
+  return request(`/questionnaires${qs ? `?${qs}` : ""}`);
 }
 
 export async function getQuestionnaire(
@@ -966,7 +976,7 @@ export interface TemplateSummary {
 }
 
 export async function listTemplates(): Promise<TemplateSummary[]> {
-  return request<TemplateSummary[]>("/questionnaires/templates/");
+  return request<TemplateSummary[]>("/questionnaires/templates");
 }
 
 export async function applyTemplate(

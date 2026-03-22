@@ -6,6 +6,7 @@ import { QueryProvider } from "@/lib/query-provider";
 import { ThemeProvider } from "@/lib/theme-context";
 import { ToastProvider } from "@/components/Toast";
 import Sidebar from "@/components/Sidebar";
+import Navbar from "@/components/Navbar";
 import { validateEnv } from "@/lib/env";
 
 // Validate environment variables at import time (server side)
@@ -85,6 +86,7 @@ export default function RootLayout({
                   >
                     Skip to main content
                   </a>
+                  <Navbar />
                   <Sidebar />
                   <main id="main-content" className="sidebar-main" role="main">
                     {children}

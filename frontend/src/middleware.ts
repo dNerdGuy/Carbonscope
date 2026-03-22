@@ -49,13 +49,10 @@ export function middleware(request: NextRequest) {
   }
 
   const accessToken = request.cookies.get("access_token")?.value;
-  const indicator = request.cookies.get("cs_access_token")?.value;
 
-  // Token is valid if the httpOnly access_token exists and isn't expired
-  const hasValidToken = accessToken ? !isTokenExpired(accessToken) : false;
-  // Fallback: if no httpOnly cookie visible (it may not be readable in edge),
-  // use the indicator cookie as a hint (backend still validates on each API call)
-  const isAuthenticated = hasValidToken || !!indicator;
+  // Token is valid if the httpOnly access_token exists and isn't expired.
+  // The backend validates signatures on every API call; middleware only handles routing.
+  const isAuthenticated = accessToken ? !isTokenExpired(accessToken) : false;
 
   const isPublicRoute = PUBLIC_ROUTES.some((r) => pathname.startsWith(r));
 

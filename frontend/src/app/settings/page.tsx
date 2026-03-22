@@ -12,9 +12,13 @@ import {
   updateProfile,
   changePassword,
   getMFAStatus,
+  setupMFA,
+  verifyMFA,
+  disableMFA,
   deleteAccount,
   type Company,
   type User,
+  type MFASetup,
 } from "@/lib/api";
 import { FormField } from "@/components/FormField";
 import { PageSkeleton } from "@/components/Skeleton";
@@ -44,11 +48,19 @@ export default function SettingsPage() {
   const [profileErr, setProfileErr] = useState("");
 
   // Password change state
+  const [showPasswordChange, setShowPasswordChange] = useState(false);
   const [currentPw, setCurrentPw] = useState("");
   const [newPw, setNewPw] = useState("");
   const [pwSaving, setPwSaving] = useState(false);
   const [pwMsg, setPwMsg] = useState("");
   const [pwErr, setPwErr] = useState("");
+
+  // MFA state
+  const [mfaSetup, setMfaSetup] = useState<MFASetup | null>(null);
+  const [totpCode, setTotpCode] = useState("");
+  const [disableCode, setDisableCode] = useState("");
+  const [mfaError, setMfaError] = useState("");
+  const [mfaSuccess, setMfaSuccess] = useState("");
 
   // Form state
   const [name, setName] = useState("");
@@ -68,7 +80,7 @@ export default function SettingsPage() {
     enabled: !!user && !loading,
   });
 
-  const mfaStatusQuery = useQuery<{ enabled: boolean }>({
+  const mfaStatusQuery = useQuery<{ mfa_enabled: boolean }>({
     queryKey: ["mfa-status", user?.id],
     queryFn: getMFAStatus,
     enabled: !!user && !loading,
@@ -90,7 +102,43 @@ export default function SettingsPage() {
 
   const company = settingsQuery.data?.[1] ?? null;
   const profile = settingsQuery.data?.[0] ?? null;
-  const mfaEnabled = mfaStatusQuery.data?.enabled ?? false;
+  const mfaEnabled = mfaStatusQuery.data?.mfa_enabled ?? false;
+
+  async function handleMFASetup() {
+    setMfaError("");
+    setMfaSuccess("");
+    try {
+      const s = await setupMFA();
+      setMfaSetup(s);
+    } catch (e: unknown) {
+      setMfaError(e instanceof Error ? e.message : "MFA setup failed");
+    }
+  }
+
+  async function handleMFAVerify() {
+    setMfaError("");
+    try {
+      await verifyMFA(totpCode);
+      setMfaSuccess("MFA enabled successfully!");
+      setMfaSetup(null);
+      setTotpCode("");
+      await mfaStatusQuery.refetch();
+    } catch (e: unknown) {
+      setMfaError(e instanceof Error ? e.message : "Invalid TOTP code");
+    }
+  }
+
+  async function handleMFADisable() {
+    setMfaError("");
+    try {
+      await disableMFA(disableCode);
+      setMfaSuccess("MFA disabled.");
+      setDisableCode("");
+      await mfaStatusQuery.refetch();
+    } catch (e: unknown) {
+      setMfaError(e instanceof Error ? e.message : "Failed to disable MFA");
+    }
+  }
 
   async function handleSave(e: React.FormEvent) {
     e.preventDefault();
@@ -188,7 +236,7 @@ export default function SettingsPage() {
   }
 
   return (
-    <div className="max-w-2xl mx-auto p-8">
+    <div className="max-w-3xl mx-auto p-8">
       <Breadcrumbs
         items={[
           { label: "Dashboard", href: "/dashboard" },
@@ -237,37 +285,66 @@ export default function SettingsPage() {
       )}
 
       {/* Password Change */}
-      <form onSubmit={handlePasswordChange} className="card space-y-4 mb-8">
-        <h2 className="text-lg font-bold">Change Password</h2>
-        {pwErr && <StatusMessage message={pwErr} variant="error" />}
-        {pwMsg && <StatusMessage message={pwMsg} variant="success" />}
-        <FormField
-          label="Current Password"
-          type="password"
-          className="input"
-          value={currentPw}
-          onChange={(e) => setCurrentPw(e.target.value)}
-          required
-        />
-        <FormField
-          label="New Password"
-          type="password"
-          className="input"
-          value={newPw}
-          onChange={(e) => setNewPw(e.target.value)}
-          required
-          minLength={8}
-          maxLength={128}
-          hint="Min 8 characters, must include an uppercase letter and a digit."
-        />
+      <div className="card mb-8">
         <button
-          type="submit"
-          className="btn-primary"
-          disabled={pwSaving || !currentPw || !newPw}
+          type="button"
+          className="flex w-full items-center justify-between text-left"
+          onClick={() => {
+            setShowPasswordChange((v) => !v);
+            setPwErr("");
+            setPwMsg("");
+          }}
+          aria-expanded={showPasswordChange}
         >
-          {pwSaving ? "Changing..." : "Change Password"}
+          <h2 className="text-lg font-bold">Change Password</h2>
+          <svg
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            aria-hidden="true"
+            className={`transition-transform duration-200 ${showPasswordChange ? "rotate-180" : ""}`}
+          >
+            <polyline points="6 9 12 15 18 9" />
+          </svg>
         </button>
-      </form>
+        {showPasswordChange && (
+          <form onSubmit={handlePasswordChange} className="mt-4 space-y-4">
+            {pwErr && <StatusMessage message={pwErr} variant="error" />}
+            {pwMsg && <StatusMessage message={pwMsg} variant="success" />}
+            <FormField
+              label="Current Password"
+              type="password"
+              className="input"
+              value={currentPw}
+              onChange={(e) => setCurrentPw(e.target.value)}
+              required
+            />
+            <FormField
+              label="New Password"
+              type="password"
+              className="input"
+              value={newPw}
+              onChange={(e) => setNewPw(e.target.value)}
+              required
+              minLength={8}
+              maxLength={128}
+              hint="Min 8 characters, must include an uppercase letter and a digit."
+            />
+            <button
+              type="submit"
+              className="btn-primary"
+              disabled={pwSaving || !currentPw || !newPw}
+            >
+              {pwSaving ? "Changing..." : "Change Password"}
+            </button>
+          </form>
+        )}
+      </div>
 
       {/* Company Profile */}
       <form onSubmit={handleSave} className="card space-y-4">
@@ -330,16 +407,18 @@ export default function SettingsPage() {
       </form>
 
       {/* Two-Factor Authentication */}
-      <div className="card space-y-3 mt-8">
-        <h2 className="text-lg font-bold">Two-Factor Authentication</h2>
-        <p className="text-sm text-[var(--muted)]">
-          {mfaEnabled
-            ? "Two-factor authentication is enabled on your account."
-            : "Protect your account with time-based one-time passwords (TOTP)."}
-        </p>
-        <div className="flex items-center gap-3">
+      <div className="card space-y-4 mt-8">
+        <div className="flex items-center justify-between gap-3">
+          <div>
+            <h2 className="text-lg font-bold">Two-Factor Authentication</h2>
+            <p className="text-sm text-[var(--muted)] mt-0.5">
+              {mfaEnabled
+                ? "TOTP two-factor authentication is active on your account."
+                : "Add a second layer of security with a TOTP authenticator app."}
+            </p>
+          </div>
           <span
-            className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-medium ${
+            className={`shrink-0 inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-medium ${
               mfaEnabled
                 ? "bg-green-500/15 text-green-400"
                 : "bg-gray-500/15 text-gray-400"
@@ -350,10 +429,106 @@ export default function SettingsPage() {
             />
             {mfaEnabled ? "Enabled" : "Disabled"}
           </span>
-          <a href="/mfa" className="btn-secondary text-sm">
-            {mfaEnabled ? "Manage 2FA" : "Enable 2FA"}
-          </a>
         </div>
+
+        {mfaError && <StatusMessage message={mfaError} variant="error" />}
+        {mfaSuccess && <StatusMessage message={mfaSuccess} variant="success" />}
+
+        {/* Enable flow */}
+        {!mfaEnabled && !mfaSetup && (
+          <button onClick={handleMFASetup} className="btn-primary">
+            Enable 2FA
+          </button>
+        )}
+
+        {/* Setup: show secret + backup codes + verify input */}
+        {mfaSetup && (
+          <div className="space-y-4">
+            <div>
+              <p className="text-sm text-[var(--muted)] mb-1">
+                Scan this QR code with your authenticator app, or enter the
+                secret manually:
+              </p>
+              <code className="block rounded bg-[var(--background)] p-3 text-sm text-[var(--primary)] break-all">
+                {mfaSetup.secret}
+              </code>
+            </div>
+            <div>
+              <p className="text-sm text-[var(--muted)] mb-1">
+                Backup codes — save these somewhere safe:
+              </p>
+              <div className="grid grid-cols-2 gap-1">
+                {mfaSetup.backup_codes.map((code, i) => (
+                  <code
+                    key={i}
+                    className="rounded bg-[var(--background)] px-2 py-1 text-sm font-mono"
+                  >
+                    {code}
+                  </code>
+                ))}
+              </div>
+            </div>
+            <div className="flex gap-3">
+              <input
+                className="input"
+                placeholder="Enter 6-digit TOTP code"
+                value={totpCode}
+                onChange={(e) => setTotpCode(e.target.value)}
+                maxLength={6}
+                inputMode="numeric"
+                pattern="[0-9]*"
+                aria-label="TOTP verification code"
+              />
+              <button
+                onClick={handleMFAVerify}
+                className="btn-primary shrink-0"
+              >
+                Verify &amp; Enable
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Disable flow */}
+        {mfaEnabled && (
+          <div
+            className="rounded-lg border p-4 space-y-3"
+            style={{
+              borderColor: "var(--error, #ef4444)",
+              background:
+                "color-mix(in srgb, var(--error, #ef4444) 8%, transparent)",
+            }}
+          >
+            <p
+              className="text-sm font-medium"
+              style={{ color: "var(--error, #ef4444)" }}
+            >
+              Disable 2FA
+            </p>
+            <p className="text-sm text-[var(--muted)]">
+              Enter your current TOTP code to disable multi-factor
+              authentication.
+            </p>
+            <div className="flex gap-3">
+              <input
+                className="input"
+                placeholder="6-digit TOTP code"
+                value={disableCode}
+                onChange={(e) => setDisableCode(e.target.value)}
+                maxLength={6}
+                inputMode="numeric"
+                pattern="[0-9]*"
+                aria-label="TOTP code to disable MFA"
+              />
+              <button
+                onClick={handleMFADisable}
+                className="btn-danger shrink-0"
+              >
+                Disable
+              </button>
+            </div>
+          </div>
+        )}
       </div>
 
       <WebhookSection />

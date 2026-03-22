@@ -208,6 +208,175 @@ a:focus-visible,
   color: var(--muted);
 }
 
+/* ─── Navbar ─── */
+.navbar-bar {
+  position: fixed;
+  top: 0;
+  right: 0;
+  left: 0;
+  height: 52px;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 1rem;
+  background: color-mix(in srgb, var(--background) 85%, transparent);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid
+    color-mix(in srgb, var(--card-border) 60%, transparent);
+}
+
+@media (min-width: 1024px) {
+  .navbar-bar {
+    left: 240px; /* default: expanded sidebar */
+    padding-left: 1.25rem;
+    padding-right: 1.25rem;
+    transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+}
+
+/* Shift navbar when sidebar collapses */
+@media (min-width: 1024px) {
+  body:has(.sidebar-collapsed) .navbar-bar {
+    left: 64px;
+  }
+  body:has(.sidebar-expanded) .navbar-bar {
+    left: 240px;
+  }
+}
+
+.navbar-avatar {
+  width: 34px;
+  height: 34px;
+  border-radius: 9999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #fff;
+  cursor: pointer;
+  border: 2px solid transparent;
+  transition:
+    border-color 0.15s,
+    box-shadow 0.15s;
+  flex-shrink: 0;
+}
+.navbar-avatar:hover,
+.navbar-avatar:focus-visible {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary) 25%, transparent);
+  outline: none;
+}
+
+.navbar-dropdown {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  min-width: 220px;
+  background: var(--card);
+  border: 1px solid var(--card-border);
+  border-radius: 0.875rem;
+  box-shadow:
+    0 8px 30px -4px rgba(0, 0, 0, 0.25),
+    0 2px 8px -2px rgba(0, 0, 0, 0.15);
+  z-index: 50;
+  overflow: hidden;
+  animation: dropdown-in 0.12s ease-out both;
+}
+
+@keyframes dropdown-in {
+  from {
+    opacity: 0;
+    transform: translateY(-6px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.navbar-dropdown-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.875rem 1rem;
+}
+
+.navbar-dropdown-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 9999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #fff;
+  flex-shrink: 0;
+}
+
+.navbar-dropdown-name {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--foreground);
+  truncate: true;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.navbar-dropdown-email {
+  font-size: 0.75rem;
+  color: var(--muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.navbar-dropdown-role {
+  font-size: 0.7rem;
+  color: var(--primary);
+  text-transform: capitalize;
+  font-weight: 500;
+  margin-top: 1px;
+}
+
+.navbar-dropdown-divider {
+  height: 1px;
+  background: var(--card-border);
+  margin: 0.25rem 0;
+}
+
+.navbar-dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  width: 100%;
+  padding: 0.6rem 1rem;
+  font-size: 0.875rem;
+  color: var(--foreground);
+  text-decoration: none;
+  transition:
+    background 0.12s,
+    color 0.12s;
+  cursor: pointer;
+  background: transparent;
+  border: none;
+}
+.navbar-dropdown-item:hover {
+  background: color-mix(in srgb, var(--card-border) 50%, transparent);
+  color: var(--foreground);
+}
+.navbar-dropdown-item-danger {
+  color: var(--danger);
+}
+.navbar-dropdown-item-danger:hover {
+  background: color-mix(in srgb, var(--danger) 10%, transparent);
+  color: var(--danger);
+}
+
 /* ─── Sidebar ─── */
 .sidebar-desktop {
   display: none;
@@ -240,6 +409,7 @@ a:focus-visible,
   }
   .sidebar-main {
     min-height: 100vh;
+    padding-top: 52px;
     transition: margin-left 0.2s ease;
   }
   /* JS toggles data-collapsed on the aside; we use CSS classes instead */
@@ -270,7 +440,6 @@ a:focus-visible,
   padding: 0.75rem 1rem;
   background: var(--card);
   border-bottom: 1px solid var(--card-border);
-  position: sticky;
   top: 0;
   z-index: 30;
 }

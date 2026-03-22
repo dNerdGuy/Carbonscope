@@ -13,6 +13,7 @@ import {
   login as apiLogin,
   logoutApi,
   register as apiRegister,
+  getProfile,
   type User,
 } from "@/lib/api";
 import { getQueryClient } from "@/lib/query-client";
@@ -35,33 +36,18 @@ interface AuthState {
 
 const AuthContext = createContext<AuthState | null>(null);
 
-function syncLoggedInCookie(loggedIn: boolean): void {
-  if (typeof document === "undefined") return;
-  if (!loggedIn) {
-    document.cookie = "cs_access_token=; Path=/; Max-Age=0; SameSite=Lax";
-    return;
-  }
-  const secure = window.location.protocol === "https:" ? "; Secure" : "";
-  document.cookie = `cs_access_token=1; Path=/; SameSite=Lax${secure}`;
-}
-
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  // Restore user display data from localStorage on mount
+  // Verify session with server on mount — uses httpOnly cookie sent automatically
   useEffect(() => {
-    const savedUser = localStorage.getItem("user");
-    if (savedUser) {
-      try {
-        setUser(JSON.parse(savedUser));
-      } catch {
-        localStorage.removeItem("user");
-      }
-    }
-    setLoading(false);
+    getProfile()
+      .then((u) => setUser(u))
+      .catch(() => setUser(null))
+      .finally(() => setLoading(false));
   }, []);
 
   const login = useCallback(
@@ -75,9 +61,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
 
       // Server sets httpOnly cookies (access_token, refresh_token) automatically
-      syncLoggedInCookie(true);
-
-      // Use user info from login response (server no longer sends raw JWT in body)
+      // Use user info from login response directly
       const u: User = resp.user
         ? {
             id: resp.user.id,
@@ -87,7 +71,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             role: resp.user.role ?? "",
           }
         : { id: "", email, full_name: "", company_id: "", role: "" };
-      localStorage.setItem("user", JSON.stringify(u));
       setUser(u);
       const redirect = searchParams.get("redirect");
       // Prevent open redirect: validate with URL parser, allow only relative paths
@@ -122,8 +105,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const u = await apiRegister(data);
       // Auto-login after registration — server sets httpOnly cookies
       await apiLogin(data.email, data.password);
-      syncLoggedInCookie(true);
-      localStorage.setItem("user", JSON.stringify(u));
       setUser(u);
       router.push("/dashboard");
     },
@@ -136,8 +117,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     } catch {
       // Proceed with local cleanup even if server-side logout fails
     }
-    localStorage.removeItem("user");
-    syncLoggedInCookie(false);
     getQueryClient().clear();
     setUser(null);
     router.push("/login");
@@ -147,7 +126,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const { toast } = useToast();
   useEffect(() => {
     const onSessionExpired = () => {
-      syncLoggedInCookie(false);
       getQueryClient().clear();
       setUser(null);
       toast("Your session has expired. Please log in again.", "warning");
@@ -157,31 +135,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return () =>
       window.removeEventListener("auth:session-expired", onSessionExpired);
   }, [router, toast]);
-
-  // Cross-tab auth sync: detect login/logout in other tabs via storage events
-  useEffect(() => {
-    const onStorage = (e: StorageEvent) => {
-      if (e.key !== "user") return;
-      if (e.newValue === null) {
-        // Another tab logged out
-        syncLoggedInCookie(false);
-        getQueryClient().clear();
-        setUser(null);
-        router.push("/login");
-      } else {
-        // Another tab logged in
-        try {
-          const u = JSON.parse(e.newValue) as User;
-          syncLoggedInCookie(true);
-          setUser(u);
-        } catch {
-          // Ignore malformed data
-        }
-      }
-    };
-    window.addEventListener("storage", onStorage);
-    return () => window.removeEventListener("storage", onStorage);
-  }, [router]);
 
   return (
     <AuthContext.Provider value={{ user, loading, login, register, logout }}>
