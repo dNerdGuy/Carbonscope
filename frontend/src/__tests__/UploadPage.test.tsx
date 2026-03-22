@@ -1,13 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 
-const mockReplace = vi.fn();
-vi.mock("next/navigation", () => ({
-  useRouter: () => ({ push: vi.fn(), replace: mockReplace }),
-  usePathname: () => "/upload",
-  useSearchParams: () => new URLSearchParams(),
-}));
-
 const mockUploadData = vi.fn();
 const mockCreateEstimate = vi.fn();
 
@@ -24,7 +17,8 @@ vi.mock("@/components/Skeleton", () => ({
   PageSkeleton: () => <div>Loading...</div>,
 }));
 
-import UploadPage from "@/app/upload/page";
+import { Route as _Route_UploadPage } from "@/app/upload";
+const UploadPage = _Route_UploadPage.options.component!;
 
 describe("UploadPage", () => {
   beforeEach(() => {

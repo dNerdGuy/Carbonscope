@@ -3,14 +3,6 @@ import { render, screen } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import type { ReactElement, ReactNode } from "react";
 
-const mockReplace = vi.fn();
-
-vi.mock("next/navigation", () => ({
-  useRouter: () => ({ replace: mockReplace, push: vi.fn() }),
-  usePathname: () => "/marketplace/seller",
-  useSearchParams: () => new URLSearchParams(),
-}));
-
 vi.mock("next/link", () => ({
   default: ({
     children,
@@ -79,7 +71,8 @@ vi.mock("@/components/DataTable", () => ({
     ),
 }));
 
-import SellerDashboardPage from "@/app/marketplace/seller/page";
+import { Route as _Route_SellerDashboardPage } from "@/app/marketplace.seller";
+const SellerDashboardPage = _Route_SellerDashboardPage.options.component!;
 
 function renderWithQueryClient(ui: ReactElement) {
   const queryClient = new QueryClient({

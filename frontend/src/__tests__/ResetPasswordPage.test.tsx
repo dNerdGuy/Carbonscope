@@ -2,9 +2,6 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 
 const mockSearchParams = new URLSearchParams("token=abc123");
-vi.mock("next/navigation", () => ({
-  useSearchParams: () => mockSearchParams,
-}));
 
 const mockResetPassword = vi.fn();
 
@@ -18,7 +15,8 @@ vi.mock("@/lib/api", () => ({
   },
 }));
 
-import ResetPasswordPage from "@/app/reset-password/page";
+import { Route as _Route_ResetPasswordPage } from "@/app/reset-password";
+const ResetPasswordPage = _Route_ResetPasswordPage.options.component!;
 
 describe("ResetPasswordPage", () => {
   beforeEach(() => {
@@ -86,7 +84,7 @@ describe("ResetPasswordPage", () => {
 
   it("shows API error on failure", async () => {
     const { ApiError } = await import("@/lib/api");
-    mockResetPassword.mockRejectedValue(new ApiError("Token expired"));
+    mockResetPassword.mockRejectedValue(new ApiError(400, "Token expired"));
     render(<ResetPasswordPage />);
     fireEvent.change(screen.getByLabelText("New Password"), {
       target: { value: "StrongPass1!" },

@@ -1,5 +1,3 @@
-"use client";
-
 import {
   createContext,
   useCallback,
@@ -8,7 +6,7 @@ import {
   useState,
   type ReactNode,
 } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useNavigate, useLocation } from "@tanstack/react-router";
 import {
   login as apiLogin,
   logoutApi,
@@ -41,8 +39,8 @@ const AuthContext = createContext<AuthState | null>(null);
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
-  const router = useRouter();
-  const searchParams = useSearchParams();
+  const navigate = useNavigate();
+  const { search } = useLocation();
 
   // Verify session with server on mount — uses httpOnly cookie sent automatically
   useEffect(() => {
@@ -58,7 +56,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       // If server requests MFA, redirect to MFA verification instead of granting access
       if (resp.mfa_required) {
-        router.push("/mfa-verify");
+        navigate({ to: "/mfa-verify" });
         return;
       }
 
@@ -74,8 +72,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           }
         : { id: "", email, full_name: "", company_id: "", role: "" };
       setUser(u);
-      const redirect = searchParams.get("redirect");
-      // Prevent open redirect: validate with URL parser, allow only relative paths
+      const redirect = new URLSearchParams(search).get("redirect");
+      // Prevent open redirect: validate with URL parser, allow only relative pathsths
       let safeRedirect = "/dashboard";
       if (redirect) {
         try {
@@ -90,9 +88,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           // Malformed URL — use default
         }
       }
-      router.push(safeRedirect);
+      navigate({ to: safeRedirect });
     },
-    [router, searchParams],
+    [navigate, search],
   );
 
   const loginWithGoogle = useCallback(
@@ -108,9 +106,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           }
         : { id: "", email: "", full_name: "", company_id: "", role: "" };
       setUser(u);
-      router.push("/dashboard");
+      navigate({ to: "/dashboard" });
     },
-    [router],
+    [navigate],
   );
 
   const register = useCallback(
@@ -126,9 +124,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       // Auto-login after registration — server sets httpOnly cookies
       await apiLogin(data.email, data.password);
       setUser(u);
-      router.push("/dashboard");
+      navigate({ to: "/dashboard" });
     },
-    [router],
+    [navigate],
   );
 
   const logout = useCallback(async () => {
@@ -139,8 +137,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
     getQueryClient().clear();
     setUser(null);
-    router.push("/login");
-  }, [router]);
+    navigate({ to: "/login" });
+  }, [navigate]);
 
   // Listen for session-expired events dispatched by the API client
   const { toast } = useToast();
@@ -149,15 +147,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       getQueryClient().clear();
       setUser(null);
       toast("Your session has expired. Please log in again.", "warning");
-      router.push("/login");
+      navigate({ to: "/login" });
     };
     window.addEventListener("auth:session-expired", onSessionExpired);
     return () =>
       window.removeEventListener("auth:session-expired", onSessionExpired);
-  }, [router, toast]);
+  }, [navigate, toast]);
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, loginWithGoogle, register, logout }}>
+    <AuthContext.Provider
+      value={{ user, loading, login, loginWithGoogle, register, logout }}
+    >
       {children}
     </AuthContext.Provider>
   );

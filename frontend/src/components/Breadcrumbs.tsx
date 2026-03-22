@@ -1,6 +1,5 @@
-"use client";
 
-import Link from "next/link";
+import { Link } from "@tanstack/react-router";
 
 export interface Crumb {
   label: string;
@@ -36,7 +35,7 @@ export default function Breadcrumbs({ items }: BreadcrumbsProps) {
                 </span>
               ) : (
                 <Link
-                  href={item.href}
+                  to={item.href}
                   className="hover:text-[var(--foreground)] transition-colors"
                 >
                   {item.label}

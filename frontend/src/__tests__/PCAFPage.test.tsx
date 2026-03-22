@@ -4,14 +4,6 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import type { ReactElement } from "react";
 import userEvent from "@testing-library/user-event";
 
-const mockPush = vi.fn();
-
-vi.mock("next/navigation", () => ({
-  useRouter: () => ({ push: mockPush, replace: vi.fn() }),
-  usePathname: () => "/pcaf",
-  useSearchParams: () => new URLSearchParams(),
-}));
-
 const mockListPortfolios = vi.fn();
 const mockCreatePortfolio = vi.fn();
 const mockGetPortfolioSummary = vi.fn();
@@ -30,7 +22,8 @@ vi.mock("@/lib/auth-context", () => ({
   useAuth: () => ({ user: { email: "test@example.com" }, loading: false }),
 }));
 
-import PCAFPage from "@/app/pcaf/page";
+import { Route as _Route_PCAFPage } from "@/app/pcaf";
+const PCAFPage = _Route_PCAFPage.options.component!;
 
 function renderWithQueryClient(ui: ReactElement) {
   const queryClient = new QueryClient({

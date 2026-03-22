@@ -1,8 +1,5 @@
-"use client";
-
-import Link from "next/link";
+import { Link, useLocation } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
-import { usePathname } from "next/navigation";
 import { useAuth } from "@/lib/auth-context";
 import { useTheme } from "@/lib/theme-context";
 
@@ -37,7 +34,7 @@ function avatarColor(email: string): string {
 export default function Navbar() {
   const { user, logout } = useAuth();
   const { theme, toggleTheme } = useTheme();
-  const pathname = usePathname();
+  const { pathname } = useLocation();
   const [open, setOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
@@ -126,7 +123,7 @@ export default function Navbar() {
 
             {/* Account & Settings */}
             <Link
-              href="/settings"
+              to="/settings"
               role="menuitem"
               className="navbar-dropdown-item"
             >
@@ -148,7 +145,7 @@ export default function Navbar() {
             </Link>
 
             <Link
-              href="/billing"
+              to="/billing"
               role="menuitem"
               className="navbar-dropdown-item"
             >

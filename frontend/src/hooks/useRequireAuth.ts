@@ -1,7 +1,5 @@
-"use client";
-
 import { useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useNavigate } from "@tanstack/react-router";
 import { useAuth } from "@/lib/auth-context";
 
 /**
@@ -10,13 +8,13 @@ import { useAuth } from "@/lib/auth-context";
  */
 export function useRequireAuth() {
   const { user, loading } = useAuth();
-  const router = useRouter();
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (!loading && !user) {
-      router.replace("/login");
+      navigate({ to: "/login", replace: true });
     }
-  }, [user, loading, router]);
+  }, [user, loading, navigate]);
 
   return { user, loading };
 }

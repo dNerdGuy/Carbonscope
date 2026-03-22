@@ -1,7 +1,4 @@
-"use client";
-
-import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { Link, useLocation } from "@tanstack/react-router";
 import { useState, useEffect } from "react";
 import { useAuth } from "@/lib/auth-context";
 
@@ -164,7 +161,7 @@ const NAV_SECTIONS: NavSection[] = [
 
 export default function Sidebar() {
   const { user } = useAuth();
-  const pathname = usePathname();
+  const { pathname } = useLocation();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [collapsed, setCollapsed] = useState(false);
 
@@ -187,7 +184,7 @@ export default function Sidebar() {
       {/* Logo */}
       <div className="sidebar-header">
         <Link
-          href="/dashboard"
+          to="/dashboard"
           className="flex items-center gap-2 text-[var(--primary)] font-bold"
         >
           <svg
@@ -251,7 +248,7 @@ export default function Sidebar() {
                 return (
                   <li key={item.href}>
                     <Link
-                      href={item.href}
+                      to={item.href}
                       className={`sidebar-link ${active ? "sidebar-link-active" : "sidebar-link-inactive"}`}
                       title={collapsed ? item.label : undefined}
                       aria-current={active ? "page" : undefined}
@@ -277,7 +274,7 @@ export default function Sidebar() {
       {/* Mobile top bar */}
       <div className="sidebar-mobile-bar lg:hidden">
         <Link
-          href="/dashboard"
+          to="/dashboard"
           className="flex items-center gap-2 text-[var(--primary)] font-bold"
         >
           <svg

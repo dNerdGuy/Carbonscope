@@ -59,7 +59,8 @@ vi.mock("@/lib/validation", () => ({
 }));
 
 import { validateRegisterForm, validateRegisterField } from "@/lib/validation";
-import RegisterPage from "@/app/register/page";
+import { Route as _Route_RegisterPage } from "@/app/register";
+const RegisterPage = _Route_RegisterPage.options.component!;
 
 describe("RegisterPage", () => {
   beforeEach(() => {

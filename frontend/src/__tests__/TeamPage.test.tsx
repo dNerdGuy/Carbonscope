@@ -4,14 +4,6 @@ import userEvent from "@testing-library/user-event";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import type { ReactElement } from "react";
 
-const mockPush = vi.fn();
-
-vi.mock("next/navigation", () => ({
-  useRouter: () => ({ push: mockPush, replace: vi.fn() }),
-  usePathname: () => "/team",
-  useSearchParams: () => new URLSearchParams(),
-}));
-
 const mockListMembers = vi.fn();
 const mockListInvitations = vi.fn();
 const mockInviteTeamMember = vi.fn();
@@ -42,7 +34,8 @@ vi.mock("@/components/Toast", () => ({
   useToast: () => ({ toast: mockToast }),
 }));
 
-import TeamPage from "@/app/team/page";
+import { Route as _Route_TeamPage } from "@/app/team";
+const TeamPage = _Route_TeamPage.options.component!;
 
 function renderWithQueryClient(ui: ReactElement) {
   const queryClient = new QueryClient({

@@ -3,11 +3,6 @@ import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import type { ReactElement } from "react";
 
-const mockReplace = vi.fn();
-vi.mock("next/navigation", () => ({
-  useRouter: () => ({ replace: mockReplace }),
-}));
-
 vi.mock("@/components/Skeleton", () => ({
   CardSkeleton: () => <div>Loading...</div>,
 }));
@@ -57,7 +52,8 @@ vi.mock("@/lib/auth-context", () => ({
   useAuth: () => ({ user: mockUser, loading: false }),
 }));
 
-import BillingPage from "@/app/billing/page";
+import { Route as _Route_BillingPage } from "@/app/billing";
+const BillingPage = _Route_BillingPage.options.component!;
 
 function renderWithQueryClient(ui: ReactElement) {
   const queryClient = new QueryClient({
@@ -131,7 +127,7 @@ describe("BillingPage", () => {
   it("shows error when changePlan fails", async () => {
     const { ApiError } = await import("@/lib/api");
     mockChangePlan.mockRejectedValueOnce(
-      new ApiError("Plan change failed", 400),
+      new ApiError(400, "Plan change failed"),
     );
 
     renderWithQueryClient(<BillingPage />);

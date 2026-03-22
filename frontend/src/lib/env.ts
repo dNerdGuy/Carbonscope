@@ -1,45 +1,20 @@
 /**
- * Runtime environment validation.
+ * Client-side environment variables.
  *
- * Imported once in layout.tsx (server side) so misconfigurations are
- * caught at build / startup rather than at request time.
+ * In Vite, client-side vars must be prefixed with VITE_ and are accessed
+ * via import.meta.env. Hardcoded fallbacks ensure the app works in
+ * development without a .env.local file.
  */
 
-function required(key: string): string {
-  const value = process.env[key];
-  if (!value) {
-    throw new Error(
-      `Missing required environment variable: ${key}. ` +
-        "Check .env.local or your deployment config.",
-    );
-  }
-  return value;
-}
-
-function optional(key: string, fallback: string): string {
-  return process.env[key] || fallback;
-}
-
-/** Validated server-side environment variables. */
+/** Validated client-side environment variables. */
 export const env = {
-  BACKEND_URL: optional("BACKEND_URL", "http://localhost:8000"),
-  NODE_ENV: optional("NODE_ENV", "development"),
-  NEXT_PUBLIC_SITE_URL: optional(
-    "NEXT_PUBLIC_SITE_URL",
-    "https://carbonscope.io",
-  ),
-  NEXT_PUBLIC_GOOGLE_CLIENT_ID: optional(
-    "NEXT_PUBLIC_GOOGLE_CLIENT_ID",
+  BACKEND_URL: import.meta.env.VITE_BACKEND_URL || "http://localhost:8000",
+  NODE_ENV: import.meta.env.MODE || "development",
+  SITE_URL: import.meta.env.VITE_SITE_URL || "https://carbonscope.io",
+  GOOGLE_CLIENT_ID:
+    import.meta.env.VITE_GOOGLE_CLIENT_ID ||
     "323040716512-7maggb3e8djdg1bfhonnr8jol42lk04e.apps.googleusercontent.com",
-  ),
 } as const;
 
-/**
- * Call once at startup to make sure all required vars are present.
- * In production, missing vars cause a hard failure.
- */
-export function validateEnv(): void {
-  if (env.NODE_ENV === "production") {
-    required("BACKEND_URL");
-  }
-}
+/** No-op in SPA/CSR mode — kept for backward compatibility. */
+export function validateEnv(): void {}

@@ -23,7 +23,8 @@ vi.mock("@/lib/api", () => ({
   },
 }));
 
-import ForgotPasswordPage from "@/app/forgot-password/page";
+import { Route as _Route_ForgotPasswordPage } from "@/app/forgot-password";
+const ForgotPasswordPage = _Route_ForgotPasswordPage.options.component!;
 
 describe("ForgotPasswordPage", () => {
   beforeEach(() => {
@@ -75,7 +76,7 @@ describe("ForgotPasswordPage", () => {
   it("shows error on ApiError", async () => {
     const { ApiError } = await import("@/lib/api");
     mockForgotPassword.mockRejectedValueOnce(
-      new ApiError("Email not found", 404),
+      new ApiError(404, "Email not found"),
     );
     render(<ForgotPasswordPage />);
     fireEvent.change(screen.getByLabelText("Email"), {

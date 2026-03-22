@@ -3,14 +3,6 @@ import { render, screen } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import type { ReactElement } from "react";
 
-const mockPush = vi.fn();
-
-vi.mock("next/navigation", () => ({
-  useRouter: () => ({ push: mockPush, replace: vi.fn() }),
-  usePathname: () => "/benchmarks",
-  useSearchParams: () => new URLSearchParams(),
-}));
-
 const mockGetIndustryBenchmarks = vi.fn();
 const mockGetPeerComparison = vi.fn();
 
@@ -24,7 +16,8 @@ vi.mock("@/lib/auth-context", () => ({
   useAuth: () => ({ user: { email: "test@example.com" }, loading: false }),
 }));
 
-import BenchmarksPage from "@/app/benchmarks/page";
+import { Route as _Route_BenchmarksPage } from "@/app/benchmarks";
+const BenchmarksPage = _Route_BenchmarksPage.options.component!;
 
 function renderWithQueryClient(ui: ReactElement) {
   const queryClient = new QueryClient({

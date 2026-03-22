@@ -3,12 +3,6 @@ import { render, screen, fireEvent } from "@testing-library/react";
 
 let mockPathname = "/dashboard";
 
-vi.mock("next/navigation", () => ({
-  usePathname: () => mockPathname,
-  useRouter: () => ({ push: vi.fn(), replace: vi.fn() }),
-  useSearchParams: () => new URLSearchParams(),
-}));
-
 vi.mock("next/link", () => ({
   default: ({
     href,

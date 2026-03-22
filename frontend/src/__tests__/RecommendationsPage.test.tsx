@@ -2,14 +2,6 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
-const mockReplace = vi.fn();
-
-vi.mock("next/navigation", () => ({
-  useRouter: () => ({ replace: mockReplace, push: vi.fn() }),
-  usePathname: () => "/recommendations",
-  useSearchParams: () => new URLSearchParams(),
-}));
-
 vi.mock("next/link", () => ({
   default: ({
     children,
@@ -36,7 +28,8 @@ vi.mock("@/components/Breadcrumbs", () => ({
   default: () => <nav data-testid="breadcrumbs" />,
 }));
 
-import RecommendationsIndexPage from "@/app/recommendations/page";
+import { Route as _Route_RecommendationsIndexPage } from "@/app/recommendations";
+const RecommendationsIndexPage = _Route_RecommendationsIndexPage.options.component!;
 
 function renderWithQuery(ui: React.ReactElement) {
   const queryClient = new QueryClient({

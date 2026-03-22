@@ -3,15 +3,6 @@ import { render, screen } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import type { ReactElement } from "react";
 
-const mockPush = vi.fn();
-const mockReplace = vi.fn();
-
-vi.mock("next/navigation", () => ({
-  useRouter: () => ({ push: mockPush, replace: mockReplace }),
-  usePathname: () => "/dashboard",
-  useSearchParams: () => new URLSearchParams(),
-}));
-
 const mockGetDashboard = vi.fn();
 vi.mock("@/lib/api", () => ({
   getDashboard: () => mockGetDashboard(),
@@ -28,7 +19,8 @@ vi.mock("@/components/ScopeChart", () => ({
   default: () => <div data-testid="scope-chart" />,
 }));
 
-import DashboardPage from "@/app/dashboard/page";
+import { Route as _Route_DashboardPage } from "@/app/dashboard";
+const DashboardPage = _Route_DashboardPage.options.component!;
 
 function renderWithQueryClient(ui: ReactElement) {
   const queryClient = new QueryClient({

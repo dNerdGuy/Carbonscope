@@ -3,13 +3,6 @@ import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import type { ReactElement } from "react";
 
-const mockReplace = vi.fn();
-vi.mock("next/navigation", () => ({
-  useRouter: () => ({ push: vi.fn(), replace: mockReplace }),
-  usePathname: () => "/alerts",
-  useSearchParams: () => new URLSearchParams(),
-}));
-
 const mockListAlerts = vi.fn();
 const mockAcknowledgeAlert = vi.fn();
 const mockTriggerAlertCheck = vi.fn();
@@ -44,7 +37,8 @@ vi.mock("@/components/StatusMessage", () => ({
   StatusMessage: ({ message }: { message: string }) => <div>{message}</div>,
 }));
 
-import AlertsPage from "@/app/alerts/page";
+import { Route as _Route_AlertsPage } from "@/app/alerts";
+const AlertsPage = _Route_AlertsPage.options.component!;
 
 function renderWithQueryClient(ui: ReactElement) {
   const queryClient = new QueryClient({

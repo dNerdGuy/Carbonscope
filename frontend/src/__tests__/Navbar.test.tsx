@@ -1,13 +1,7 @@
 import { describe, it, expect, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
 
-// Mock next/navigation
 const mockPathname = vi.fn(() => "/reports");
-vi.mock("next/navigation", () => ({
-  usePathname: () => mockPathname(),
-  useRouter: () => ({ replace: vi.fn(), push: vi.fn() }),
-  useSearchParams: () => new URLSearchParams(),
-}));
 
 // Mock auth context
 vi.mock("@/lib/auth-context", () => ({

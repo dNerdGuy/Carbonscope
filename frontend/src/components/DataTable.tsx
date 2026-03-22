@@ -1,4 +1,3 @@
-"use client";
 
 import { memo, type ReactNode } from "react";
 import { SkeletonRows } from "@/components/Skeleton";

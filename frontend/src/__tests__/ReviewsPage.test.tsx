@@ -4,14 +4,6 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import type { ReactElement } from "react";
 import userEvent from "@testing-library/user-event";
 
-const mockPush = vi.fn();
-
-vi.mock("next/navigation", () => ({
-  useRouter: () => ({ push: mockPush, replace: vi.fn() }),
-  usePathname: () => "/reviews",
-  useSearchParams: () => new URLSearchParams(),
-}));
-
 const mockListReviews = vi.fn();
 const mockListReports = vi.fn();
 
@@ -26,7 +18,8 @@ vi.mock("@/lib/auth-context", () => ({
   useAuth: () => ({ user: { email: "test@example.com" }, loading: false }),
 }));
 
-import ReviewsPage from "@/app/reviews/page";
+import { Route as _Route_ReviewsPage } from "@/app/reviews";
+const ReviewsPage = _Route_ReviewsPage.options.component!;
 
 function renderWithQueryClient(ui: ReactElement) {
   const queryClient = new QueryClient({

@@ -1,14 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen } from "@testing-library/react";
 
-const mockPush = vi.fn();
-
-vi.mock("next/navigation", () => ({
-  useRouter: () => ({ push: mockPush, replace: vi.fn() }),
-  usePathname: () => "/mfa",
-  useSearchParams: () => new URLSearchParams(),
-}));
-
 const mockGetMFAStatus = vi.fn();
 
 vi.mock("@/lib/api", () => ({
@@ -43,7 +35,8 @@ vi.mock("@tanstack/react-query", () => ({
   },
 }));
 
-import MFAPage from "@/app/mfa/page";
+import { Route as _Route_MFAPage } from "@/app/mfa";
+const MFAPage = _Route_MFAPage.options.component!;
 
 /**
  * Helper: render the component, resolve the useQuery mock data by calling

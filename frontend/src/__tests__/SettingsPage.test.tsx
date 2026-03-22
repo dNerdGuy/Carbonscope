@@ -3,13 +3,6 @@ import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import type { InputHTMLAttributes, ReactElement, ReactNode } from "react";
 
-const mockReplace = vi.fn();
-vi.mock("next/navigation", () => ({
-  useRouter: () => ({ push: vi.fn(), replace: mockReplace }),
-  usePathname: () => "/settings",
-  useSearchParams: () => new URLSearchParams(),
-}));
-
 const mockGetCompany = vi.fn();
 const mockUpdateCompany = vi.fn();
 const mockGetProfile = vi.fn();
@@ -96,7 +89,8 @@ vi.mock("@/components/ConfirmDialog", () => ({
     ) : null,
 }));
 
-import SettingsPage from "@/app/settings/page";
+import { Route as _Route_SettingsPage } from "@/app/settings";
+const SettingsPage = _Route_SettingsPage.options.component!;
 
 function renderWithQueryClient(ui: ReactElement) {
   const queryClient = new QueryClient({

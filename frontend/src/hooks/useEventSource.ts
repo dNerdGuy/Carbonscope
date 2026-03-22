@@ -1,4 +1,3 @@
-"use client";
 
 import { useEffect, useRef, useCallback } from "react";
 import { SSE_EVENTS_URL } from "@/lib/api";

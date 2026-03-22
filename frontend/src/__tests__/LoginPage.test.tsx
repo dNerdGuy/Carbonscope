@@ -36,7 +36,8 @@ vi.mock("@/components/FormField", () => ({
   ),
 }));
 
-import LoginPage from "@/app/login/page";
+import { Route as _Route_LoginPage } from "@/app/login";
+const LoginPage = _Route_LoginPage.options.component!;
 
 describe("LoginPage", () => {
   beforeEach(() => {

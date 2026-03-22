@@ -3,14 +3,6 @@ import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import type { ReactElement } from "react";
 
-const mockReplace = vi.fn();
-const mockPush = vi.fn();
-vi.mock("next/navigation", () => ({
-  useRouter: () => ({ push: mockPush, replace: mockReplace }),
-  usePathname: () => "/questionnaires",
-  useSearchParams: () => new URLSearchParams(),
-}));
-
 const mockListQuestionnaires = vi.fn();
 const mockListTemplates = vi.fn();
 const mockUploadQuestionnaire = vi.fn();
@@ -63,7 +55,8 @@ vi.mock("@/components/ConfirmDialog", () => ({
     ) : null,
 }));
 
-import QuestionnairesPage from "@/app/questionnaires/page";
+import { Route as _Route_QuestionnairesPage } from "@/app/questionnaires";
+const QuestionnairesPage = _Route_QuestionnairesPage.options.component!;
 
 function renderWithQueryClient(ui: ReactElement) {
   const queryClient = new QueryClient({

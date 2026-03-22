@@ -3,12 +3,6 @@ import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import type { ReactElement } from "react";
 
-const mockReplace = vi.fn();
-vi.mock("next/navigation", () => ({
-  useRouter: () => ({ push: vi.fn(), replace: mockReplace }),
-  usePathname: () => "/supply-chain",
-}));
-
 const mockListSuppliers = vi.fn();
 const mockAddSupplier = vi.fn();
 const mockGetScope3 = vi.fn();
@@ -54,7 +48,8 @@ vi.mock("@/components/ConfirmDialog", () => ({
     ) : null,
 }));
 
-import SupplyChainPage from "@/app/supply-chain/page";
+import { Route as _Route_SupplyChainPage } from "@/app/supply-chain";
+const SupplyChainPage = _Route_SupplyChainPage.options.component!;
 
 function renderWithQueryClient(ui: ReactElement) {
   const queryClient = new QueryClient({

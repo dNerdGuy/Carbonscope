@@ -9,13 +9,17 @@ build/
 venv/
 *.db
 
-# Node / Next.js
+# Node / Vite
 node_modules/
-frontend/.next/
-frontend/out/
+frontend/.output/
+frontend/.tanstack/
+frontend/.vite/
+frontend/.nitro/
+frontend/dist/
 frontend/playwright-report/
 frontend/test-results/
 frontend/tsconfig.tsbuildinfo
+frontend/src/routeTree.gen.ts
 
 # IDE
 .vscode/

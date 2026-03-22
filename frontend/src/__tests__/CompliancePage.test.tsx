@@ -1,13 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 
-const mockReplace = vi.fn();
-vi.mock("next/navigation", () => ({
-  useRouter: () => ({ push: vi.fn(), replace: mockReplace }),
-  usePathname: () => "/compliance",
-  useSearchParams: () => new URLSearchParams(),
-}));
-
 const mockListReports = vi.fn();
 const mockGenerateComplianceReport = vi.fn();
 
@@ -58,7 +51,8 @@ vi.mock("@tanstack/react-query", () => ({
   }),
 }));
 
-import CompliancePage from "@/app/compliance/page";
+import { Route as _Route_CompliancePage } from "@/app/compliance";
+const CompliancePage = _Route_CompliancePage.options.component!;
 
 describe("CompliancePage", () => {
   beforeEach(() => {

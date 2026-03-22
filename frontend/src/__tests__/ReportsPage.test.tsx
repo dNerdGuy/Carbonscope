@@ -1,12 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 
-const mockReplace = vi.fn();
-vi.mock("next/navigation", () => ({
-  useRouter: () => ({ replace: mockReplace }),
-  useSearchParams: () => new URLSearchParams(),
-}));
-
 vi.mock("next/link", () => ({
   default: ({
     children,
@@ -64,7 +58,8 @@ vi.mock("@tanstack/react-query", () => ({
   },
 }));
 
-import ReportsPage from "@/app/reports/page";
+import { Route as _Route_ReportsPage } from "@/app/reports";
+const ReportsPage = _Route_ReportsPage.options.component!;
 
 describe("ReportsPage", () => {
   beforeEach(() => {

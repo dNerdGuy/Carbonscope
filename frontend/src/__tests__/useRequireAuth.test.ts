@@ -2,9 +2,6 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import { renderHook } from "@testing-library/react";
 
 const mockReplace = vi.fn();
-vi.mock("next/navigation", () => ({
-  useRouter: () => ({ replace: mockReplace }),
-}));
 
 let mockUser: { email: string } | null = null;
 let mockLoading = false;
