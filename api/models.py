@@ -640,7 +640,7 @@ class MFASecret(Base):
 
     id: str = Column(String(32), primary_key=True, default=_new_id)
     user_id: str = Column(String(32), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, unique=True, index=True)
-    totp_secret: str = Column(String(64), nullable=False)
+    totp_secret: str = Column(Text, nullable=False)  # Encrypted TOTP secret (Fernet-encrypted, ~250+ chars)
     is_enabled: bool = Column(Boolean, nullable=False, default=False)
     backup_codes: str | None = Column(Text, nullable=True)  # JSON array of hashed codes
     created_at: datetime = Column(DateTime(timezone=True), default=_utcnow)
