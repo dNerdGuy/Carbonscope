@@ -163,15 +163,17 @@ function UploadPage() {
   }
 
   return (
-    <div className="max-w-3xl mx-auto p-8">
+    <div className="max-w-6xl mx-auto p-8 animate-fade-up space-y-8">
       <Breadcrumbs
         items={[
           { label: "Dashboard", href: "/dashboard" },
           { label: "Upload Data" },
         ]}
       />
-      <h1 className="text-2xl font-bold mb-2">Upload Operational Data</h1>
-      <p className="text-[var(--muted)] mb-8">
+      <h1 className="text-3xl font-extrabold tracking-tight mb-2">
+        Upload Operational Data
+      </h1>
+      <p className="text-[var(--muted)] text-base font-medium mb-8 max-w-2xl">
         Enter your company&apos;s operational data. CarbonScope will estimate
         emissions across all three scopes.
       </p>
@@ -225,10 +227,7 @@ function UploadPage() {
 
         {/* Scope 1: Direct emissions */}
         <fieldset className="card space-y-4">
-          <legend
-            className="text-lg font-semibold"
-            style={{ color: "var(--scope1)" }}
-          >
+          <legend className="text-lg font-semibold mb-4">
             Scope 1 — Direct Emissions
           </legend>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -267,10 +266,7 @@ function UploadPage() {
 
         {/* Scope 2: Indirect energy */}
         <fieldset className="card space-y-4">
-          <legend
-            className="text-lg font-semibold"
-            style={{ color: "var(--scope2)" }}
-          >
+          <legend className="text-lg font-semibold mb-4">
             Scope 2 — Purchased Energy
           </legend>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -310,10 +306,7 @@ function UploadPage() {
 
         {/* Scope 3 / context */}
         <fieldset className="card space-y-4">
-          <legend
-            className="text-lg font-semibold"
-            style={{ color: "var(--scope3)" }}
-          >
+          <legend className="text-lg font-semibold mb-4">
             Scope 3 & Context
           </legend>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

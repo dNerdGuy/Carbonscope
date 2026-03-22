@@ -134,20 +134,22 @@ function QuestionnairesPage() {
   if (loading || dataQuery.isLoading) return <PageSkeleton />;
 
   return (
-    <div className="max-w-5xl mx-auto p-8">
+    <div className="max-w-6xl mx-auto p-8 animate-fade-up space-y-8">
       <Breadcrumbs
         items={[
           { label: "Dashboard", href: "/dashboard" },
           { label: "Questionnaires" },
         ]}
       />
-      <h1 className="text-2xl font-bold mb-6">Sustainability Questionnaires</h1>
+      <h1 className="text-3xl font-extrabold tracking-tight mb-2">
+        Sustainability Questionnaires
+      </h1>
 
       {error && <StatusMessage message={error} variant="error" />}
 
       {/* Tabs */}
       <div
-        className="flex gap-1 mb-6 border-b border-[var(--card-border)]"
+        className="flex gap-1 mb-6 border-b border-[var(--card-border)]/50"
         role="tablist"
         aria-label="Questionnaire sections"
       >
@@ -159,7 +161,7 @@ function QuestionnairesPage() {
             aria-controls={`tabpanel-${tab}`}
             id={`tab-${tab}`}
             onClick={() => setActiveTab(tab)}
-            className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
+            className={`px-4 py-2 text-sm font-medium border-b-2 ${
               activeTab === tab
                 ? "border-[var(--primary)] text-[var(--primary)]"
                 : "border-transparent text-[var(--muted)] hover:text-[var(--foreground)]"
@@ -182,7 +184,7 @@ function QuestionnairesPage() {
           aria-labelledby="tab-upload"
           className="rounded-lg border border-[var(--card-border)] bg-[var(--card)] p-8 text-center"
         >
-          <p className="text-[var(--muted)] mb-4">
+          <p className="text-[var(--muted)] text-base font-medium mb-8 max-w-2xl">
             Upload a sustainability questionnaire (PDF, DOCX, XLSX, or CSV). Our
             AI will extract questions and generate draft responses using your
             company data.
@@ -252,7 +254,9 @@ function QuestionnairesPage() {
           {questionnaires.length === 0 ? (
             <div className="text-center py-16 rounded-xl border border-[var(--card-border)] bg-[var(--card)]">
               <span className="text-4xl mb-3 block">📋</span>
-              <p className="text-[var(--muted)] mb-2">No questionnaires yet</p>
+              <p className="text-[var(--muted)] text-base font-medium mb-8 max-w-2xl">
+                No questionnaires yet
+              </p>
               <p className="text-sm text-[var(--muted)]">
                 Upload a document or apply a template to get started.
               </p>
@@ -261,12 +265,12 @@ function QuestionnairesPage() {
             questionnaires.map((q) => (
               <div
                 key={q.id}
-                className="rounded-lg border border-[var(--card-border)] bg-[var(--card)] p-4 flex items-center justify-between"
+                className="card flex items-center justify-between"
               >
                 <div className="flex-1">
                   <button
                     onClick={() => navigate({ to: `/questionnaires/${q.id}` })}
-                    className="font-medium hover:text-[var(--primary)] transition-colors text-left"
+                    className="font-medium hover:text-[var(--primary)] text-left"
                   >
                     {q.title}
                   </button>

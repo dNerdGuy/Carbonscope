@@ -95,7 +95,7 @@ function ReviewsPage() {
   if (!user) return null;
 
   return (
-    <div className="mx-auto max-w-5xl p-8">
+    <div className="max-w-6xl mx-auto p-8 animate-fade-up space-y-8">
       <Breadcrumbs
         items={[
           { label: "Dashboard", href: "/dashboard" },
@@ -103,7 +103,9 @@ function ReviewsPage() {
         ]}
       />
       <div className="mb-8 flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Data Reviews</h1>
+        <h1 className="text-3xl font-extrabold tracking-tight mb-2">
+          Data Reviews
+        </h1>
         <button onClick={() => setShowCreate(true)} className="btn-primary">
           New Review
         </button>
@@ -112,7 +114,7 @@ function ReviewsPage() {
       {error && <StatusMessage message={error} variant="error" />}
 
       {showCreate && (
-        <div className="mb-6 rounded-lg border border-[var(--card-border)] bg-[var(--card)] p-4">
+        <div className="mb-6 card ">
           <h3 className="mb-2 font-semibold">Create Review for Report</h3>
           <div className="flex gap-4">
             <select
@@ -143,10 +145,7 @@ function ReviewsPage() {
 
       <div className="space-y-3">
         {reviews.map((r) => (
-          <div
-            key={r.id}
-            className="rounded-lg border border-[var(--card-border)] bg-[var(--card)] p-4"
-          >
+          <div key={r.id} className="card ">
             <div className="flex items-center justify-between">
               <div>
                 <p className="font-medium">
@@ -200,7 +199,9 @@ function ReviewsPage() {
         {reviews.length === 0 && (
           <div className="card p-12 text-center">
             <span className="text-4xl mb-3 block">📋</span>
-            <p className="text-[var(--muted)] mb-2">No reviews yet</p>
+            <p className="text-[var(--muted)] text-base font-medium mb-8 max-w-2xl">
+              No reviews yet
+            </p>
             <p className="text-sm text-[var(--muted)]">
               Create one for an emission report to get started.
             </p>

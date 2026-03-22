@@ -4,7 +4,9 @@ import { Link } from "@tanstack/react-router";
 import { useDocumentTitle } from "@/hooks/useDocumentTitle";
 import { forgotPassword, ApiError } from "@/lib/api";
 
-export const Route = createFileRoute("/forgot-password")({ component: ForgotPasswordPage });
+export const Route = createFileRoute("/forgot-password")({
+  component: ForgotPasswordPage,
+});
 
 function ForgotPasswordPage() {
   useDocumentTitle("Forgot Password");
@@ -31,23 +33,22 @@ function ForgotPasswordPage() {
   return (
     <div className="flex items-center justify-center min-h-screen px-4">
       <div className="card w-full max-w-md">
-        <h1 className="text-2xl font-bold mb-2">Forgot Password</h1>
+        <h1 className="text-3xl font-extrabold tracking-tight mb-2">
+          Forgot Password
+        </h1>
         {submitted ? (
           <div>
-            <p className="text-[var(--muted)] mb-4">
+            <p className="text-[var(--muted)] text-base font-medium mb-8 max-w-2xl">
               If an account exists with that email, you will receive a password
               reset link shortly.
             </p>
-            <Link
-              to="/login"
-              className="text-[var(--primary)] hover:underline"
-            >
+            <Link to="/login" className="text-[var(--primary)] hover:underline">
               Back to sign in
             </Link>
           </div>
         ) : (
           <>
-            <p className="text-[var(--muted)] mb-6">
+            <p className="text-[var(--muted)] text-base font-medium mb-8 max-w-2xl">
               Enter your email and we&apos;ll send you a reset link.
             </p>
             {error && (

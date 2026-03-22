@@ -81,7 +81,7 @@ function BillingPage() {
 
   if (loading || (subQuery.isLoading && !error)) {
     return (
-      <div className="max-w-4xl mx-auto p-8 space-y-6">
+      <div className="max-w-6xl mx-auto p-8 animate-fade-up space-y-8">
         <CardSkeleton />
         <CardSkeleton />
       </div>
@@ -90,7 +90,7 @@ function BillingPage() {
 
   if (error && !sub) {
     return (
-      <div className="max-w-5xl mx-auto p-8">
+      <div className="max-w-6xl mx-auto p-8 animate-fade-up space-y-8">
         <ErrorCard
           message={error}
           onRetry={() => {
@@ -104,7 +104,7 @@ function BillingPage() {
   }
 
   return (
-    <div className="max-w-5xl mx-auto p-8 space-y-8">
+    <div className="max-w-6xl mx-auto p-8 animate-fade-up space-y-8">
       <Breadcrumbs
         items={[
           { label: "Dashboard", href: "/dashboard" },
@@ -112,8 +112,10 @@ function BillingPage() {
         ]}
       />
       <div>
-        <h1 className="text-2xl font-bold">Billing & Subscription</h1>
-        <p className="text-[var(--muted)]">
+        <h1 className="text-3xl font-extrabold tracking-tight mb-2">
+          Billing & Subscription
+        </h1>
+        <p className="text-[var(--muted)] text-base font-medium mb-8 max-w-2xl">
           Manage your plan, view credits, and compare tiers.
         </p>
       </div>
@@ -192,7 +194,7 @@ function BillingPage() {
                     </ul>
                   </div>
                   <button
-                    className={`mt-6 w-full py-2 rounded-md text-sm font-medium transition-colors ${
+                    className={`mt-6 w-full py-2 rounded-md text-sm font-medium ${
                       isCurrent
                         ? "bg-[var(--card-border)] text-[var(--muted)] cursor-default"
                         : "btn-primary"
@@ -229,7 +231,7 @@ function BillingPage() {
               className="text-center p-3 rounded-md bg-[var(--background)]"
             >
               <p className="font-medium">{item.op}</p>
-              <p className="text-[var(--muted)]">
+              <p className="text-[var(--muted)] text-base font-medium mb-8 max-w-2xl">
                 {item.cost === 0 ? "Listing price" : `${item.cost} credits`}
               </p>
             </div>

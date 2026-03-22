@@ -27,7 +27,7 @@ function RecommendationsPage() {
   if (loading || (!data && !error)) return <PageSkeleton />;
   if (error)
     return (
-      <div className="max-w-5xl mx-auto p-8">
+      <div className="max-w-6xl mx-auto p-8 animate-fade-up space-y-8">
         <ErrorCard
           message={
             error instanceof Error
@@ -43,11 +43,13 @@ function RecommendationsPage() {
   const { recommendations, summary } = data;
 
   return (
-    <div className="max-w-5xl mx-auto p-8 space-y-8">
+    <div className="max-w-6xl mx-auto p-8 animate-fade-up space-y-8">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold">Reduction Recommendations</h1>
-          <p className="text-[var(--muted)] text-sm">
+          <h1 className="text-3xl font-extrabold tracking-tight mb-2">
+            Reduction Recommendations
+          </h1>
+          <p className="text-[var(--muted)] text-base font-medium mb-8 max-w-2xl">
             {summary.recommendation_count} strategies &middot;{" "}
             {summary.quick_wins} quick wins
           </p>
@@ -63,7 +65,9 @@ function RecommendationsPage() {
       {/* Summary cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div className="card">
-          <p className="text-[var(--muted)] text-sm">Potential Reduction</p>
+          <p className="text-[var(--muted)] text-base font-medium mb-8 max-w-2xl">
+            Potential Reduction
+          </p>
           <p className="text-xl font-bold text-[var(--primary)]">
             {summary.total_reduction_tco2e.toLocaleString()} tCO₂e
           </p>
@@ -72,14 +76,18 @@ function RecommendationsPage() {
           </p>
         </div>
         <div className="card">
-          <p className="text-[var(--muted)] text-sm">Est. Annual Cost</p>
+          <p className="text-[var(--muted)] text-base font-medium mb-8 max-w-2xl">
+            Est. Annual Cost
+          </p>
           <p className="text-xl font-bold">
             ${(summary.annual_cost_range_usd.min / 1000).toFixed(0)}k – $
             {(summary.annual_cost_range_usd.max / 1000).toFixed(0)}k
           </p>
         </div>
         <div className="card">
-          <p className="text-[var(--muted)] text-sm">Quick Wins</p>
+          <p className="text-[var(--muted)] text-base font-medium mb-8 max-w-2xl">
+            Quick Wins
+          </p>
           <p className="text-xl font-bold text-[var(--scope2)]">
             {summary.quick_wins}
           </p>
@@ -121,25 +129,33 @@ function RecommendationsPage() {
             <p className="text-sm text-[var(--muted)]">{rec.description}</p>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
               <div>
-                <p className="text-[var(--muted)] text-xs">CO₂ Reduction</p>
+                <p className="text-[var(--muted)] text-base font-medium mb-8 max-w-2xl">
+                  CO₂ Reduction
+                </p>
                 <p className="font-medium">
                   {rec.co2_reduction_tco2e.toLocaleString()} tCO₂e (
                   {rec.reduction_percentage.toFixed(1)}%)
                 </p>
               </div>
               <div>
-                <p className="text-[var(--muted)] text-xs">Annual Cost</p>
+                <p className="text-[var(--muted)] text-base font-medium mb-8 max-w-2xl">
+                  Annual Cost
+                </p>
                 <p className="font-medium">
                   ${(rec.annual_cost_usd.min / 1000).toFixed(0)}k – $
                   {(rec.annual_cost_usd.max / 1000).toFixed(0)}k
                 </p>
               </div>
               <div>
-                <p className="text-[var(--muted)] text-xs">Payback</p>
+                <p className="text-[var(--muted)] text-base font-medium mb-8 max-w-2xl">
+                  Payback
+                </p>
                 <p className="font-medium">{rec.payback_years} years</p>
               </div>
               <div>
-                <p className="text-[var(--muted)] text-xs">Co-benefits</p>
+                <p className="text-[var(--muted)] text-base font-medium mb-8 max-w-2xl">
+                  Co-benefits
+                </p>
                 <p className="font-medium">{rec.co_benefits.join(", ")}</p>
               </div>
             </div>

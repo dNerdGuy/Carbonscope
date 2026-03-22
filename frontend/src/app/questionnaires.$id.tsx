@@ -99,7 +99,7 @@ function QuestionnaireDetailPage() {
   if (loading || (!detail && !fetchError)) return <PageSkeleton />;
   if (fetchError)
     return (
-      <div className="max-w-4xl mx-auto p-8">
+      <div className="max-w-6xl mx-auto p-8 animate-fade-up space-y-8">
         <ErrorCard
           message={
             fetchError instanceof Error
@@ -118,7 +118,7 @@ function QuestionnaireDetailPage() {
   const totalCount = detail.questions.length;
 
   return (
-    <div className="max-w-4xl mx-auto p-8">
+    <div className="max-w-6xl mx-auto p-8 animate-fade-up space-y-8">
       <Breadcrumbs
         items={[
           { label: "Questionnaires", href: "/questionnaires" },
@@ -129,7 +129,9 @@ function QuestionnaireDetailPage() {
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-2xl font-bold">{detail.questionnaire.title}</h1>
+          <h1 className="text-3xl font-extrabold tracking-tight mb-2">
+            {detail.questionnaire.title}
+          </h1>
           <p className="text-sm text-[var(--muted)] mt-1">
             {approvedCount}/{totalCount} questions approved
           </p>

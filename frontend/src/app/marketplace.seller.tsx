@@ -17,7 +17,9 @@ import {
 
 const PAGE_SIZE = 20;
 
-export const Route = createFileRoute("/marketplace/seller")({ component: SellerDashboardPage });
+export const Route = createFileRoute("/marketplace/seller")({
+  component: SellerDashboardPage,
+});
 
 function SellerDashboardPage() {
   const { user, loading } = useRequireAuth();
@@ -82,7 +84,7 @@ function SellerDashboardPage() {
   ];
 
   return (
-    <div className="max-w-5xl mx-auto p-8 space-y-8">
+    <div className="max-w-6xl mx-auto p-8 animate-fade-up space-y-8">
       <Breadcrumbs
         items={[
           { label: "Marketplace", href: "/marketplace" },
@@ -91,7 +93,9 @@ function SellerDashboardPage() {
       />
 
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Seller Dashboard</h1>
+        <h1 className="text-3xl font-extrabold tracking-tight mb-2">
+          Seller Dashboard
+        </h1>
         <Link to="/marketplace" className="btn-secondary text-sm">
           ← Back to Marketplace
         </Link>
@@ -115,17 +119,23 @@ function SellerDashboardPage() {
       {revenue && (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div className="card">
-            <p className="text-[var(--muted)] text-sm">Total Revenue</p>
+            <p className="text-[var(--muted)] text-base font-medium mb-8 max-w-2xl">
+              Total Revenue
+            </p>
             <p className="text-2xl font-bold text-[var(--primary)]">
               {revenue.total_revenue_credits.toLocaleString()} credits
             </p>
           </div>
           <div className="card">
-            <p className="text-[var(--muted)] text-sm">Total Sales</p>
+            <p className="text-[var(--muted)] text-base font-medium mb-8 max-w-2xl">
+              Total Sales
+            </p>
             <p className="text-2xl font-bold">{revenue.total_sales}</p>
           </div>
           <div className="card">
-            <p className="text-[var(--muted)] text-sm">Active Listings</p>
+            <p className="text-[var(--muted)] text-base font-medium mb-8 max-w-2xl">
+              Active Listings
+            </p>
             <p className="text-2xl font-bold">{revenue.active_listings}</p>
           </div>
         </div>

@@ -51,7 +51,7 @@ function BenchmarksPage() {
   if (!user) return null;
 
   return (
-    <div className="mx-auto max-w-5xl p-8">
+    <div className="max-w-6xl mx-auto p-8 animate-fade-up space-y-8">
       <Breadcrumbs
         items={[
           { label: "Dashboard", href: "/dashboard" },
@@ -59,7 +59,9 @@ function BenchmarksPage() {
         ]}
       />
       <div className="mb-8 flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Industry Benchmarks</h1>
+        <h1 className="text-3xl font-extrabold tracking-tight mb-2">
+          Industry Benchmarks
+        </h1>
         <select
           className="input w-auto"
           value={industry}
@@ -88,7 +90,7 @@ function BenchmarksPage() {
       {!benchmarks && !error && (
         <div className="card p-12 text-center">
           <span className="text-4xl mb-3 block">📊</span>
-          <p className="text-[var(--muted)] mb-2">
+          <p className="text-[var(--muted)] text-base font-medium mb-8 max-w-2xl">
             No benchmark data available
           </p>
           <p className="text-sm text-[var(--muted)]">

@@ -220,7 +220,7 @@ function ScenariosPageInner() {
   if (loading || dataQuery.isLoading) return <PageSkeleton />;
 
   return (
-    <div className="max-w-5xl mx-auto p-8">
+    <div className="max-w-6xl mx-auto p-8 animate-fade-up space-y-8">
       <Breadcrumbs
         items={[
           { label: "Dashboard", href: "/dashboard" },
@@ -228,7 +228,9 @@ function ScenariosPageInner() {
         ]}
       />
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold">What-If Scenarios</h1>
+        <h1 className="text-3xl font-extrabold tracking-tight mb-2">
+          What-If Scenarios
+        </h1>
         <button
           onClick={() => setShowCreate(!showCreate)}
           className="px-4 py-2 rounded bg-[var(--primary)] text-black text-sm font-medium hover:opacity-90"
@@ -315,7 +317,7 @@ function ScenariosPageInner() {
                 <button
                   type="button"
                   key={adj.key}
-                  className={`rounded border p-4 text-left transition-colors ${
+                  className={`rounded border p-4 text-left ${
                     active
                       ? "border-[var(--primary)]"
                       : "border-[var(--card-border)] bg-[var(--background)]/50"
@@ -385,7 +387,9 @@ function ScenariosPageInner() {
         {scenarios.length === 0 && !showCreate ? (
           <div className="text-center py-16 rounded-xl border border-[var(--card-border)] bg-[var(--card)]">
             <span className="text-4xl mb-3 block">🔬</span>
-            <p className="text-[var(--muted)] mb-2">No scenarios yet</p>
+            <p className="text-[var(--muted)] text-base font-medium mb-8 max-w-2xl">
+              No scenarios yet
+            </p>
             <p className="text-sm text-[var(--muted)]">
               Create one to model emission reduction strategies.
             </p>

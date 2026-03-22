@@ -161,9 +161,9 @@ function RegisterPage() {
 
   return (
     <div className="flex items-center justify-center min-h-screen px-4 py-8">
-      <div className="card w-full max-w-md">
+      <div className="card w-full max-w-md animate-fade-up">
         <div className="text-center mb-8">
-          <h1 className="flex items-center justify-center gap-2 text-2xl font-bold text-[var(--primary)]">
+          <h1 className="text-3xl font-extrabold tracking-tight mb-2">
             <svg
               width="24"
               height="24"
@@ -180,7 +180,9 @@ function RegisterPage() {
             </svg>
             CarbonScope
           </h1>
-          <p className="text-[var(--muted)] mt-1">Create your account</p>
+          <p className="text-[var(--muted)] text-base font-medium mb-8 max-w-2xl">
+            Create your account
+          </p>
         </div>
         <form onSubmit={handleSubmit} className="space-y-4">
           {error && (

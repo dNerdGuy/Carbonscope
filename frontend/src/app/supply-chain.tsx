@@ -42,7 +42,9 @@ interface Scope3Summary {
   coverage_pct: number;
 }
 
-export const Route = createFileRoute("/supply-chain")({ component: SupplyChainPage });
+export const Route = createFileRoute("/supply-chain")({
+  component: SupplyChainPage,
+});
 
 function SupplyChainPage() {
   useDocumentTitle("Supply Chain");
@@ -128,14 +130,16 @@ function SupplyChainPage() {
     );
 
   return (
-    <div className="max-w-6xl mx-auto p-8 space-y-8">
+    <div className="max-w-6xl mx-auto p-8 animate-fade-up space-y-8">
       <Breadcrumbs
         items={[
           { label: "Dashboard", href: "/dashboard" },
           { label: "Supply Chain" },
         ]}
       />
-      <h1 className="text-2xl font-bold">Supply Chain Network</h1>
+      <h1 className="text-3xl font-extrabold tracking-tight mb-2">
+        Supply Chain Network
+      </h1>
 
       {error && <StatusMessage message={error} variant="error" />}
 
@@ -143,23 +147,31 @@ function SupplyChainPage() {
       {scope3 && (
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <div className="card">
-            <p className="text-[var(--muted)] text-sm">Scope 3 (Cat 1)</p>
+            <p className="text-[var(--muted)] text-base font-medium mb-8 max-w-2xl">
+              Scope 3 (Cat 1)
+            </p>
             <p className="text-xl font-bold text-[var(--scope3)]">
               {scope3.scope3_cat1_from_suppliers.toLocaleString()} tCO₂e
             </p>
           </div>
           <div className="card">
-            <p className="text-[var(--muted)] text-sm">Suppliers</p>
+            <p className="text-[var(--muted)] text-base font-medium mb-8 max-w-2xl">
+              Suppliers
+            </p>
             <p className="text-xl font-bold">{scope3.supplier_count}</p>
           </div>
           <div className="card">
-            <p className="text-[var(--muted)] text-sm">Verified</p>
+            <p className="text-[var(--muted)] text-base font-medium mb-8 max-w-2xl">
+              Verified
+            </p>
             <p className="text-xl font-bold text-[var(--primary)]">
               {scope3.verified_count}
             </p>
           </div>
           <div className="card">
-            <p className="text-[var(--muted)] text-sm">Coverage</p>
+            <p className="text-[var(--muted)] text-base font-medium mb-8 max-w-2xl">
+              Coverage
+            </p>
             <p className="text-xl font-bold">
               {scope3.coverage_pct.toFixed(0)}%
             </p>
@@ -242,7 +254,9 @@ function SupplyChainPage() {
         {suppliers.length === 0 ? (
           <div className="text-center py-12">
             <span className="text-4xl mb-3 block">🔗</span>
-            <p className="text-[var(--muted)] mb-2">No suppliers linked yet</p>
+            <p className="text-[var(--muted)] text-base font-medium mb-8 max-w-2xl">
+              No suppliers linked yet
+            </p>
             <p className="text-sm text-[var(--muted)]">
               Add a supplier above to start tracking Scope 3 emissions.
             </p>
@@ -250,21 +264,35 @@ function SupplyChainPage() {
         ) : (
           <table className="w-full text-sm">
             <thead>
-              <tr className="text-[var(--muted)] text-left border-b border-[var(--card-border)]">
-                <th className="pb-2">Company</th>
-                <th className="pb-2">Industry</th>
-                <th className="pb-2">Category</th>
-                <th className="pb-2">Spend</th>
-                <th className="pb-2">Emissions</th>
-                <th className="pb-2">Status</th>
-                <th className="pb-2">Actions</th>
+              <tr className="text-[var(--muted)] text-left border-b border-[var(--card-border)]/50">
+                <th className="pb-2 text-[var(--muted)] text-xs font-semibold uppercase tracking-wider">
+                  Company
+                </th>
+                <th className="pb-2 text-[var(--muted)] text-xs font-semibold uppercase tracking-wider">
+                  Industry
+                </th>
+                <th className="pb-2 text-[var(--muted)] text-xs font-semibold uppercase tracking-wider">
+                  Category
+                </th>
+                <th className="pb-2 text-[var(--muted)] text-xs font-semibold uppercase tracking-wider">
+                  Spend
+                </th>
+                <th className="pb-2 text-[var(--muted)] text-xs font-semibold uppercase tracking-wider">
+                  Emissions
+                </th>
+                <th className="pb-2 text-[var(--muted)] text-xs font-semibold uppercase tracking-wider">
+                  Status
+                </th>
+                <th className="pb-2 text-[var(--muted)] text-xs font-semibold uppercase tracking-wider">
+                  Actions
+                </th>
               </tr>
             </thead>
             <tbody>
               {suppliers.map((s) => (
                 <tr
                   key={s.link_id}
-                  className="border-b border-[var(--card-border)]"
+                  className="border-b border-[var(--card-border)]/50"
                 >
                   <td className="py-2 font-medium">{s.company_name}</td>
                   <td className="py-2">{s.industry}</td>

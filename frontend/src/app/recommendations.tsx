@@ -34,7 +34,7 @@ function RecommendationsIndexPage() {
   }
 
   return (
-    <div className="max-w-5xl mx-auto p-8 space-y-8">
+    <div className="max-w-6xl mx-auto p-8 animate-fade-up space-y-8">
       <Breadcrumbs
         items={[
           { label: "Dashboard", href: "/dashboard" },
@@ -43,8 +43,10 @@ function RecommendationsIndexPage() {
       />
 
       <div>
-        <h1 className="text-2xl font-bold">Reduction Recommendations</h1>
-        <p className="text-[var(--muted)] text-sm">
+        <h1 className="text-3xl font-extrabold tracking-tight mb-2">
+          Reduction Recommendations
+        </h1>
+        <p className="text-[var(--muted)] text-base font-medium mb-8 max-w-2xl">
           Select a report to view AI-generated reduction strategies.
         </p>
       </div>
@@ -57,7 +59,7 @@ function RecommendationsIndexPage() {
         <div className="card text-center p-8">
           <div className="text-4xl mb-4">📊</div>
           <h2 className="text-lg font-semibold mb-2">No reports yet</h2>
-          <p className="text-[var(--muted)] text-sm mb-4">
+          <p className="text-[var(--muted)] text-base font-medium mb-8 max-w-2xl">
             Create an emission estimate first, then come back here for reduction
             recommendations.
           </p>
@@ -73,7 +75,7 @@ function RecommendationsIndexPage() {
             <Link
               key={report.id}
               to={`/recommendations/${report.id}`}
-              className="card hover:border-[var(--primary)] transition-colors cursor-pointer"
+              className="card cursor-pointer"
             >
               <div className="flex items-center justify-between">
                 <div>

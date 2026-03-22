@@ -73,10 +73,12 @@ function ResetPasswordPageInner() {
   return (
     <div className="flex items-center justify-center min-h-screen px-4">
       <div className="card w-full max-w-md">
-        <h1 className="text-2xl font-bold mb-2">Reset Password</h1>
+        <h1 className="text-3xl font-extrabold tracking-tight mb-2">
+          Reset Password
+        </h1>
         {success ? (
           <div>
-            <p className="text-[var(--muted)] mb-4">
+            <p className="text-[var(--muted)] text-base font-medium mb-8 max-w-2xl">
               Your password has been reset successfully.
             </p>
             <Link to="/login" className="btn-primary inline-block">
@@ -85,7 +87,9 @@ function ResetPasswordPageInner() {
           </div>
         ) : (
           <>
-            <p className="text-[var(--muted)] mb-6">Enter your new password.</p>
+            <p className="text-[var(--muted)] text-base font-medium mb-8 max-w-2xl">
+              Enter your new password.
+            </p>
             {missingToken && (
               <div
                 className="px-4 py-2 rounded-lg mb-4 text-sm"

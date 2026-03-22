@@ -120,9 +120,9 @@ function LoginPage() {
 
   return (
     <div className="flex items-center justify-center min-h-screen px-4">
-      <div className="card w-full max-w-md">
+      <div className="card w-full max-w-md animate-fade-up">
         <div className="text-center mb-8">
-          <h1 className="flex items-center justify-center gap-2 text-2xl font-bold text-[var(--primary)]">
+          <h1 className="text-3xl font-extrabold tracking-tight mb-2">
             <svg
               width="24"
               height="24"
@@ -139,7 +139,9 @@ function LoginPage() {
             </svg>
             CarbonScope
           </h1>
-          <p className="text-[var(--muted)] mt-1">Sign in to your account</p>
+          <p className="text-[var(--muted)] text-base font-medium mb-8 max-w-2xl">
+            Sign in to your account
+          </p>
         </div>
         <form onSubmit={handleSubmit} className="space-y-4">
           {error && (
@@ -172,7 +174,7 @@ function LoginPage() {
               <button
                 type="button"
                 onClick={() => setShowPassword((v) => !v)}
-                className="absolute inset-y-0 right-0 flex items-center px-3 text-(--muted) hover:text-(--foreground) transition-colors"
+                className="absolute inset-y-0 right-0 flex items-center px-3 text-(--muted) hover:text-(--foreground)"
                 aria-label={showPassword ? "Hide password" : "Show password"}
               >
                 {showPassword ? (

@@ -70,7 +70,9 @@ function MFAPage() {
 
   return (
     <div className="max-w-lg mx-auto space-y-6 p-6">
-      <h1 className="text-2xl font-bold">Multi-Factor Authentication</h1>
+      <h1 className="text-3xl font-extrabold tracking-tight mb-2">
+        Multi-Factor Authentication
+      </h1>
 
       <div className="card space-y-2">
         <p className="font-semibold">

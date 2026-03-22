@@ -114,12 +114,14 @@ function PCAFPage() {
   if (!user) return null;
 
   return (
-    <div className="mx-auto max-w-6xl p-8">
+    <div className="max-w-6xl mx-auto p-8 animate-fade-up space-y-8">
       <Breadcrumbs
         items={[{ label: "Dashboard", href: "/dashboard" }, { label: "PCAF" }]}
       />
       <div className="mb-8 flex items-center justify-between">
-        <h1 className="text-2xl font-bold">PCAF Financed Emissions</h1>
+        <h1 className="text-3xl font-extrabold tracking-tight mb-2">
+          PCAF Financed Emissions
+        </h1>
         <button onClick={() => setShowCreate(true)} className="btn-primary">
           New Portfolio
         </button>
@@ -128,7 +130,7 @@ function PCAFPage() {
       {error && <StatusMessage message={error} variant="error" />}
 
       {showCreate && (
-        <div className="mb-6 rounded-lg border border-[var(--card-border)] bg-[var(--card)] p-4">
+        <div className="mb-6 card ">
           <h3 className="mb-2 font-semibold">Create Portfolio</h3>
           <div className="flex gap-4">
             <input
@@ -179,7 +181,7 @@ function PCAFPage() {
             </button>
           ))}
           {portfolios.length === 0 && (
-            <p className="text-[var(--muted)]">
+            <p className="text-[var(--muted)] text-base font-medium mb-8 max-w-2xl">
               No portfolios yet. Create one to get started.
             </p>
           )}
@@ -223,7 +225,7 @@ function PCAFPage() {
               </div>
 
               {showAssetForm && (
-                <div className="mb-4 rounded-lg border border-[var(--card-border)] bg-[var(--card)] p-4">
+                <div className="mb-4 card ">
                   <div className="grid grid-cols-2 gap-3">
                     <div>
                       <label
@@ -392,7 +394,7 @@ function PCAFPage() {
               </div>
             </div>
           ) : (
-            <p className="text-[var(--muted)]">
+            <p className="text-[var(--muted)] text-base font-medium mb-8 max-w-2xl">
               Select a portfolio to view details.
             </p>
           )}

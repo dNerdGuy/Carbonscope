@@ -251,15 +251,17 @@ function TeamPage() {
   if (!user) return null;
 
   return (
-    <div className="max-w-5xl mx-auto p-8 space-y-8">
+    <div className="max-w-6xl mx-auto p-8 animate-fade-up space-y-8">
       <Breadcrumbs
         items={[{ label: "Dashboard", href: "/dashboard" }, { label: "Team" }]}
       />
 
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold">Team Management</h1>
-          <p className="text-[var(--muted)] text-sm">
+          <h1 className="text-3xl font-extrabold tracking-tight mb-2">
+            Team Management
+          </h1>
+          <p className="text-[var(--muted)] text-base font-medium mb-8 max-w-2xl">
             {members.length} member{members.length !== 1 ? "s" : ""}
             {pendingInvites.length > 0 &&
               ` · ${pendingInvites.length} pending invite${pendingInvites.length !== 1 ? "s" : ""}`}

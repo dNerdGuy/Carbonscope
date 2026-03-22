@@ -50,7 +50,7 @@ function ReportDetailPage() {
 
   if (error) {
     return (
-      <div className="max-w-4xl mx-auto p-8">
+      <div className="max-w-6xl mx-auto p-8 animate-fade-up space-y-8">
         <ErrorCard message={error} onRetry={() => reportQuery.refetch()} />
       </div>
     );
@@ -59,7 +59,7 @@ function ReportDetailPage() {
   if (!report) return null;
 
   return (
-    <div className="max-w-4xl mx-auto p-8 space-y-8">
+    <div className="max-w-6xl mx-auto p-8 animate-fade-up space-y-8">
       <Breadcrumbs
         items={[
           { label: "Reports", href: "/reports" },
@@ -69,10 +69,10 @@ function ReportDetailPage() {
 
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold">
+          <h1 className="text-3xl font-extrabold tracking-tight mb-2">
             Emission Report — {report.year}
           </h1>
-          <p className="text-[var(--muted)] text-sm">
+          <p className="text-[var(--muted)] text-base font-medium mb-8 max-w-2xl">
             Generated {new Date(report.created_at).toLocaleString()} &middot;{" "}
             {report.methodology_version}
           </p>
@@ -82,7 +82,9 @@ function ReportDetailPage() {
       {/* Totals */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <div className="card">
-          <p className="text-[var(--muted)] text-sm">Total</p>
+          <p className="text-[var(--muted)] text-base font-medium mb-8 max-w-2xl">
+            Total
+          </p>
           <p className="text-xl font-bold">{fmt(report.total)} tCO₂e</p>
         </div>
         <div className="card">

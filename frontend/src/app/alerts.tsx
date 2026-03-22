@@ -109,7 +109,7 @@ function AlertsPage() {
   const alerts = data?.items ?? [];
 
   return (
-    <div className="max-w-5xl mx-auto p-8 space-y-6">
+    <div className="max-w-6xl mx-auto p-8 animate-fade-up space-y-8">
       <Breadcrumbs
         items={[
           { label: "Dashboard", href: "/dashboard" },
@@ -118,8 +118,10 @@ function AlertsPage() {
       />
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold">Alerts</h1>
-          <p className="text-[var(--muted)]">
+          <h1 className="text-3xl font-extrabold tracking-tight mb-2">
+            Alerts
+          </h1>
+          <p className="text-[var(--muted)] text-base font-medium mb-8 max-w-2xl">
             Automated monitoring for emission changes and data quality.
           </p>
         </div>
@@ -199,7 +201,7 @@ function AlertsPage() {
                 </div>
                 {!alert.is_read && (
                   <button
-                    className="text-xs px-3 py-1.5 rounded-md bg-[var(--card-border)] hover:bg-[var(--primary)] hover:text-black transition-colors shrink-0"
+                    className="text-xs px-3 py-1.5 rounded-md bg-[var(--card-border)] hover:bg-[var(--primary)] hover:text-black shrink-0"
                     onClick={() => handleAcknowledge(alert.id)}
                   >
                     Acknowledge

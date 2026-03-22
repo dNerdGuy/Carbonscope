@@ -23,7 +23,7 @@ function AuditLogsPage() {
   return (
     <Suspense
       fallback={
-        <div className="p-6 max-w-6xl mx-auto">
+        <div className="max-w-6xl mx-auto p-8 animate-fade-up space-y-8">
           <TableSkeleton />
         </div>
       }
@@ -123,14 +123,14 @@ function AuditLogsPageInner() {
   ];
 
   return (
-    <div className="p-6 max-w-6xl mx-auto">
+    <div className="max-w-6xl mx-auto p-8 animate-fade-up space-y-8">
       <Breadcrumbs
         items={[
           { label: "Dashboard", href: "/dashboard" },
           { label: "Audit Log" },
         ]}
       />
-      <h1 className="text-2xl font-bold mb-6">Audit Log</h1>
+      <h1 className="text-3xl font-extrabold tracking-tight mb-2">Audit Log</h1>
 
       {error && <StatusMessage message={error} variant="error" />}
 

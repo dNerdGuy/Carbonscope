@@ -37,7 +37,9 @@ const FRAMEWORKS: { id: Framework; label: string; desc: string }[] = [
   },
 ];
 
-export const Route = createFileRoute("/compliance")({ component: CompliancePage });
+export const Route = createFileRoute("/compliance")({
+  component: CompliancePage,
+});
 
 function CompliancePage() {
   useDocumentTitle("Compliance Reports");
@@ -90,14 +92,16 @@ function CompliancePage() {
   if (loading) return <PageSkeleton />;
 
   return (
-    <div className="max-w-5xl mx-auto p-8 space-y-8">
+    <div className="max-w-6xl mx-auto p-8 animate-fade-up space-y-8">
       <Breadcrumbs
         items={[
           { label: "Dashboard", href: "/dashboard" },
           { label: "Compliance" },
         ]}
       />
-      <h1 className="text-2xl font-bold">Compliance Reports</h1>
+      <h1 className="text-3xl font-extrabold tracking-tight mb-2">
+        Compliance Reports
+      </h1>
 
       {/* Controls */}
       <div className="card space-y-4">
@@ -139,7 +143,7 @@ function CompliancePage() {
                 setSelectedFramework(fw.id);
                 setResult(null);
               }}
-              className={`text-left p-3 rounded-lg border transition-colors ${
+              className={`text-left p-3 rounded-lg border ${
                 selectedFramework === fw.id
                   ? "border-[var(--primary)] bg-[var(--primary)]/10"
                   : "border-[var(--card-border)] hover:border-[var(--muted)]"
@@ -224,7 +228,9 @@ function ComplianceSection({
     return (
       <div className="border border-[var(--card-border)] rounded-lg p-4">
         <h3 className="font-semibold text-sm mb-1">{label}</h3>
-        <p className="text-[var(--muted)] text-sm">—</p>
+        <p className="text-[var(--muted)] text-base font-medium mb-8 max-w-2xl">
+          —
+        </p>
       </div>
     );
   }

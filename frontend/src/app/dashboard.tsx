@@ -52,7 +52,7 @@ function DashboardPage() {
 
   if (error) {
     return (
-      <div className="max-w-6xl mx-auto p-8">
+      <div className="max-w-6xl mx-auto p-8 animate-fade-up space-y-8">
         <ErrorCard
           message={error || "Failed to load dashboard"}
           onRetry={() => dashboardQuery.refetch()}
@@ -66,16 +66,18 @@ function DashboardPage() {
   const report = data.latest_report;
 
   return (
-    <div className="max-w-6xl mx-auto p-8 space-y-8 animate-fade-up">
+    <div className="max-w-6xl mx-auto p-8 animate-fade-up space-y-8">
       <div className="flex flex-col gap-1">
-        <h1 className="text-3xl font-extrabold tracking-tight">Dashboard</h1>
-        <p className="text-[var(--muted)] text-base font-medium">
+        <h1 className="text-3xl font-extrabold tracking-tight mb-2">
+          Dashboard
+        </h1>
+        <p className="text-[var(--muted)] text-base font-medium mb-8 max-w-2xl">
           {data.company.name} &middot; {data.company.industry}
         </p>
       </div>
 
       {/* KPI Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6 animate-fade-up delay-100">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
         <KpiCard
           label="Total Emissions"
           value={report ? `${fmt(report.total)} tCO₂e` : "—"}
@@ -102,7 +104,7 @@ function DashboardPage() {
         <div className="card p-8 text-center space-y-3">
           <p className="text-4xl">📊</p>
           <h2 className="text-lg font-semibold">No emission reports yet</h2>
-          <p className="text-[var(--muted)] text-sm max-w-md mx-auto">
+          <p className="text-[var(--muted)] text-base font-medium mb-8 max-w-2xl">
             Upload your first emission data to see your carbon footprint
             breakdown, track trends, and generate compliance reports.
           </p>
@@ -116,23 +118,23 @@ function DashboardPage() {
       )}
 
       {/* Stats row */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 animate-fade-up delay-200">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div className="card flex flex-col items-center text-center">
-          <p className="text-[var(--muted)] text-sm font-medium tracking-wide uppercase">
+          <p className="text-[var(--muted)] text-base font-medium mb-8 max-w-2xl">
             Confidence
           </p>
-          <p className="text-3xl font-extrabold mt-2 text-transparent bg-clip-text bg-gradient-to-r from-[var(--primary)] to-[var(--info)]">
+          <p className="text-3xl font-extrabold mt-2 text-[var(--primary)]">
             {report ? `${(report.confidence * 100).toFixed(0)}%` : "—"}
           </p>
         </div>
         <div className="card flex flex-col items-center text-center">
-          <p className="text-[var(--muted)] text-sm font-medium tracking-wide uppercase">
+          <p className="text-[var(--muted)] text-base font-medium mb-8 max-w-2xl">
             Reports
           </p>
           <p className="text-3xl font-extrabold mt-2">{data.reports_count}</p>
         </div>
         <div className="card flex flex-col items-center text-center">
-          <p className="text-[var(--muted)] text-sm font-medium tracking-wide uppercase">
+          <p className="text-[var(--muted)] text-base font-medium mb-8 max-w-2xl">
             Data Uploads
           </p>
           <p className="text-3xl font-extrabold mt-2">
@@ -143,7 +145,7 @@ function DashboardPage() {
 
       {/* Scope breakdown chart */}
       {report && (
-        <div className="card animate-fade-up delay-300">
+        <div className="card">
           <h2 className="text-xl font-bold mb-6 tracking-tight">
             Emission Breakdown
           </h2>
@@ -173,7 +175,7 @@ function DashboardPage() {
 
       {/* Year-over-year trend */}
       {data.year_over_year && data.year_over_year.length > 1 && (
-        <div className="card animate-fade-up delay-400">
+        <div className="card">
           <h2 className="text-xl font-bold mb-6 tracking-tight">
             Year-over-Year Trend
           </h2>
@@ -182,10 +184,10 @@ function DashboardPage() {
       )}
 
       {/* Quick actions */}
-      <div className="flex gap-4 animate-fade-up delay-500 pt-4">
+      <div className="flex gap-4 pt-4">
         <button
           onClick={() => navigate({ to: "/upload" })}
-          className="btn-primary shadow-lg shadow-[var(--primary)]/20"
+          className="btn-primary"
         >
           Upload New Data
         </button>
@@ -210,20 +212,16 @@ function KpiCard({
   color?: string;
 }) {
   return (
-    <div className="card flex flex-col justify-center items-start gap-1 relative overflow-hidden group">
-      {color && (
-        <div
-          className="absolute -top-10 -right-10 w-24 h-24 rounded-full opacity-10 blur-xl group-hover:scale-150 transition-transform duration-500"
-          style={{ background: color }}
-        />
-      )}
-      <p className="text-[var(--muted)] text-sm font-medium tracking-wide uppercase">
-        {label}
-      </p>
-      <p
-        className="text-3xl font-extrabold tracking-tight mt-1"
-        style={color ? { color } : undefined}
-      >
+    <div className="card flex flex-col justify-center items-start gap-2 relative overflow-hidden group">
+      <div className="flex items-center gap-2 mb-8">
+        {color && (
+          <div className="w-2 h-2 rounded-full" style={{ background: color }} />
+        )}
+        <p className="text-[var(--muted)] text-base font-medium max-w-2xl">
+          {label}
+        </p>
+      </div>
+      <p className="text-3xl font-bold tracking-tight text-[var(--foreground)]">
         {value}
       </p>
     </div>
@@ -245,12 +243,22 @@ function YoyTable({
     <div className="overflow-x-auto">
       <table className="w-full text-sm">
         <thead>
-          <tr className="text-[var(--muted)] text-left border-b border-[var(--card-border)]">
-            <th className="py-2 pr-4">Year</th>
-            <th className="py-2 pr-4">Scope 1</th>
-            <th className="py-2 pr-4">Scope 2</th>
-            <th className="py-2 pr-4">Scope 3</th>
-            <th className="py-2">Total</th>
+          <tr className="text-[var(--muted)] text-left border-b border-[var(--card-border)]/50">
+            <th className="py-2 pr-4 text-[var(--muted)] text-xs font-semibold uppercase tracking-wider">
+              Year
+            </th>
+            <th className="py-2 pr-4 text-[var(--muted)] text-xs font-semibold uppercase tracking-wider">
+              Scope 1
+            </th>
+            <th className="py-2 pr-4 text-[var(--muted)] text-xs font-semibold uppercase tracking-wider">
+              Scope 2
+            </th>
+            <th className="py-2 pr-4 text-[var(--muted)] text-xs font-semibold uppercase tracking-wider">
+              Scope 3
+            </th>
+            <th className="py-2 text-[var(--muted)] text-xs font-semibold uppercase tracking-wider">
+              Total
+            </th>
           </tr>
         </thead>
         <tbody>

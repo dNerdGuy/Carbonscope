@@ -173,7 +173,7 @@ function MarketplacePageInner() {
   const listings = data?.items ?? [];
 
   return (
-    <div className="max-w-6xl mx-auto p-8 space-y-6">
+    <div className="max-w-6xl mx-auto p-8 animate-fade-up space-y-8">
       <Breadcrumbs
         items={[
           { label: "Dashboard", href: "/dashboard" },
@@ -182,8 +182,10 @@ function MarketplacePageInner() {
       />
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold">Data Marketplace</h1>
-          <p className="text-[var(--muted)]">
+          <h1 className="text-3xl font-extrabold tracking-tight mb-2">
+            Data Marketplace
+          </h1>
+          <p className="text-[var(--muted)] text-base font-medium mb-8 max-w-2xl">
             Browse and purchase anonymized emission data from other
             organizations.
           </p>
@@ -370,7 +372,9 @@ function MarketplacePageInner() {
                           listing.anonymized_data.scope1 as number
                         )?.toLocaleString() ?? "—"}
                       </p>
-                      <p className="text-[var(--muted)]">Scope 1</p>
+                      <p className="text-[var(--muted)] text-base font-medium mb-8 max-w-2xl">
+                        Scope 1
+                      </p>
                     </div>
                     <div className="text-center p-2 rounded bg-[var(--background)]">
                       <p className="font-medium">
@@ -378,7 +382,9 @@ function MarketplacePageInner() {
                           listing.anonymized_data.scope2 as number
                         )?.toLocaleString() ?? "—"}
                       </p>
-                      <p className="text-[var(--muted)]">Scope 2</p>
+                      <p className="text-[var(--muted)] text-base font-medium mb-8 max-w-2xl">
+                        Scope 2
+                      </p>
                     </div>
                     <div className="text-center p-2 rounded bg-[var(--background)]">
                       <p className="font-medium">
@@ -386,7 +392,9 @@ function MarketplacePageInner() {
                           listing.anonymized_data.scope3 as number
                         )?.toLocaleString() ?? "—"}
                       </p>
-                      <p className="text-[var(--muted)]">Scope 3</p>
+                      <p className="text-[var(--muted)] text-base font-medium mb-8 max-w-2xl">
+                        Scope 3
+                      </p>
                     </div>
                   </div>
                 )}

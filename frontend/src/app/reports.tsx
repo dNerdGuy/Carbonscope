@@ -21,7 +21,7 @@ function ReportsPage() {
   return (
     <Suspense
       fallback={
-        <div className="max-w-5xl mx-auto p-8 space-y-3">
+        <div className="max-w-6xl mx-auto p-8 animate-fade-up space-y-8">
           <CardSkeleton />
           <CardSkeleton />
           <CardSkeleton />
@@ -138,7 +138,7 @@ function ReportsPageInner() {
 
   if (loading || (fetching && reports.length === 0)) {
     return (
-      <div className="max-w-5xl mx-auto p-8 space-y-3">
+      <div className="max-w-6xl mx-auto p-8 animate-fade-up space-y-8">
         <CardSkeleton />
         <CardSkeleton />
         <CardSkeleton />
@@ -147,7 +147,7 @@ function ReportsPageInner() {
   }
 
   return (
-    <div className="max-w-5xl mx-auto p-8">
+    <div className="max-w-6xl mx-auto p-8 animate-fade-up space-y-8">
       <Breadcrumbs
         items={[
           { label: "Dashboard", href: "/dashboard" },
@@ -155,7 +155,9 @@ function ReportsPageInner() {
         ]}
       />
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold">Emission Reports</h1>
+        <h1 className="text-3xl font-extrabold tracking-tight mb-2">
+          Emission Reports
+        </h1>
         <button
           onClick={() => navigate({ to: "/upload" })}
           className="btn-primary text-sm"
@@ -230,7 +232,7 @@ function ReportsPageInner() {
 
       {reports.length === 0 && !fetching ? (
         <div className="card text-center py-12">
-          <p className="text-[var(--muted)] mb-4">
+          <p className="text-[var(--muted)] text-base font-medium mb-8 max-w-2xl">
             No reports yet. Upload data to generate your first emission
             estimate.
           </p>
@@ -245,11 +247,7 @@ function ReportsPageInner() {
         <>
           <div className="space-y-3">
             {reports.map((r) => (
-              <Link
-                key={r.id}
-                to={`/reports/${r.id}`}
-                className="card block hover:border-[var(--primary)] transition-colors"
-              >
+              <Link key={r.id} to={`/reports/${r.id}`} className="card block">
                 <div className="flex items-center justify-between">
                   <div>
                     <span className="font-semibold text-lg">{r.year}</span>

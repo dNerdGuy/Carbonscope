@@ -236,15 +236,15 @@ function SettingsPage() {
   }
 
   return (
-    <div className="max-w-3xl mx-auto p-8">
+    <div className="max-w-6xl mx-auto p-8 animate-fade-up space-y-8">
       <Breadcrumbs
         items={[
           { label: "Dashboard", href: "/dashboard" },
           { label: "Settings" },
         ]}
       />
-      <h1 className="text-2xl font-bold mb-2">Settings</h1>
-      <p className="text-[var(--muted)] mb-8">
+      <h1 className="text-3xl font-extrabold tracking-tight mb-2">Settings</h1>
+      <p className="text-[var(--muted)] text-base font-medium mb-8 max-w-2xl">
         Manage your profile and company.
       </p>
 
@@ -536,7 +536,10 @@ function SettingsPage() {
       {/* Danger Zone */}
       <div
         className="card mt-8 space-y-3"
-        style={{ borderColor: "var(--error, #ef4444)" }}
+        style={{
+          borderColor: "color-mix(in srgb, var(--danger) 50%, transparent)",
+          backgroundColor: "color-mix(in srgb, var(--danger) 5%, transparent)",
+        }}
       >
         <h2
           className="text-lg font-bold"
@@ -551,7 +554,7 @@ function SettingsPage() {
         {deleteErr && <StatusMessage message={deleteErr} variant="error" />}
         <button
           type="button"
-          className="rounded-md border px-4 py-2 text-sm font-medium transition-colors"
+          className="rounded-md border px-4 py-2 text-sm font-medium"
           style={{
             borderColor: "var(--error, #ef4444)",
             color: "var(--error, #ef4444)",
