@@ -1,0 +1,2 @@
+sed -i '' -e 's/border-radius: 0.75rem;/border-radius: 1rem;/g' frontend/src/app/globals.css
+sed -i '' -e 's/padding: 1.5rem;/padding: 1.5rem;\n  box-shadow: 0 4px 6px -1px rgb(0 0 0 \/ 0.1), 0 2px 4px -2px rgb(0 0 0 \/ 0.1);\n  transition: box-shadow 0.2s ease-in-out, transform 0.2s ease-in-out;\n}\n.card:hover {\n  box-shadow: 0 10px 15px -3px rgb(0 0 0 \/ 0.1), 0 4px 6px -4px rgb(0 0 0 \/ 0.1);\n  transform: translateY(-2px);/g' frontend/src/app/globals.css

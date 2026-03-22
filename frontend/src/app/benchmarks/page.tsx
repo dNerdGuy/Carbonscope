@@ -2,6 +2,16 @@
 
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+  ResponsiveContainer,
+} from "recharts";
 import { useDocumentTitle } from "@/hooks/useDocumentTitle";
 import { useRequireAuth } from "@/hooks/useRequireAuth";
 import { PageSkeleton } from "@/components/Skeleton";
@@ -90,7 +100,9 @@ export default function BenchmarksPage() {
           <h2 className="mb-4 text-xl font-semibold">
             {industry.charAt(0).toUpperCase() + industry.slice(1)} Benchmarks
           </h2>
-          <div className="grid gap-4 sm:grid-cols-3">
+
+          {/* KPI cards */}
+          <div className="grid gap-4 sm:grid-cols-3 mb-6">
             {Object.entries(benchmarks)
               .filter(
                 ([, val]) => typeof val === "number" || typeof val === "string",
@@ -108,6 +120,55 @@ export default function BenchmarksPage() {
                 </div>
               ))}
           </div>
+
+          {/* Scope intensity bar chart */}
+          {(() => {
+            const s1 = (benchmarks as Record<string, unknown>)
+              .scope1_per_employee as number | undefined;
+            const s2 = (benchmarks as Record<string, unknown>)
+              .scope2_per_employee as number | undefined;
+            const s3 = (benchmarks as Record<string, unknown>)
+              .scope3_per_employee as number | undefined;
+            if (s1 == null && s2 == null && s3 == null) return null;
+            const chartData = [
+              { scope: "Scope 1", industry: s1 ?? 0 },
+              { scope: "Scope 2", industry: s2 ?? 0 },
+              { scope: "Scope 3", industry: s3 ?? 0 },
+            ];
+            return (
+              <div className="card mb-4">
+                <p className="text-sm font-medium text-[var(--muted)] mb-4">
+                  Intensity per Employee (tCO₂e) — Industry Median
+                </p>
+                <ResponsiveContainer width="100%" height={220}>
+                  <BarChart
+                    data={chartData}
+                    margin={{ top: 4, right: 16, left: 0, bottom: 0 }}
+                  >
+                    <CartesianGrid
+                      strokeDasharray="3 3"
+                      stroke="var(--card-border)"
+                    />
+                    <XAxis dataKey="scope" tick={{ fontSize: 12 }} />
+                    <YAxis tick={{ fontSize: 12 }} unit=" t" />
+                    <Tooltip
+                      formatter={(v: number) => [
+                        `${v.toLocaleString()} tCO₂e`,
+                        "Industry median",
+                      ]}
+                    />
+                    <Legend />
+                    <Bar
+                      dataKey="industry"
+                      name="Industry median"
+                      fill="var(--primary, #22c55e)"
+                      radius={[4, 4, 0, 0]}
+                    />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            );
+          })()}
         </section>
       )}
 

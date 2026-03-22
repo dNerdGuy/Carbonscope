@@ -276,6 +276,31 @@ async def export_reports(
         ]
         return json.dumps(data, indent=2).encode(), "application/json", "reports.json"
 
+    if fmt == "parquet":
+        try:
+            import pyarrow as pa
+            import pyarrow.parquet as pq
+        except ImportError as exc:  # pragma: no cover
+            raise ServiceError(500, "pyarrow is not installed — cannot export as Parquet") from exc
+
+        table = pa.table({
+            "id": pa.array([r.id for r in reports], type=pa.string()),
+            "year": pa.array([r.year for r in reports], type=pa.int32()),
+            "scope1": pa.array([r.scope1 for r in reports], type=pa.float64()),
+            "scope2": pa.array([r.scope2 for r in reports], type=pa.float64()),
+            "scope3": pa.array([r.scope3 for r in reports], type=pa.float64()),
+            "total": pa.array([r.total for r in reports], type=pa.float64()),
+            "confidence": pa.array([r.confidence for r in reports], type=pa.float64()),
+            "methodology_version": pa.array([r.methodology_version for r in reports], type=pa.string()),
+            "created_at": pa.array(
+                [r.created_at.isoformat() if r.created_at else None for r in reports],
+                type=pa.string(),
+            ),
+        })
+        buf = io.BytesIO()
+        pq.write_table(table, buf)
+        return buf.getvalue(), "application/octet-stream", "reports.parquet"
+
     output = io.StringIO()
     writer = csv.writer(output)
     writer.writerow(["id", "year", "scope1", "scope2", "scope3", "total", "confidence", "methodology_version", "created_at"])

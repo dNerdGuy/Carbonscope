@@ -20,6 +20,13 @@ from typing import Any
 
 logger = logging.getLogger(__name__)
 
+# LLM model identifiers — override via env vars to upgrade models without code changes
+_ANTHROPIC_MODEL: str = os.getenv("ANTHROPIC_MODEL", "claude-sonnet-4-20250514")
+_OPENAI_MODEL: str = os.getenv("OPENAI_MODEL", "gpt-4o-mini")
+
+# LLM call timeout — prevents hanging indefinitely on unresponsive API endpoints
+_LLM_TIMEOUT_SECONDS: float = float(os.getenv("LLM_TIMEOUT_SECONDS", "30"))
+
 # Optional LLM client — only used if API key is set
 _llm_client = None
 _llm_lock = threading.Lock()
@@ -154,21 +161,21 @@ async def parse_unstructured_text(text: str) -> dict[str, Any]:
         def _call() -> str:
             if provider == "anthropic":
                 response = client.messages.create(
-                    model="claude-sonnet-4-20250514",
+                    model=_ANTHROPIC_MODEL,
                     max_tokens=1024,
                     messages=[{"role": "user", "content": prompt}],
                 )
                 return response.content[0].text
             else:
                 response = client.chat.completions.create(
-                    model="gpt-4o-mini",
+                    model=_OPENAI_MODEL,
                     messages=[{"role": "user", "content": prompt}],
                     max_tokens=1024,
                     temperature=0,
                 )
                 return response.choices[0].message.content
 
-        content = await asyncio.to_thread(_call)
+        content = await asyncio.wait_for(asyncio.to_thread(_call), timeout=_LLM_TIMEOUT_SECONDS)
 
         # Parse JSON from response
         json_match = re.search(r"\{[^}]+\}", content, re.DOTALL)
@@ -318,7 +325,7 @@ async def generate_audit_trail(
         if provider == "anthropic":
             def _audit_call() -> str:
                 response = client.messages.create(
-                    model="claude-sonnet-4-20250514",
+                    model=_ANTHROPIC_MODEL,
                     max_tokens=2048,
                     messages=[{"role": "user", "content": prompt}],
                 )
@@ -326,14 +333,14 @@ async def generate_audit_trail(
         else:
             def _audit_call() -> str:
                 response = client.chat.completions.create(
-                    model="gpt-4o-mini",
+                    model=_OPENAI_MODEL,
                     messages=[{"role": "user", "content": prompt}],
                     max_tokens=2048,
                     temperature=0.3,
                 )
                 return response.choices[0].message.content
 
-        return await asyncio.to_thread(_audit_call)
+        return await asyncio.wait_for(asyncio.to_thread(_audit_call), timeout=_LLM_TIMEOUT_SECONDS)
 
     except (json.JSONDecodeError, KeyError, TypeError, OSError, RuntimeError, asyncio.TimeoutError) as e:
         logger.warning("LLM audit trail failed, falling back to rule-based: %s", e)

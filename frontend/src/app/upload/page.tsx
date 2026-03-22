@@ -1,6 +1,6 @@
 "use client";
 
-import { useReducer } from "react";
+import { useReducer, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { useDocumentTitle } from "@/hooks/useDocumentTitle";
 import Breadcrumbs from "@/components/Breadcrumbs";
@@ -8,6 +8,7 @@ import { useRequireAuth } from "@/hooks/useRequireAuth";
 import { uploadData, createEstimate } from "@/lib/api";
 import { PageSkeleton } from "@/components/Skeleton";
 import { StatusMessage } from "@/components/StatusMessage";
+import { useEventSource } from "@/hooks/useEventSource";
 
 const CURRENT_YEAR = new Date().getFullYear();
 
@@ -91,6 +92,13 @@ export default function UploadPage() {
 
   const setField = (field: keyof UploadState) => (value: string) =>
     dispatch({ type: "SET_FIELD", field, value });
+
+  // Redirect to /reports when a background subnet estimation completes
+  const sseHandlers = useMemo(
+    () => ({ report_ready: () => router.push("/reports") }),
+    [router],
+  );
+  useEventSource(sseHandlers, !!user);
 
   if (loading) return <PageSkeleton />;
   if (!user) return null;

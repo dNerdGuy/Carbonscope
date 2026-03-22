@@ -81,7 +81,7 @@ async def list_reports(
 @limiter.limit(RATE_LIMIT_DEFAULT)
 async def export_reports(
     request: Request,
-    format: str = Query(default="csv", pattern="^(csv|json)$"),
+    format: str = Query(default="csv", pattern="^(csv|json|parquet)$"),
     year: int | None = Query(default=None),
     user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),

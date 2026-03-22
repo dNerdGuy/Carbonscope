@@ -32,9 +32,22 @@ _SCORES_HMAC_FILE = _SCORES_FILE + ".sig"
 
 
 def _score_hmac_key() -> bytes:
-    """Derive HMAC key from the validator wallet hotkey (unique per validator)."""
+    """Return HMAC key for score file integrity check.
+
+    On test networks, an unset key is allowed with a warning so developers can
+    run validators without pre-configuring secrets.  On mainnet (finney) the key
+    is mandatory; omitting it causes a hard exit to prevent operating without
+    tamper-detection.
+    """
     key = os.getenv("VALIDATOR_SCORE_HMAC_KEY", "")
     if not key:
+        network = os.getenv("BT_NETWORK", "finney")
+        if network == "test":
+            bt.logging.warning(
+                "VALIDATOR_SCORE_HMAC_KEY not set — score file will be stored unsigned. "
+                "This is acceptable on the test network. Set this env var before going to mainnet."
+            )
+            return b""
         bt.logging.error(
             "VALIDATOR_SCORE_HMAC_KEY not set — score file integrity cannot be verified. "
             "Set this env var to a secure random string."
@@ -177,14 +190,16 @@ class CarbonValidator:
                 data = json.loads(raw_data)
             # Verify HMAC if signature file exists
             if os.path.exists(_SCORES_HMAC_FILE):
-                with open(_SCORES_HMAC_FILE) as f:
-                    stored_sig = f.read().strip()
-                expected_sig = hmac.new(
-                    _score_hmac_key(), raw_data.encode("utf-8"), hashlib.sha256
-                ).hexdigest()
-                if not hmac.compare_digest(stored_sig, expected_sig):
-                    bt.logging.error("Score file integrity check failed — possible tampering. Starting fresh.")
-                    return {}
+                hmac_key = _score_hmac_key()
+                if hmac_key:
+                    with open(_SCORES_HMAC_FILE) as f:
+                        stored_sig = f.read().strip()
+                    expected_sig = hmac.new(
+                        hmac_key, raw_data.encode("utf-8"), hashlib.sha256
+                    ).hexdigest()
+                    if not hmac.compare_digest(stored_sig, expected_sig):
+                        bt.logging.error("Score file integrity check failed — possible tampering. Starting fresh.")
+                        return {}
             scores = {int(k): float(v) for k, v in data.items()}
             bt.logging.info(f"Loaded {len(scores)} persisted scores from {_SCORES_FILE}")
             return scores
@@ -199,14 +214,16 @@ class CarbonValidator:
             with open(tmp, "w") as f:
                 f.write(raw_data)
             os.replace(tmp, _SCORES_FILE)
-            # Write HMAC signature
-            sig = hmac.new(
-                _score_hmac_key(), raw_data.encode("utf-8"), hashlib.sha256
-            ).hexdigest()
-            sig_tmp = _SCORES_HMAC_FILE + ".tmp"
-            with open(sig_tmp, "w") as f:
-                f.write(sig)
-            os.replace(sig_tmp, _SCORES_HMAC_FILE)
+            # Write HMAC signature (skipped in unsigned/dev mode)
+            hmac_key = _score_hmac_key()
+            if hmac_key:
+                sig = hmac.new(
+                    hmac_key, raw_data.encode("utf-8"), hashlib.sha256
+                ).hexdigest()
+                sig_tmp = _SCORES_HMAC_FILE + ".tmp"
+                with open(sig_tmp, "w") as f:
+                    f.write(sig)
+                os.replace(sig_tmp, _SCORES_HMAC_FILE)
         except OSError:
             bt.logging.error("Failed to persist scores to disk — data may be lost on restart")
 
@@ -322,11 +339,13 @@ class CarbonValidator:
             except Exception:
                 if q_attempt < len(query_retry_delays):
                     delay = query_retry_delays[q_attempt]
+                    # Add random jitter to avoid synchronized retry storms across validators
+                    jitter = random.uniform(0, delay * 0.3)
                     bt.logging.warning(
-                        f"Query attempt {q_attempt + 1} failed, retrying in {delay}s:\n"
+                        f"Query attempt {q_attempt + 1} failed, retrying in {delay + jitter:.2f}s:\n"
                         f"{traceback.format_exc()}"
                     )
-                    time.sleep(delay)
+                    time.sleep(delay + jitter)
                 else:
                     self._consecutive_failures += 1
                     bt.logging.error(

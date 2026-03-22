@@ -7,10 +7,66 @@ Provides uncertainty bounds (low/mid/high) to quantify prediction quality.
 
 from __future__ import annotations
 
+import logging
 import math
+import os
+from pathlib import Path
 from typing import Any
 
 from carbonscope.emission_factors.loader import get_industry_profile, load_factors
+
+logger = logging.getLogger(__name__)
+
+# ── ML model (optional) ─────────────────────────────────────────────
+# When the trained artifact is present the service augments rule-based
+# predictions with ML estimates; otherwise it falls back gracefully.
+
+_MODEL_PATH: str = os.getenv(
+    "SCOPE3_MODEL_PATH",
+    str(Path(__file__).resolve().parent.parent.parent / "data" / "model" / "scope3_predictor.pkl"),
+)
+
+_ml_artifact: dict | None = None
+_ml_load_attempted: bool = False
+
+
+def _load_model() -> dict | None:
+    """Lazily load the scikit-learn artifact.  Returns None if unavailable."""
+    global _ml_artifact, _ml_load_attempted
+    if _ml_load_attempted:
+        return _ml_artifact
+    _ml_load_attempted = True
+    if not Path(_MODEL_PATH).exists():
+        return None
+    try:
+        import joblib  # noqa: PLC0415
+        _ml_artifact = joblib.load(_MODEL_PATH)
+        logger.info("Loaded ML prediction model v%s from %s",
+                    _ml_artifact.get("version", "?"), _MODEL_PATH)
+    except Exception as exc:  # pragma: no cover
+        logger.warning("Failed to load ML prediction model: %s — using rule-based fallback", exc)
+    return _ml_artifact
+
+
+def _ml_predict(industry: str, region: str, revenue_usd: float, employee_count: int) -> dict[str, float] | None:
+    """Return ML-based scope predictions or None if model is unavailable."""
+    artifact = _load_model()
+    if artifact is None:
+        return None
+    try:
+        import numpy as np  # noqa: PLC0415
+        log_emp = float(np.log1p(employee_count))
+        log_rev = float(np.log1p(revenue_usd))
+        X = np.array([[industry, region, float(employee_count), revenue_usd, log_emp, log_rev]], dtype=object)
+        models: dict = artifact["models"]
+        return {
+            scope: float(max(0.0, models[scope].predict(X)[0]))
+            for scope in ("scope1", "scope2", "scope3")
+            if scope in models
+        }
+    except Exception as exc:  # pragma: no cover
+        logger.warning("ML prediction failed: %s — falling back to rule-based", exc)
+        return None
 
 
 # ── Intensity-based prediction ──────────────────────────────────────
@@ -117,8 +173,12 @@ def predict_missing_emissions(
     method = "none"
     filled_categories: list[str] = []
 
-    # Choose prediction strategy based on available proxy data
-    if revenue > 0 and employees > 0:
+    # Try ML model first; fall back to intensity-factor rules if unavailable
+    ml_preds = _ml_predict(industry, region, revenue, employees)
+    if ml_preds is not None:
+        predictions = {k: round(v, 2) for k, v in ml_preds.items()}
+        method = "ml_gradient_boosting"
+    elif revenue > 0 and employees > 0:
         # Hybrid: average of both approaches
         rev_pred = predict_from_revenue(revenue, industry)
         emp_pred = predict_from_employees(employees, industry)

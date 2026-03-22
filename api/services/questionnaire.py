@@ -29,6 +29,13 @@ from api.models import (
 
 logger = logging.getLogger(__name__)
 
+# LLM model identifiers — override via env vars to upgrade models without code changes
+_ANTHROPIC_MODEL: str = os.getenv("ANTHROPIC_MODEL", "claude-sonnet-4-20250514")
+_OPENAI_MODEL: str = os.getenv("OPENAI_MODEL", "gpt-4o-mini")
+
+# LLM call timeout in seconds — prevents hanging on unresponsive API endpoints
+_LLM_TIMEOUT_SECONDS: float = float(os.getenv("LLM_TIMEOUT_SECONDS", "30"))
+
 
 # ── Document text extraction ─────────────────────────────────────────
 
@@ -226,14 +233,14 @@ def _llm_call_sync(client: Any, provider: str, prompt: str, max_tokens: int = 20
     """Make a synchronous LLM call (runs in thread pool via caller)."""
     if provider == "anthropic":
         resp = client.messages.create(
-            model="claude-sonnet-4-20250514",
+            model=_ANTHROPIC_MODEL,
             max_tokens=max_tokens,
             messages=[{"role": "user", "content": prompt}],
         )
         return resp.content[0].text
     else:
         resp = client.chat.completions.create(
-            model="gpt-4o-mini",
+            model=_OPENAI_MODEL,
             messages=[{"role": "user", "content": prompt}],
             max_tokens=max_tokens,
             temperature=0.2,
@@ -249,14 +256,17 @@ async def extract_questions_llm(text: str) -> list[dict[str, Any]]:
 
     try:
         prompt = _EXTRACT_QUESTIONS_PROMPT.format(text=text[:8000])
-        content = await asyncio.to_thread(_llm_call_sync, client, provider, prompt)
+        content = await asyncio.wait_for(
+            asyncio.to_thread(_llm_call_sync, client, provider, prompt),
+            timeout=_LLM_TIMEOUT_SECONDS,
+        )
 
         # Parse JSON array from response
         json_match = re.search(r"\[.*\]", content, re.DOTALL)
         if json_match:
             return json.loads(json_match.group())
         return json.loads(content)
-    except (json.JSONDecodeError, KeyError, TypeError, OSError) as e:
+    except (json.JSONDecodeError, KeyError, TypeError, OSError, asyncio.TimeoutError) as e:
         logger.warning("LLM question extraction failed, using rule-based: %s", e)
         return extract_questions_rule_based(text)
 
@@ -288,9 +298,12 @@ async def generate_draft_answer(
             total=total,
             question=question,
         )
-        answer = await asyncio.to_thread(_llm_call_sync, client, provider, prompt, 512)
+        answer = await asyncio.wait_for(
+            asyncio.to_thread(_llm_call_sync, client, provider, prompt, 512),
+            timeout=_LLM_TIMEOUT_SECONDS,
+        )
         return answer.strip(), 0.75
-    except (KeyError, TypeError, OSError) as e:
+    except (KeyError, TypeError, OSError, asyncio.TimeoutError) as e:
         logger.warning("LLM draft answer failed: %s", e)
         return _draft_answer_rule_based(question, company_name, industry), 0.3
 

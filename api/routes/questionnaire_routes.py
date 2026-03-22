@@ -225,6 +225,7 @@ async def apply_template(
     # Get company data for draft answers
     from api.models import Company, EmissionReport
     from api.services.questionnaire import generate_draft_answer
+    from api.services.prediction import predict_missing_emissions
 
     company_result = await db.execute(
         select(Company).where(Company.id == user.company_id, Company.deleted_at.is_(None))
@@ -242,6 +243,28 @@ async def apply_template(
     )
     report = report_result.scalar_one_or_none()
 
+    # For companies with no prior emission report, use industry-based predictions so
+    # the LLM receives non-zero baseline values and generates useful draft answers.
+    if report is None:
+        prediction = predict_missing_emissions(
+            known_data={
+                "revenue_usd": company.revenue_usd,
+                "employee_count": company.employee_count,
+            },
+            industry=company.industry,
+            region=company.region,
+        )
+        baseline = prediction.get("predictions", {})
+        draft_scope1 = baseline.get("scope1", 0.0)
+        draft_scope2 = baseline.get("scope2", 0.0)
+        draft_scope3 = baseline.get("scope3", 0.0)
+        draft_total = draft_scope1 + draft_scope2 + draft_scope3
+    else:
+        draft_scope1 = report.scope1
+        draft_scope2 = report.scope2
+        draft_scope3 = report.scope3
+        draft_total = report.total
+
     questions_out = []
     for i, q in enumerate(tpl["questions"], start=1):
         draft, confidence = await generate_draft_answer(
@@ -249,10 +272,10 @@ async def apply_template(
             company_name=company.name,
             industry=company.industry,
             region=company.region,
-            scope1=report.scope1 if report else 0,
-            scope2=report.scope2 if report else 0,
-            scope3=report.scope3 if report else 0,
-            total=report.total if report else 0,
+            scope1=draft_scope1,
+            scope2=draft_scope2,
+            scope3=draft_scope3,
+            total=draft_total,
         )
         question = QuestionnaireQuestion(
             questionnaire_id=questionnaire.id,

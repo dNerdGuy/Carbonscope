@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 import { useDocumentTitle } from "@/hooks/useDocumentTitle";
 import { useRequireAuth } from "@/hooks/useRequireAuth";
@@ -10,6 +11,8 @@ import {
   getProfile,
   updateProfile,
   changePassword,
+  getMFAStatus,
+  deleteAccount,
   type Company,
   type User,
 } from "@/lib/api";
@@ -18,12 +21,16 @@ import { PageSkeleton } from "@/components/Skeleton";
 import { StatusMessage } from "@/components/StatusMessage";
 import Breadcrumbs from "@/components/Breadcrumbs";
 import WebhookSection from "@/components/WebhookSection";
+import ConfirmDialog from "@/components/ConfirmDialog";
+import { useAuth } from "@/lib/auth-context";
 
 import { INDUSTRIES, industryLabel } from "@/lib/constants";
 
 export default function SettingsPage() {
   useDocumentTitle("Settings");
   const { user, loading } = useRequireAuth();
+  const { logout } = useAuth();
+  const router = useRouter();
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
@@ -49,9 +56,20 @@ export default function SettingsPage() {
   const [employeeCount, setEmployeeCount] = useState("");
   const [revenueUsd, setRevenueUsd] = useState("");
 
+  // Delete account state
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const [deleteErr, setDeleteErr] = useState("");
+
   const settingsQuery = useQuery<[User, Company]>({
     queryKey: ["settings", user?.company_id],
     queryFn: () => Promise.all([getProfile(), getCompany()]),
+    enabled: !!user && !loading,
+  });
+
+  const mfaStatusQuery = useQuery<{ enabled: boolean }>({
+    queryKey: ["mfa-status", user?.id],
+    queryFn: getMFAStatus,
     enabled: !!user && !loading,
   });
 
@@ -71,6 +89,7 @@ export default function SettingsPage() {
 
   const company = settingsQuery.data?.[1] ?? null;
   const profile = settingsQuery.data?.[0] ?? null;
+  const mfaEnabled = mfaStatusQuery.data?.enabled ?? false;
 
   async function handleSave(e: React.FormEvent) {
     e.preventDefault();
@@ -136,6 +155,21 @@ export default function SettingsPage() {
       setPwErr(err instanceof Error ? err.message : "Password change failed");
     } finally {
       setPwSaving(false);
+    }
+  }
+
+  async function handleDeleteAccount() {
+    setDeleteErr("");
+    setDeleting(true);
+    try {
+      await deleteAccount();
+      await logout();
+      router.replace("/login");
+    } catch (err: unknown) {
+      setDeleteErr(
+        err instanceof Error ? err.message : "Failed to delete account",
+      );
+      setDeleting(false);
     }
   }
 
@@ -285,7 +319,74 @@ export default function SettingsPage() {
         </button>
       </form>
 
+      {/* Two-Factor Authentication */}
+      <div className="card space-y-3 mt-8">
+        <h2 className="text-lg font-bold">Two-Factor Authentication</h2>
+        <p className="text-sm text-[var(--muted)]">
+          {mfaEnabled
+            ? "Two-factor authentication is enabled on your account."
+            : "Protect your account with time-based one-time passwords (TOTP)."}
+        </p>
+        <div className="flex items-center gap-3">
+          <span
+            className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-medium ${
+              mfaEnabled
+                ? "bg-green-500/15 text-green-400"
+                : "bg-gray-500/15 text-gray-400"
+            }`}
+          >
+            <span
+              className={`h-1.5 w-1.5 rounded-full ${mfaEnabled ? "bg-green-400" : "bg-gray-400"}`}
+            />
+            {mfaEnabled ? "Enabled" : "Disabled"}
+          </span>
+          <a href="/mfa" className="btn-secondary text-sm">
+            {mfaEnabled ? "Manage 2FA" : "Enable 2FA"}
+          </a>
+        </div>
+      </div>
+
       <WebhookSection />
+
+      {/* Danger Zone */}
+      <div
+        className="card mt-8 space-y-3"
+        style={{ borderColor: "var(--error, #ef4444)" }}
+      >
+        <h2
+          className="text-lg font-bold"
+          style={{ color: "var(--error, #ef4444)" }}
+        >
+          Danger Zone
+        </h2>
+        <p className="text-sm text-[var(--muted)]">
+          Permanently delete your account and all associated data. This action
+          cannot be undone.
+        </p>
+        {deleteErr && <StatusMessage message={deleteErr} variant="error" />}
+        <button
+          type="button"
+          className="rounded-md border px-4 py-2 text-sm font-medium transition-colors"
+          style={{
+            borderColor: "var(--error, #ef4444)",
+            color: "var(--error, #ef4444)",
+          }}
+          onClick={() => setShowDeleteConfirm(true)}
+          disabled={deleting}
+        >
+          Delete My Account
+        </button>
+      </div>
+
+      <ConfirmDialog
+        open={showDeleteConfirm}
+        title="Delete Account"
+        message="This will permanently delete your account, company data, and all emission reports. This action cannot be undone."
+        confirmLabel={deleting ? "Deleting..." : "Delete Account"}
+        onConfirm={handleDeleteAccount}
+        onCancel={() => setShowDeleteConfirm(false)}
+        variant="danger"
+      />
     </div>
   );
 }

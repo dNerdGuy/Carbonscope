@@ -236,7 +236,19 @@ async def _do_subnet_query(
     else:
         selected = max(valid_responses, key=lambda x: x[2]["final"])
 
-    _, best_response, _ = selected
+    _, best_response, best_score = selected
+    selected_total = best_response.emissions.get("total", 0) if best_response.emissions else 0
+
+    # Compute agreement_pct: fraction of valid miners within ±20% of the selected total
+    if selected_total and len(valid_responses) > 1:
+        tolerance = selected_total * 0.20
+        agreeing = sum(
+            1 for _, r, _ in valid_responses
+            if abs((r.emissions or {}).get("total", 0) - selected_total) <= tolerance
+        )
+        agreement_pct = round(agreeing / len(valid_responses) * 100, 1)
+    else:
+        agreement_pct = 100.0
 
     return {
         "emissions": best_response.emissions,
@@ -246,6 +258,7 @@ async def _do_subnet_query(
         "assumptions": best_response.assumptions,
         "methodology_version": best_response.methodology_version,
         "miner_scores": all_scores,
+        "agreement_pct": agreement_pct,
     }
 
 
@@ -254,8 +267,43 @@ def _select_by_consensus(
 ) -> tuple[int, CarbonSynapse, dict]:
     """Select the response closest to the median emissions across all valid responses.
 
-    This discourages outlier/fabricated emissions, rewarding miners whose
-    results align with the majority.
+    **Algorithm overview:**
+
+    1. **Median computation** — compute the median of the ``total`` emissions
+       field across every valid response.  Using the median (rather than the
+       mean) makes the selection robust against a small number of outlier miners
+       that report fabricated or wildly incorrect values.
+
+    2. **Quality filtering** — only responses with a composite quality score
+       (``result["final"]``) of at least *0.3* are considered as candidates for
+       selection.  This threshold rejects miners that produced technically valid
+       JSON but scored poorly on accuracy, compliance, or completeness axes.
+       If *all* miners fall below the threshold (e.g. a first-run cold-start),
+       the filter is dropped and all responses become candidates, ensuring the
+       function always returns something.
+
+    3. **Proximity selection** — among the quality candidates, choose the
+       response whose ``total`` emissions value is closest (by absolute
+       distance) to the computed median.  This rewards miners whose answers
+       align with the consensus view while still preferring higher-quality
+       submissions over low-quality ones that happen to match the median.
+
+    **Fallback chain:**
+    * ``>= 3`` valid responses  →  ``_select_by_consensus`` (this function)
+    * ``< 3`` valid responses   →  best-score selection (``max`` by
+      ``result["final"]``) in the caller.
+    * ``0`` valid responses     →  ``RuntimeError`` raised before this is
+      called.
+
+    **Return value:**
+    A ``(uid, synapse, score_dict)`` triple for the winning miner.  The
+    ``score_dict`` is the full dict returned by :func:`~carbonscope.scoring.score_response`
+    and includes per-axis scores (``accuracy``, ``compliance``, ``completeness``,
+    ``anti_hallucination``, ``benchmark``) plus the composite ``final`` score.
+
+    The caller exposes ``miner_scores`` (all UID → score dicts) in the API
+    response alongside ``agreement_pct`` (percentage of miners within ±20 % of
+    the selected total) so downstream consumers can gauge consensus quality.
     """
     # Compute median total emissions
     totals = [r[1].emissions.get("total", 0) for r in responses]
