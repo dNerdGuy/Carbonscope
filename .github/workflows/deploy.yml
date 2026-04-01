@@ -60,7 +60,7 @@ jobs:
     needs: [setup]
     environment: ${{ needs.setup.outputs.environment }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Authenticate to cluster
         uses: azure/k8s-set-context@v4
