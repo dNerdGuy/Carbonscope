@@ -1,17 +1,17 @@
 bittensor==10.1.0
-pydantic==2.12.5
+pydantic==2.13.2
 numpy==2.4.3
 
 # Platform API
-fastapi==0.135.1
-uvicorn==0.41.0
+fastapi==0.136.0
+uvicorn==0.44.0
 sqlalchemy[asyncio]==2.0.48
 asyncpg==0.31.0
 alembic==1.18.4
 passlib[bcrypt]==1.7.4
 bcrypt==3.2.2
 PyJWT==2.11.0
-pydantic[email]==2.12.5
+pydantic[email]==2.13.2
 httpx==0.28.1
 python-dotenv>=1.0.0
 slowapi==0.1.9
